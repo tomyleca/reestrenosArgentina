@@ -1,0 +1,7 @@
+{
+  "cinemarkHoyts": {
+    "container": "div.MuiGrid-item",
+    "title": "[data-testid='movie-title']",
+    "idiomas": "[data-testid='movie-description'] p"
+  }
+}

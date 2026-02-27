@@ -1,0 +1,68 @@
+@startuml
+
+class Pelicula{
+-id: Long
+-cines: List<cine>
+-poster: Imagen
+-descripcion: String
+-genero: Genero
+-categoria: Categoria
+-List<Idioma>
+}
+
+
+class Cine{
+-id: Long
+-nombre: String
+-localidad: Localidad
+-url: String
+}
+
+class Localidad{
+-id: Long
+nombre: String
+}
+
+enum Categoria{
+-ESTRENO
+-REESTRENO
+}
+
+class Genero{
+-id: Long
+-nombre:String
+}
+
+class Localidad{
+-id: Long
+-nombre:String
+}
+
+class Imagen{
+-path: String
+}
+
+interface ICineScrapper{
++getCine(): Cine
++scrape(): List<PeliculaDTO>
+}
+
+abstract class BaseScrapper{
++scrape(): List<PeliculaDTO>
+}
+
+class CinemarkScrapper implements ICineScrapper{
+
+}
+
+
+
+Pelicula --> Cine
+Pelicula --> Genero
+Pelicula --> Categoria
+Pelicula --> Imagen
+Cine --> Localidad
+CinemarkScrapper --|> BaseScrapper
+
+
+@enduml
