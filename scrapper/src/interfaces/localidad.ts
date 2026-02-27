@@ -1,4 +1,4 @@
-export interface Localidad {
-	id: number;
-	nombre: string;
+export enum Localidad {
+	CABA = 'CABA',
+	GBA = 'GBA'
 }

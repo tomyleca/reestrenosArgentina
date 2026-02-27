@@ -3,8 +3,7 @@ import type { PeliculaInput } from "./peliculaInput.js";
 import type {Page} from 'playwright';
 
 export interface CineScrapper {
-	nombreCine: string;
-	url: string;
+	cine: Cine;
 	
 	scrapear(page: Page): Promise<PeliculaInput[]>;
 }
