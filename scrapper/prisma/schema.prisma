@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pelicula {
+  id              Int         @id @default(autoincrement())
+  titulo          String
+  descripcion     String
+  generos         Genero[]
+  duracionMinutos Int
+  categoria       Categoria
+  cines           Cine[]
+  activa          Boolean
+}
+
+model Cine {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  localidad Localidad
+  url       String
+  peliculas Pelicula[] // Recordá que si Pelicula tiene cines, Cine debe tener peliculas
+}
+
+model Genero {
+  id        Int        @id @default(autoincrement())
+  nombre    String
+  peliculas Pelicula[]
+}
+
+enum Localidad {
+  CABA
+  GBA
+}
+
+enum Categoria {
+  ESTRENOS
+  REESTRENOS
+}

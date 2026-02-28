@@ -2,8 +2,8 @@ import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { chromium } from 'playwright';
 import type { Browser, Page} from 'playwright';
 import { CinemarkScrapper } from '../src/scrapers/particulares/cinemarkScrapper.js';
-import type { Cine } from '../src/interfaces/cine.js';
-import { Localidad } from '../src/interfaces/localidad.js';
+import type { Cine } from '../src/core/cine.js';
+import { Localidad } from '../src/core/localidad.js';
 import selectorsData from '../src/config/selectors.json' with { type: 'json' };
 import path from 'path';
 
@@ -30,6 +30,7 @@ describe('CinemarkScrapper', () => {
       selectors: {
         containerPelicula: selectorsData.cinemarkHoyts.container,
         titulo: selectorsData.cinemarkHoyts.title,
+		nombreBoton: selectorsData.cinemarkHoyts.nombreBoton,
       }
     };
 

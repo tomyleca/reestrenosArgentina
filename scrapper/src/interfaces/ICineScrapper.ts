@@ -1,5 +1,5 @@
-import type { Cine } from "./cine.js";
-import type { PeliculaInput } from "./peliculaInput.js";
+import type { Cine } from "../core/cine.js";
+import type { PeliculaInput } from "../core/peliculaInput.js";
 import type {Page} from 'playwright';
 
 export interface CineScrapper {

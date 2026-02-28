@@ -42,16 +42,13 @@ class Imagen{
 -path: String
 }
 
-interface ICineScrapper{
-+getCine(): Cine
+
+
+abstract class Scraper{
 +scrape(): List<PeliculaDTO>
 }
 
-abstract class BaseScrapper{
-+scrape(): List<PeliculaDTO>
-}
-
-class CinemarkScrapper implements ICineScrapper{
+class CinemarkScrapper extends Scraper{
 
 }
 
@@ -62,7 +59,7 @@ Pelicula --> Genero
 Pelicula --> Categoria
 Pelicula --> Imagen
 Cine --> Localidad
-CinemarkScrapper --|> BaseScrapper
+
 
 
 @enduml

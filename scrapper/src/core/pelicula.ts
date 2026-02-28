@@ -6,9 +6,10 @@ export interface Pelicula {
 	id: number;
 	titulo: string;
 	descripcion: string;
-	genero: Genero;
-	duracion: number; // Duración en minutos
+	generos: Genero[];
+	duracionMinutos: number; // Duración en minutos
 	categoria: Categoria;
 	cines: Cine[];
+	activa: boolean;
 }
 
