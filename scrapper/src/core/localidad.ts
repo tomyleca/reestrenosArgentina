@@ -1,4 +1,1 @@
-export enum Localidad {
-	CABA,
-	GBA
-}
+export { Localidad } from '@prisma/client';

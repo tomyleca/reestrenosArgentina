@@ -25,6 +25,13 @@ export abstract class Scraper {
   }
 
   protected async scrapear(page: Page): Promise<PeliculaInput[]> {
+
+	if(!this.cine.selectors) {
+		throw new Error(`No se han definido los selectores para el cine ${this.cine.nombre}`);
+	}
+
+
+
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
       (elements, { sel, cine }) => {

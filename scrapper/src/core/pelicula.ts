@@ -11,5 +11,6 @@ export interface Pelicula {
 	categoria: Categoria;
 	cines: Cine[];
 	activa: boolean;
+	tmdbId?: number | null; 
 }
 

@@ -1,4 +1,1 @@
-export enum Categoria{
-	ESTRENOS,
-	REESTRENOS 
-}
+export { Categoria } from '@prisma/client';

@@ -7,5 +7,5 @@ export interface Cine {
 	nombre: string;
 	localidad: Localidad;
 	url: string
-	selectors: PeliculaSelectors;
+	selectors?: PeliculaSelectors;
 }

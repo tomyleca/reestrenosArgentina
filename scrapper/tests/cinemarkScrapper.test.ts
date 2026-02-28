@@ -35,8 +35,8 @@ describe('CinemarkScrapper', () => {
     };
 
     console.log('\n🔍 Selectores utilizados:');
-    console.log(`   Container: ${cine.selectors.containerPelicula}`);
-    console.log(`   Título: ${cine.selectors.titulo}\n`);
+    console.log(`   Container: ${cine.selectors?.containerPelicula}`);
+    console.log(`   Título: ${cine.selectors?.titulo}\n`);
 
     // Crear scrapper
     const scrapper = new CinemarkScrapper(cine);

@@ -1,7 +1,7 @@
 import type { Page } from 'playwright';
-import type { PeliculaInput } from '../core/peliculaInput.js';
-import type { PeliculaSelectors } from '../core/selectors.js';
-import type { Cine } from '../core/cine.js';
+import type { PeliculaInput } from './src/core/peliculaInput.js';
+import type { PeliculaSelectors } from './src/core/selectors.js';
+import type { Cine } from './src/core/cine.js';
 
 //Tener una clase base y heredar me sirve para manejar la distinta lógica de scrapear las páginas, por ejemplo un formulario de inicio.
 //Además me permite aplicar un template method.

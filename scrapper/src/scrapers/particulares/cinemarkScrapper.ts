@@ -11,6 +11,10 @@ export class CinemarkScrapper extends Scraper {
 	}
 
 	async prepararPagina(page: Page): Promise<void> {
+	if(!this.cine.selectors) {
+		throw new Error(`No se han definido los selectores para el cine ${this.cine.nombre}`);
+	}
+
 		const nombreBoton = this.cine.selectors.nombreBoton;
 		if (!nombreBoton) throw new Error("No se ha definido el nombre del botón para ver más películas en los selectores del cine.");
 		

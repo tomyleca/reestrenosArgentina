@@ -9,13 +9,15 @@ datasource db {
 
 model Pelicula {
   id              Int         @id @default(autoincrement())
-  titulo          String
+  titulo          String	   @unique
+  
   descripcion     String
   generos         Genero[]
   duracionMinutos Int
   categoria       Categoria
   cines           Cine[]
   activa          Boolean
+  tmdbId          Int?        @unique 
 }
 
 model Cine {
