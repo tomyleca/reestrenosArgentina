@@ -1,6 +1,6 @@
 import { Scraper } from "../scraper.js";
 import type { Page } from 'playwright';
-import type { Cine } from "../../core/cine.js";
+import type { Cine } from "../../core/domain/cine.js";
 
 export class CinemarkScrapper extends Scraper {
 	cine: Cine;

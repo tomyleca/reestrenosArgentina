@@ -1,4 +1,4 @@
-import type { Pelicula } from "../core/pelicula.js";
+import type { Pelicula } from "../core/domain/pelicula.js";
 
 export interface ICarteleraRepository {
 	upsertPeliculas(peliculas: Pelicula[]): Promise<void>;
