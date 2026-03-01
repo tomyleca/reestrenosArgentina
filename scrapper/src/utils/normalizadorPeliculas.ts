@@ -3,7 +3,7 @@ import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { IDatosPeliculaGetter } from "../core/interfaces/IDatosPeliculaGetter.js";
 
 export interface INormalizadorPeliculas {
-  normalizar(peliculasInput: PeliculaInput[]): Pelicula[];
+  normalizar(peliculasInput: PeliculaInput[]): Promise<Pelicula[]>;
 }
 
 export class NormalizadorPeliculas implements INormalizadorPeliculas {
@@ -13,9 +13,7 @@ export class NormalizadorPeliculas implements INormalizadorPeliculas {
     this.datosPeliculaGetter = datosPeliculaGetter;
   }
 
-  normalizar(peliculasInput: PeliculaInput[]): Pelicula[] {
-    const peliculas =
-      this.datosPeliculaGetter.getPeliculaFromScrapeado(peliculasInput);
-    return peliculas;
+  async normalizar(peliculasInput: PeliculaInput[]): Promise<Pelicula[]> {
+    return this.datosPeliculaGetter.getPeliculasFromScrapeado(peliculasInput);
   }
 }

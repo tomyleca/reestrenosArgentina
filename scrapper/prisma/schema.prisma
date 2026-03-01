@@ -8,16 +8,18 @@ datasource db {
 }
 
 model Pelicula {
-  id              Int         @id @default(autoincrement())
-  titulo          String	   @unique
-  
-  descripcion     String
-  generos         Genero[]
-  duracionMinutos Int
-  categoria       Categoria
-  cines           Cine[]
-  activa          Boolean
-  tmdbId          Int?        @unique 
+  id               Int       @id @default(autoincrement())
+  titulo           String    @unique
+  descripcion      String
+  generos          Genero[]
+  duracionMinutos  Int
+  categoria        Categoria
+  cines            Cine[]
+  activa           Boolean
+  tmdbId           Int?      @unique
+  poster_path      String?
+  popularidad      Float?
+  fechaLanzamiento String?
 }
 
 model Cine {

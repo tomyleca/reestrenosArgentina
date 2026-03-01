@@ -1,31 +1,42 @@
 import type { Pelicula } from "../core/domain/pelicula.js";
+import type { ICarteleraRepository } from "./ICarteleraRepository.js";
 import prisma from "../lib/db.js";
 import { Prisma } from "@prisma/client";
 
-export interface ICarteleraRepository {
-  upsertPeliculas(pelicula: Prisma.PeliculaCreateInput[]): Promise<void>;
-  upsertPelicula(pelicula: Prisma.PeliculaCreateInput): Promise<void>;
-  getPeliculas(): Promise<Pelicula[]>;
-}
-
 export class PrismaCarteleraRepository implements ICarteleraRepository {
-  async upsertPelicula(pelicula: Prisma.PeliculaCreateInput): Promise<void> {
+  async upsertPelicula(pelicula: Pelicula): Promise<void> {
+    const data: Prisma.PeliculaCreateInput = {
+      titulo: pelicula.titulo,
+      descripcion: pelicula.descripcion,
+      duracionMinutos: pelicula.duracionMinutos,
+      categoria: pelicula.categoria,
+      activa: pelicula.activa,
+      ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
+      ...(pelicula.poster_path != null && {
+        poster_path: pelicula.poster_path,
+      }),
+      ...(pelicula.popularidad != null && {
+        popularidad: pelicula.popularidad,
+      }),
+      ...(pelicula.fechaLanzamiento != null && {
+        fechaLanzamiento: pelicula.fechaLanzamiento,
+      }),
+      generos: { connect: pelicula.generos.map((g) => ({ id: g.id })) },
+      cines: { connect: pelicula.cines.map((c) => ({ id: c.id })) },
+    };
+    const where =
+      pelicula.tmdbId != null
+        ? { tmdbId: pelicula.tmdbId }
+        : { titulo: pelicula.titulo };
     await prisma.pelicula.upsert({
-      where: {
-        titulo: pelicula.titulo, // Si no tiene ID, usamos un valor que no existe para forzar la creación
-      },
-      update: pelicula, // Ahora sí coincide el tipo perfectamente
-      create: pelicula,
+      where,
+      update: data,
+      create: data,
     });
   }
 
-  async upsertPeliculas(
-    listaPeliculas: Prisma.PeliculaCreateInput[],
-  ): Promise<void> {
-    const promesas = listaPeliculas.map((p) => this.upsertPelicula(p));
-
-    // Esperamos a que todas se resuelvan
-    await Promise.all(promesas);
+  async upsertPeliculas(listaPeliculas: Pelicula[]): Promise<void> {
+    await Promise.all(listaPeliculas.map((p) => this.upsertPelicula(p)));
   }
 
   async getPeliculas(): Promise<Pelicula[]> {
@@ -34,6 +45,20 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         generos: true,
         cines: true,
       },
+    });
+  }
+
+  async getPeliculaByName(nombre: string): Promise<Pelicula | null> {
+    return await prisma.pelicula.findFirst({
+      where: { titulo: nombre },
+      include: { generos: true, cines: true },
+    });
+  }
+
+  async buscarPorTMDBId(tmdbId: number): Promise<Pelicula | null> {
+    return await prisma.pelicula.findFirst({
+      where: { tmdbId },
+      include: { generos: true, cines: true },
     });
   }
 }

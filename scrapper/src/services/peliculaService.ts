@@ -3,15 +3,15 @@ import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { Cine } from "../core/domain/cine.js";
 import type { Scraper } from "../scrapers/scraper.js";
 import type { INormalizadorPeliculas } from "../utils/normalizadorPeliculas.js";
-import type { ICarteleraRepository } from "../repositories/carteleraRepository.js";
+import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
 import { chromium } from "playwright";
 
 export interface IPeliculaService {
   normalizador: INormalizadorPeliculas;
   carteleraRepository: ICarteleraRepository;
-  refrescarPeliculas(scrapers: Scraper[]): Promise<Boolean>;
+  refrescarPeliculas(scrapers: Scraper[]): Promise<Pelicula[]>;
   scrapearCines(scrapers: Scraper[]): Promise<PeliculaInput[]>;
-  normalizarPeliculas(peliculasInput: PeliculaInput[]): Pelicula[];
+  normalizarPeliculas(peliculasInput: PeliculaInput[]): Promise<Pelicula[]>;
 }
 
 export class PeliculaService implements IPeliculaService {
@@ -25,30 +25,29 @@ export class PeliculaService implements IPeliculaService {
     this.normalizador = normalizador;
   }
 
-  async refrescarPeliculas(scrapers: Scraper[]): Promise<Boolean> {
-    //traigo las peliculas desde los cines
-    const peliculasInput = this.scrapearCines(scrapers);
-
-    const peliculas = this.normalizarPeliculas(await peliculasInput);
-    return true;
+  async refrescarPeliculas(scrapers: Scraper[]): Promise<Pelicula[]> {
+    const peliculasInput = await this.scrapearCines(scrapers);
+    const peliculas = await this.normalizarPeliculas(peliculasInput);
+    this.carteleraRepository.upsertPeliculas(peliculas);
+    return peliculas;
   }
 
   async scrapearCines(scrapers: Scraper[]): Promise<PeliculaInput[]> {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
 
-    let peliculasInput: PeliculaInput[] = [];
-    const promises = scrapers.map((scraper) => scraper.ejecutar(page));
-    Promise.all(promises).then((results) => {
-      results.forEach((result) => {
-        peliculasInput = peliculasInput.concat(result);
-      });
-    });
+    const results = await Promise.all(
+      scrapers.map((scraper) => scraper.ejecutar(page)),
+    );
 
-    return peliculasInput;
+    await browser.close();
+
+    return results.flat();
   }
 
-  normalizarPeliculas(peliculasInput: PeliculaInput[]): Pelicula[] {
+  async normalizarPeliculas(
+    peliculasInput: PeliculaInput[],
+  ): Promise<Pelicula[]> {
     return this.normalizador.normalizar(peliculasInput);
   }
 }
