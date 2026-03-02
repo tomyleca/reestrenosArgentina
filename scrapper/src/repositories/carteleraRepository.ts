@@ -6,13 +6,21 @@ import { Prisma } from "@prisma/client";
 
 export class PrismaCarteleraRepository implements ICarteleraRepository {
   async upsertPelicula(pelicula: Pelicula): Promise<void> {
-    const data: Prisma.PeliculaCreateInput = {
-      titulo: pelicula.titulo,
+    const relaciones = {
+      generos: {
+        connectOrCreate: pelicula.generos.map((g) => ({
+          where: { tmdbId: g.tmdbId },
+          create: { tmdbId: g.tmdbId, nombre: g.nombre },
+        })),
+      },
+      cines: { connect: pelicula.cines.map((c) => ({ id: c.id })) },
+    };
+
+    const camposComunes = {
       descripcion: pelicula.descripcion,
       duracionMinutos: pelicula.duracionMinutos,
       categoria: pelicula.categoria,
       activa: pelicula.activa,
-      ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
       ...(pelicula.poster_path != null && {
         poster_path: pelicula.poster_path,
       }),
@@ -22,17 +30,22 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       ...(pelicula.fechaLanzamiento != null && {
         fechaLanzamiento: pelicula.fechaLanzamiento,
       }),
-      generos: { connect: pelicula.generos.map((g) => ({ id: g.id })) },
-      cines: { connect: pelicula.cines.map((c) => ({ id: c.id })) },
     };
+
     const where =
       pelicula.tmdbId != null
         ? { tmdbId: pelicula.tmdbId }
         : { titulo: pelicula.titulo };
+
     await prisma.pelicula.upsert({
       where,
-      update: data,
-      create: data,
+      update: { ...camposComunes, ...relaciones },
+      create: {
+        titulo: pelicula.titulo,
+        ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
+        ...camposComunes,
+        ...relaciones,
+      },
     });
   }
 

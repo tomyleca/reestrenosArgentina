@@ -9,7 +9,9 @@ export interface ITMDBAdapter extends IDatosPeliculaGetter {
   tmdb: TMDB;
   carteleraRepository: ICarteleraRepository;
 
-  getPeliculasFromScrapeado(peliculasInput: PeliculaInput[]): Promise<Pelicula[]>;
+  getPeliculasFromScrapeado(
+    peliculasInput: PeliculaInput[],
+  ): Promise<Pelicula[]>;
   getPeliculaFromScrapeado(peliculaInput: PeliculaInput): Promise<Pelicula>;
 }
 
@@ -22,13 +24,17 @@ export class TMDBAdapter implements ITMDBAdapter {
     this.carteleraRepository = carteleraRepository;
   }
 
-  getPeliculasFromScrapeado(peliculasInput: PeliculaInput[]): Promise<Pelicula[]> {
+  getPeliculasFromScrapeado(
+    peliculasInput: PeliculaInput[],
+  ): Promise<Pelicula[]> {
     return Promise.all(
       peliculasInput.map((p) => this.getPeliculaFromScrapeado(p)),
     );
   }
 
-  async getPeliculaFromScrapeado(peliculaInput: PeliculaInput): Promise<Pelicula> {
+  async getPeliculaFromScrapeado(
+    peliculaInput: PeliculaInput,
+  ): Promise<Pelicula> {
     const idTMDBPelicula = await this.tmdb.buscarPeliculaId(
       peliculaInput.titulo,
     );
@@ -55,7 +61,7 @@ export class TMDBAdapter implements ITMDBAdapter {
       fechaLanzamiento: detallePelicula.release_date,
       generos: detallePelicula.genres.map((g) => {
         return {
-          id: g.id,
+          tmdbId: g.id,
           nombre: g.name,
         };
       }),

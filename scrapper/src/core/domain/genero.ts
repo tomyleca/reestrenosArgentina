@@ -1,4 +1,4 @@
-export interface Genero{
-	id: number;
-	nombre: string;
+export interface Genero {
+  tmdbId: number;
+  nombre: string;
 }

@@ -31,7 +31,7 @@ model Cine {
 }
 
 model Genero {
-  id        Int        @id @default(autoincrement())
+  tmdbId    Int        @id
   nombre    String
   peliculas Pelicula[]
 }

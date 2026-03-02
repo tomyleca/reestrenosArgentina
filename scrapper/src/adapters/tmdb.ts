@@ -32,8 +32,8 @@ export class TMDB {
           Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
         },
 		params: {
-			language: "es-AR",
-			region: "AR",
+			language: "es-MX",
+			region: "MX",
 		},	
       },
     );
