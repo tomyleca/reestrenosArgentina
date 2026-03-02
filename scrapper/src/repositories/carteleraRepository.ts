@@ -1,4 +1,5 @@
 import type { Pelicula } from "../core/domain/pelicula.js";
+import type { Cine } from "../core/domain/cine.js";
 import type { ICarteleraRepository } from "./ICarteleraRepository.js";
 import prisma from "../lib/db.js";
 import { Prisma } from "@prisma/client";
@@ -59,6 +60,20 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     return await prisma.pelicula.findFirst({
       where: { tmdbId },
       include: { generos: true, cines: true },
+    });
+  }
+
+  async getCineByNombre(nombre: string): Promise<Cine | null> {
+    return await prisma.cine.findFirst({
+      where: { nombre },
+    });
+  }
+
+  async upsertCine(cine: Omit<Cine, "id">): Promise<Cine> {
+    return await prisma.cine.upsert({
+      where: { nombre: cine.nombre },
+      update: { localidad: cine.localidad, url: cine.url },
+      create: { nombre: cine.nombre, localidad: cine.localidad, url: cine.url },
     });
   }
 }

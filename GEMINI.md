@@ -27,7 +27,7 @@ Cuando sugieras código o autocompletes imports, verifica que todos los imports 
 
 ## Comentarios
 
-No agregues comentarios innecesarios. Si el código es claro, no es necesario comentar. Si el código es complejo, agrega comentarios concisos que expliquen la lógica.
+No agregues comentarios innecesarios si el código es claro, no es necesario comentar. Si el código es complejo o poco verboso, agrega comentarios concisos que expliquen la lógica. Lo mismo si es un metodo largo o una clase con muchos metodos.
 No uses emojis para comentar, salvo que sean parte de un mensaje de error o advertencia, o que su uso visual este justificado, por la alta importancia del comentario.
 Si podés agregar emojis para lo que se imprima por terminal.
 

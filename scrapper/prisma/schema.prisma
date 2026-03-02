@@ -24,10 +24,10 @@ model Pelicula {
 
 model Cine {
   id        Int       @id @default(autoincrement())
-  nombre    String
+  nombre    String    @unique
   localidad Localidad
   url       String
-  peliculas Pelicula[] // Recordá que si Pelicula tiene cines, Cine debe tener peliculas
+  peliculas Pelicula[] // las relaciones de primas SIEMPRE deben estar de los dos lados
 }
 
 model Genero {
