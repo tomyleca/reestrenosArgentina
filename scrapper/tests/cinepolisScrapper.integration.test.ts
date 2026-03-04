@@ -1,33 +1,31 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { chromium } from "playwright";
 import type { Browser, Page } from "playwright";
-import { CinemarkScrapper } from "../src/scrapers/providers/cinemarkScrapper.js";
+import { CinepolisScrapper } from "../src/scrapers/providers/cinepolisScrapper.js";
 import type { Cine } from "../src/core/domain/cine.js";
-import { Localidad } from "../src/core/domain/localidad.js";
-import selectorsData from "../src/config/selectors.json" with { type: "json" };
+import { cinepolis } from "../src/config/cines.js";
+import { crearContextoScraping } from "../src/scrapers/browserContext.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import { cinemarkHoyts } from "../src/config/cines.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe("CinemarkScrapper", () => {
+describe.concurrent("CinepolisScrapper", () => {
   let browser: Browser;
   let page: Page;
 
   beforeAll(async () => {
-    browser = await chromium.launch({ headless: true });
-    page = await browser.newPage();
+    const context = await crearContextoScraping();
+    browser = context.browser()!;
+    page = await context.newPage();
   });
 
   afterAll(async () => {
     await browser.close();
   });
 
-  test("debería scrapear películas de Cinemark y devolver resultados no nulos", async () => {
-    // Configurar el cine con los selectores
+  test("debería scrapear películas de Cinepolis y devolver resultados no nulos", async () => {
     const cine: Cine = {
-      ...cinemarkHoyts,
+      ...cinepolis,
       id: 1,
     };
 
@@ -35,23 +33,19 @@ describe("CinemarkScrapper", () => {
     console.log(`   Container: ${cine.selectors?.containerPelicula}`);
     console.log(`   Título: ${cine.selectors?.titulo}\n`);
 
-    // Crear scrapper
-    const scrapper = new CinemarkScrapper(cine);
+    const scrapper = new CinepolisScrapper(cine);
 
-    // Ejecutar el scrapping
-    console.log("\n🎬 Iniciando scraping de Cinemark...\n");
+    console.log("\n🎬 Iniciando scraping de Cinepolis...\n");
     const peliculas = await scrapper.ejecutar(page);
 
-    // Tomar captura de pantalla para depuración
     const screenshotPath = path.join(
       __dirname,
       "screenshots",
-      "cinemark-screenshot.png",
+      "cinepolis-screenshot.png",
     );
     await page.screenshot({ path: screenshotPath, fullPage: true });
     console.log(`📸 Captura de pantalla guardada en: ${screenshotPath}\n`);
 
-    // Imprimir resultados
     console.log(`\n📊 Resultados obtenidos: ${peliculas.length} películas\n`);
     console.log("━".repeat(60));
 
@@ -77,12 +71,11 @@ describe("CinemarkScrapper", () => {
     expect(Array.isArray(peliculas)).toBe(true);
     expect(peliculas.length).toBeGreaterThan(0);
 
-    // Si hay películas, verificar que tengan la estructura correcta
     if (peliculas.length > 0) {
       peliculas.forEach((pelicula) => {
         expect(pelicula.titulo).toBeDefined();
         expect(pelicula.titulo).not.toBe("");
-        expect(pelicula.cine.nombre).toBe("Cinemark");
+        expect(pelicula.cine.nombre).toBe("Cinepolis");
       });
       console.log("✅ Todos los tests pasaron correctamente\n");
     } else {

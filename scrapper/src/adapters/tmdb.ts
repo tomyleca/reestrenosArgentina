@@ -18,8 +18,20 @@ export class TMDB {
       },
     );
 
+    // TMDB puede devolver varias películas que coincidan con el título.
+    // Elegimos la de mayor popularidad para reducir falsos positivos.
+	//TODO mejorar este algoritmo
     if (response.data.results.length > 0) {
-      return response.data.results[0].id;
+      // reduce recorre el array comparando de a pares (prev vs curr)
+      // y se queda con el que tiene mayor popularity.
+      // Al terminar, mas_popular es el objeto ganador de toda la lista.
+      const mas_popular = response.data.results.reduce(
+        (
+          prev: { id: number; popularity: number },
+          curr: { id: number; popularity: number },
+        ) => (curr.popularity > prev.popularity ? curr : prev),
+      );
+      return mas_popular.id;
     }
     return null;
   }
@@ -31,10 +43,10 @@ export class TMDB {
         headers: {
           Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
         },
-		params: {
-			language: "es-MX",
-			region: "MX",
-		},	
+        params: {
+          language: "es-MX",
+          region: "MX",
+        },
       },
     );
     return response.data;

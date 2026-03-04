@@ -4,5 +4,13 @@
     "title": "[data-testid='movie-title']",
     "idiomas": "[data-testid='movie-description'] p",
     "nombreBoton": "Ver más"
+  },
+
+  "cinepolis": {
+    "container": "div.featured-movies-grid-view-component div[data-v-93e448ca]",
+    "title": ".movie-thumb-text",
+    "idiomas": ".ribbon-content",
+    "image": ".movie-thumb-image",
+    "link": "a.movie-thumb"
   }
 }

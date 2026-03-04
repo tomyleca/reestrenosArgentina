@@ -17,7 +17,8 @@ export abstract class Scraper {
       timeout: 60000, // Aumentamos a 60s por las dudas
     });
     await this.prepararPagina(page); // Por si tengo que hacer algo antes de scrapear, como cerrar un popup
-    return await this.scrapear(page);
+    const peliculasInput = await this.scrapear(page);
+    return peliculasInput;
   }
 
   protected async prepararPagina(page: Page): Promise<void> {

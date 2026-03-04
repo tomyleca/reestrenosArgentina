@@ -7,8 +7,7 @@ import { TMDBAdapter } from "./adapters/tmdbAdapter.js";
 import { PrismaCarteleraRepository } from "./repositories/carteleraRepository.js";
 import { NormalizadorPeliculas } from "./utils/normalizadorPeliculas.js";
 import { PeliculaService } from "./services/peliculaService.js";
-import { CinemarkScrapper } from "./scrapers/providers/cinemarkScrapper.js";
-import { cinesConfig } from "./config/cines.js";
+import { cinesConfig, scraperRegistry } from "./config/cines.js";
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 if (!REFRESH_SECRET)
@@ -31,7 +30,12 @@ const iniciar = async () => {
     }),
   );
 
-  const scrapers = cinesDB.map((cine) => new CinemarkScrapper(cine));
+  const scrapers = cinesDB.map((cine) => {
+    const ScraperClass = scraperRegistry.get(cine.nombre);
+    if (!ScraperClass)
+      throw new Error(`❌ No hay scraper registrado para "${cine.nombre}".`);
+    return new ScraperClass(cine);
+  });
 
   const refrescarCartelera = async () => {
     console.log("🎬 Iniciando refresco de cartelera...");
@@ -48,7 +52,6 @@ const iniciar = async () => {
     timezone: "America/Argentina/Buenos_Aires",
   });
 
-  
   const server = http.createServer(async (req, res) => {
     if (req.method !== "POST" || req.url !== "/refresh") {
       res.writeHead(404).end();

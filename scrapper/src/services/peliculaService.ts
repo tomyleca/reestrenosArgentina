@@ -4,7 +4,7 @@ import type { Cine } from "../core/domain/cine.js";
 import type { Scraper } from "../scrapers/scraper.js";
 import type { INormalizadorPeliculas } from "../utils/normalizadorPeliculas.js";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
-import { chromium } from "playwright";
+import { crearContextoScraping } from "../scrapers/browserContext.js";
 
 export interface IPeliculaService {
   normalizador: INormalizadorPeliculas;
@@ -32,12 +32,26 @@ export class PeliculaService implements IPeliculaService {
     return peliculas;
   }
 
+  //TODO los scrappers no corren simultaneamente, dejarlo claro en capas superiores
   async scrapearCines(scrapers: Scraper[]): Promise<PeliculaInput[]> {
-    const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
+    const context = await crearContextoScraping();
+    const browser = context.browser()!;
 
     const results = await Promise.all(
-      scrapers.map((scraper) => scraper.ejecutar(page)),
+      scrapers.map(async (scraper) => {
+        const page = await context.newPage();
+        try {
+          return await scraper.ejecutar(page);
+        } catch (error) {
+          console.error(
+            `Error al scrapear cine ${scraper.cine.nombre}:`,
+            error,
+          );
+          return [];
+        } finally {
+          await page.close();
+        }
+      }),
     );
 
     await browser.close();
