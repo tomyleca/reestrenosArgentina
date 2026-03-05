@@ -12,5 +12,12 @@
     "idiomas": ".ribbon-content",
     "image": ".movie-thumb-image",
     "link": "a.movie-thumb"
+  },
+
+  "cinePixel": {
+    "container": ".movieItem",
+    "title": "p.truncate",
+    "idiomas": "#formatAndReleaseStatus p.text-xxs",
+    "link": "a:has(.movieItem)"
   }
 }

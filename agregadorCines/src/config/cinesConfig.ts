@@ -26,4 +26,15 @@ export const cinepolis: CineConfig = {
   },
 };
 
-export const cinesConfig: CineConfig[] = [cinemarkHoyts, cinepolis];
+export const cinePixel: CineConfig = {
+  nombre: "Cine Pixel",
+  localidad: "ZONA_SUR",
+  url: "https://www.cinespixel.com.ar/",
+  api_url: "https://apiv2.gaf.adro.studio/nowPlaying/103",
+  selectors: {
+    containerPelicula: selectorsData.cinePixel.container,
+    titulo: selectorsData.cinePixel.title,
+  },
+};
+
+export const cinesConfig: CineConfig[] = [cinemarkHoyts, cinepolis, cinePixel];

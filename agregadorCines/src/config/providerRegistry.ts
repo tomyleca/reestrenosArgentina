@@ -4,12 +4,13 @@ import type { ICineProvider } from "../provider/ICineProvider.js";
 import { CineApiRequester } from "../provider/cineApiRequester.js";
 import { CinemarkScrapper } from "../provider/scrappers/cinemarkScrapper.js";
 import { CinepolisScrapper } from "../provider/scrappers/cinepolisScrapper.js";
+import { CinePixelScrapper } from "../provider/scrappers/cinePixelScrapper.js";
 import { ApiWithFallbackProvider } from "../provider/apiWithFallbackProvider.js";
 import { cinepolisApiMapper } from "../provider/mappers/cinepolisMapper.js";
-import { cinemarkHoyts, cinepolis } from "./cinesConfig.js";
+import { cinemarkHoyts, cinepolis, cinePixel } from "./cinesConfig.js";
 import { cinemarkApiMapper } from "../provider/mappers/cinemarkMapper.js";
+import { cinePixelApiMapper } from "../provider/mappers/cinePixelMapper.js";
 import { ScraperOnlyProvider } from "../provider/scraperOnlyProvider.js";
-
 
 type ProviderFactory = (
   cine: Cine,
@@ -30,10 +31,16 @@ export const providerRegistry = new Map<string, ProviderFactory>([
   [
     cinepolis.nombre,
     (cine, pageFactory) =>
-      new ScraperOnlyProvider(
-		cine,
-		 new CinepolisScrapper(cine), 
-		 pageFactory
-		),
+      new ScraperOnlyProvider(cine, new CinepolisScrapper(cine), pageFactory),
+  ],
+  [
+    cinePixel.nombre,
+    (cine, pageFactory) =>
+      new ApiWithFallbackProvider(
+        cine,
+        new CineApiRequester(cine, cinePixelApiMapper),
+        new CinePixelScrapper(cine),
+        pageFactory,
+      ),
   ],
 ]);

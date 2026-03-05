@@ -40,6 +40,7 @@ model Genero {
 enum Localidad {
   CABA
   GBA
+  ZONA_SUR
 }
 
 enum Categoria {
