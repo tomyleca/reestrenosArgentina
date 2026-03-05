@@ -50,7 +50,12 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   }
 
   async upsertPeliculas(listaPeliculas: Pelicula[]): Promise<void> {
-    await Promise.all(listaPeliculas.map((p) => this.upsertPelicula(p)));
+    // Secuencial en lugar de Promise.all para evitar la race condition donde
+    // dos películas con el mismo título/tmdbId se insertan concurrentemente
+    // y una falla con P2002.
+    for (const pelicula of listaPeliculas) {
+      await this.upsertPelicula(pelicula);
+    }
   }
 
   async getPeliculas(): Promise<Pelicula[]> {

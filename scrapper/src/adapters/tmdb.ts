@@ -2,8 +2,13 @@ import "dotenv/config";
 import axios from "axios";
 import type { TMDBPeliculaDetalleDTO } from "../core/dtos/tmdbPeliculaDetalleDTO.js";
 
+
+const SIETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
+let MARGEN_POPULARIDAD = SIETE_DIAS_MS;	
+
+
 export class TMDB {
-  async buscarPeliculaId(titulo: string): Promise<number | null> {
+  async buscarPeliculaId(titulo: string, fechaLanzamiento?: Date): Promise<number | null> {
     const response = await axios.get(
       "https://api.themoviedb.org/3/search/movie",
       {
@@ -18,22 +23,44 @@ export class TMDB {
       },
     );
 
+    const resultados = response.data.results;
+
     // TMDB puede devolver varias películas que coincidan con el título.
-    // Elegimos la de mayor popularidad para reducir falsos positivos.
-	//TODO mejorar este algoritmo
-    if (response.data.results.length > 0) {
-      // reduce recorre el array comparando de a pares (prev vs curr)
-      // y se queda con el que tiene mayor popularity.
-      // Al terminar, mas_popular es el objeto ganador de toda la lista.
-      const mas_popular = response.data.results.reduce(
-        (
-          prev: { id: number; popularity: number },
-          curr: { id: number; popularity: number },
-        ) => (curr.popularity > prev.popularity ? curr : prev),
-      );
-      return mas_popular.id;
-    }
-    return null;
+	
+    // Si tenemos fecha de lanzamiento, la usamos para filtrar con un margen
+    // de 7 días antes de elegir por popularidad (reduce falsos positivos).
+    // Si no, elegimos directamente por popularidad.
+    //TODO mejorar este algoritmo
+    if (resultados.length === 0) return null;
+
+    const candidatos = fechaLanzamiento
+      ? this.filtrarPorFecha(resultados, fechaLanzamiento)
+      : resultados;
+
+    // Si el filtro por fecha no devolvió resultados, caemos al pool completo
+    const pool = candidatos.length > 0 ? candidatos : resultados;
+
+    return this.getMasPopular(pool);
+  }
+
+  // reduce recorre el array comparando de a pares (prev vs curr)
+  // y se queda con el que tiene mayor popularity.
+  // Al terminar, mas_popular es el objeto ganador de toda la lista.
+  private getMasPopular(resultados: { id: number; popularity: number }[]): number {
+    return resultados.reduce(
+      (prev, curr) => (curr.popularity > prev.popularity ? curr : prev),
+    ).id;
+  }
+
+  private filtrarPorFecha(
+    resultados: { release_date: string }[],
+    fechaLanzamiento: Date,
+  ): { release_date: string }[] {
+    return resultados.filter((p) => {
+      if (!p.release_date) return false;
+      const diff = Math.abs(new Date(p.release_date).getTime() - fechaLanzamiento.getTime());
+      return diff <= MARGEN_POPULARIDAD;
+    });
   }
 
   async buscarDetallesDePelicula(id: number): Promise<TMDBPeliculaDetalleDTO> {

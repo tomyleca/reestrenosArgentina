@@ -19,7 +19,7 @@ model Pelicula {
   tmdbId           Int?      @unique
   poster_path      String?
   popularidad      Float?
-  fechaLanzamiento String?
+  fechaLanzamiento DateTime?
 }
 
 model Cine {

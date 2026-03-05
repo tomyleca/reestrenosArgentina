@@ -68,14 +68,14 @@ export class TMDBAdapter implements ITMDBAdapter {
       poster_path: detallePelicula.poster_path,
       duracionMinutos: detallePelicula.runtime,
       popularidad: detallePelicula.popularity,
-      fechaLanzamiento: detallePelicula.release_date,
+      fechaLanzamiento: new Date(detallePelicula.release_date),
       generos: detallePelicula.genres.map((g) => {
         return {
           tmdbId: g.id,
           nombre: g.name,
         };
       }),
-      categoria: calcularCategoria(detallePelicula.release_date),
+      categoria: calcularCategoria(new Date(detallePelicula.release_date)),
       activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],

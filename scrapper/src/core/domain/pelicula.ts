@@ -14,14 +14,15 @@ export interface Pelicula {
   tmdbId?: number | null;
   poster_path?: string | null;
   popularidad?: number | null;
-  fechaLanzamiento?: string | null;
+  fechaLanzamiento?: Date | null;
 }
 
 const UN_ANIO_MS = 1000 * 60 * 60 * 24 * 365;
+let DIFERENCIA_MAXIMA_PARA_REESTRENO = UN_ANIO_MS;
 
-export function calcularCategoria(fechaLanzamiento: string): Categoria {
-  const diff = Date.now() - new Date(fechaLanzamiento).getTime();
-  return diff > UN_ANIO_MS ? Categoria.REESTRENOS : Categoria.ESTRENOS;
+export function calcularCategoria(fechaLanzamiento: Date): Categoria {
+  const diff = Date.now() - fechaLanzamiento.getTime();
+  return diff > DIFERENCIA_MAXIMA_PARA_REESTRENO ? Categoria.REESTRENOS : Categoria.ESTRENOS;
 }
 
 export function agregarCine(pelicula: Pelicula, cine: Cine): void {
