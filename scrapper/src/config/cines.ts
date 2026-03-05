@@ -1,11 +1,13 @@
+import type { Page } from "playwright";
 import type { Cine } from "../core/domain/cine.js";
-import type { Scraper } from "../scrapers/scraper.js";
-import { CinemarkScrapper } from "../scrapers/providers/cinemarkScrapper.js";
-import { CinepolisScrapper } from "../scrapers/providers/cinepolisScrapper.js";
+import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
+import type { ICineProvider } from "../provider/ICineProvider.js";
+import { CineApiRequester } from "../provider/cineApiRequester.js";
+import { CinemarkScrapper } from "../provider/scrappers/cinemarkScrapper.js";
+import { CinepolisScrapper } from "../provider/scrappers/cinepolisScrapper.js";
+import { ApiWithFallbackProvider } from "../provider/apiWithFallbackProvider.js";
 import selectorsData from "./selectors.json" with { type: "json" };
 
-// El id lo genera Prisma. Acá solo definimos los datos de configuración.
-// Los selectors no se guardan en DB porque son detalles de scraping, no de dominio.
 type CineConfig = Omit<Cine, "id">;
 
 export const cinemarkHoyts: CineConfig = {
@@ -31,9 +33,40 @@ export const cinepolis: CineConfig = {
 
 export const cinesConfig: CineConfig[] = [cinemarkHoyts, cinepolis];
 
-// Mapea el nombre del cine a su clase de scraper.
-// Decisión de infraestructura: el dominio no sabe nada de scrapers.
-export const scraperRegistry = new Map<string, new (cine: Cine) => Scraper>([
-  ["Cinemark", CinemarkScrapper],
-  ["Cinepolis", CinepolisScrapper],
+// TODO: reemplazar con la URL y tipo real de la API de Cinemark cuando se conozca la estructura.
+function cinemarkApiMapper(_data: unknown): PeliculaInput[] {
+  throw new Error("Mapper de API de Cinemark no implementado aún.");
+}
+
+// TODO: reemplazar con la URL y tipo real de la API de Cinepolis cuando se conozca la estructura.
+function cinepolisApiMapper(_data: unknown): PeliculaInput[] {
+  throw new Error("Mapper de API de Cinepolis no implementado aún.");
+}
+
+type ProviderFactory = (
+  cine: Cine,
+  pageFactory: () => Promise<Page>,
+) => ICineProvider;
+
+export const providerRegistry = new Map<string, ProviderFactory>([
+  [
+    "Cinemark",
+    (cine, pageFactory) =>
+      new ApiWithFallbackProvider(
+        cine,
+        new CineApiRequester(cine, cinemarkApiMapper),
+        new CinemarkScrapper(cine),
+        pageFactory,
+      ),
+  ],
+  [
+    "Cinepolis",
+    (cine, pageFactory) =>
+      new ApiWithFallbackProvider(
+        cine,
+        new CineApiRequester(cine, cinepolisApiMapper),
+        new CinepolisScrapper(cine),
+        pageFactory,
+      ),
+  ],
 ]);

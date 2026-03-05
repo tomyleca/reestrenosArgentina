@@ -85,8 +85,17 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   async upsertCine(cine: Omit<Cine, "id">): Promise<Cine> {
     return await prisma.cine.upsert({
       where: { nombre: cine.nombre },
-      update: { localidad: cine.localidad, url: cine.url },
-      create: { nombre: cine.nombre, localidad: cine.localidad, url: cine.url },
+      update: {
+        localidad: cine.localidad,
+        url: cine.url,
+        api_url: cine.api_url ?? null,
+      },
+      create: {
+        nombre: cine.nombre,
+        localidad: cine.localidad,
+        url: cine.url,
+        api_url: cine.api_url ?? null,
+      },
     });
   }
 }

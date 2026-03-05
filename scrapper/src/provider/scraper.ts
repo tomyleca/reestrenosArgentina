@@ -1,6 +1,6 @@
 import type { Page } from "playwright";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
-import type { PeliculaSelectors } from "../scrapers/types/selectors.js";
+import type { PeliculaSelectors } from "./types/selectors.js";
 import type { Cine } from "../core/domain/cine.js";
 
 //Tener una clase base y heredar me sirve para manejar la distinta lógica de scrapear las páginas, por ejemplo un formulario de inicio.

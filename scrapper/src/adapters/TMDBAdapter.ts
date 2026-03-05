@@ -24,12 +24,22 @@ export class TMDBAdapter implements ITMDBAdapter {
     this.carteleraRepository = carteleraRepository;
   }
 
-  getPeliculasFromScrapeado(
+  async getPeliculasFromScrapeado(
     peliculasInput: PeliculaInput[],
   ): Promise<Pelicula[]> {
-    return Promise.all(
+    const resultados = await Promise.allSettled(
       peliculasInput.map((p) => this.getPeliculaFromScrapeado(p)),
     );
+
+    return resultados.flatMap((resultado, i) => {
+      if (resultado.status === "fulfilled") {
+        return [resultado.value];
+      }
+      console.warn(
+        `⚠️  No se pudo obtener datos de TMDB para "${peliculasInput[i]?.titulo}": ${resultado.reason instanceof Error ? resultado.reason.message : resultado.reason}`,
+      );
+      return [];
+    });
   }
 
   async getPeliculaFromScrapeado(

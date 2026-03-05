@@ -27,6 +27,7 @@ model Cine {
   nombre    String    @unique
   localidad Localidad
   url       String
+  api_url   String?
   peliculas Pelicula[] // las relaciones de primas SIEMPRE deben estar de los dos lados
 }
 

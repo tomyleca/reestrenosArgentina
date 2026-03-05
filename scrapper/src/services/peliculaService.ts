@@ -1,22 +1,21 @@
 import type { Pelicula } from "../core/domain/pelicula.js";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
-import type { Cine } from "../core/domain/cine.js";
-import type { Scraper } from "../scrapers/scraper.js";
+import type { ICineProvider } from "../provider/ICineProvider.js";
 import type { INormalizadorPeliculas } from "../utils/normalizadorPeliculas.js";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
-import { crearContextoScraping } from "../scrapers/browserContext.js";
 
 export interface IPeliculaService {
   normalizador: INormalizadorPeliculas;
   carteleraRepository: ICarteleraRepository;
-  refrescarPeliculas(scrapers: Scraper[]): Promise<Pelicula[]>;
-  scrapearCines(scrapers: Scraper[]): Promise<PeliculaInput[]>;
+  refrescarPeliculas(providers: ICineProvider[]): Promise<Pelicula[]>;
+  obtenerPeliculas(providers: ICineProvider[]): Promise<PeliculaInput[]>;
   normalizarPeliculas(peliculasInput: PeliculaInput[]): Promise<Pelicula[]>;
 }
 
 export class PeliculaService implements IPeliculaService {
   normalizador: INormalizadorPeliculas;
   carteleraRepository: ICarteleraRepository;
+
   constructor(
     carteleraRepository: ICarteleraRepository,
     normalizador: INormalizadorPeliculas,
@@ -25,37 +24,27 @@ export class PeliculaService implements IPeliculaService {
     this.normalizador = normalizador;
   }
 
-  async refrescarPeliculas(scrapers: Scraper[]): Promise<Pelicula[]> {
-    const peliculasInput = await this.scrapearCines(scrapers);
+  async refrescarPeliculas(providers: ICineProvider[]): Promise<Pelicula[]> {
+    const peliculasInput = await this.obtenerPeliculas(providers);
     const peliculas = await this.normalizarPeliculas(peliculasInput);
     this.carteleraRepository.upsertPeliculas(peliculas);
     return peliculas;
   }
 
-  //TODO los scrappers no corren simultaneamente, dejarlo claro en capas superiores
-  async scrapearCines(scrapers: Scraper[]): Promise<PeliculaInput[]> {
-    const context = await crearContextoScraping();
-    const browser = context.browser()!;
-
+  async obtenerPeliculas(providers: ICineProvider[]): Promise<PeliculaInput[]> {
     const results = await Promise.all(
-      scrapers.map(async (scraper) => {
-        const page = await context.newPage();
+      providers.map(async (provider) => {
         try {
-          return await scraper.ejecutar(page);
+          return await provider.obtenerPeliculas();
         } catch (error) {
           console.error(
-            `Error al scrapear cine ${scraper.cine.nombre}:`,
+            `❌ Error al obtener películas de ${provider.cine.nombre}:`,
             error,
           );
           return [];
-        } finally {
-          await page.close();
         }
       }),
     );
-
-    await browser.close();
-
     return results.flat();
   }
 

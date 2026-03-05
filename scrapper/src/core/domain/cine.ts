@@ -1,11 +1,12 @@
 import type { Localidad } from "./localidad.js";
 import type { Pelicula } from "./pelicula.js";
-import type { PeliculaSelectors } from "../../scrapers/types/selectors.js";
+import type { PeliculaSelectors } from "../../provider/types/selectors.js";
 
 export interface Cine {
   id: number;
   nombre: string;
   localidad: Localidad;
   url: string;
+  api_url?: string | null;
   selectors?: PeliculaSelectors;
 }

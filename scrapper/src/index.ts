@@ -1,13 +1,18 @@
 import "dotenv/config";
 import http from "http";
 import cron from "node-cron";
+import type { BrowserContext } from "playwright";
 
 import { TMDB } from "./adapters/tmdb.js";
 import { TMDBAdapter } from "./adapters/tmdbAdapter.js";
 import { PrismaCarteleraRepository } from "./repositories/carteleraRepository.js";
 import { NormalizadorPeliculas } from "./utils/normalizadorPeliculas.js";
 import { PeliculaService } from "./services/peliculaService.js";
-import { cinesConfig, scraperRegistry } from "./config/cines.js";
+import { cinesConfig } from "./config/cinesConfig.js";
+import { providerRegistry } from "./config/providerRegistry.js";
+import { crearContextoScraping } from "./provider/browserContext.js";
+
+//DEFINICIONES
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 if (!REFRESH_SECRET)
@@ -30,24 +35,43 @@ const iniciar = async () => {
     }),
   );
 
-  const scrapers = cinesDB.map((cine) => {
-    const ScraperClass = scraperRegistry.get(cine.nombre);
-    if (!ScraperClass)
-      throw new Error(`❌ No hay scraper registrado para "${cine.nombre}".`);
-    return new ScraperClass(cine);
-  });
-
   const refrescarCartelera = async () => {
     console.log("🎬 Iniciando refresco de cartelera...");
+
+    // Factory y no Promise directa por dos razones:
+    // 1. Laziness: una Promise ejecuta inmediatamente al construirse, abriría el browser
+    //    aunque todas las APIs respondan correctamente y ningún provider use el fallback.
+    // 2. Cada llamada devuelve una Page nueva dentro del mismo BrowserContext,
+    //    evitando que múltiples providers compartan la misma instancia de Page.
+    // El cierre del browser está garantizado en el finally.
+    let browserContext: BrowserContext | undefined;
+
+    const pageFactory = async () => {
+      if (!browserContext) browserContext = await crearContextoScraping();
+      return browserContext.newPage();
+    };
+
     try {
-      await peliculaService.refrescarPeliculas(scrapers);
+      const providers = cinesDB.map((cine) => {
+        //busco el providerFactory registrado para el cine
+        const factory = providerRegistry.get(cine.nombre);
+        if (!factory)
+          throw new Error(
+            `❌ No hay provider registrado para "${cine.nombre}".`,
+          );
+        //le paso el cine y la pageFactory para crear el CineProvider
+        return factory(cine, pageFactory);
+      });
+
+      await peliculaService.refrescarPeliculas(providers);
       console.log("✅ Cartelera actualizada correctamente.");
     } catch (error) {
       console.error("❌ Error al refrescar la cartelera:", error);
+    } finally {
+      if (browserContext) await browserContext.browser()?.close();
     }
   };
 
-  // Todos los jueves a las 17:00 (ART)
   cron.schedule("0 17 * * 4", refrescarCartelera, {
     timezone: "America/Argentina/Buenos_Aires",
   });
@@ -73,5 +97,7 @@ const iniciar = async () => {
 
   console.log("⏰ Scheduler activo. Próxima ejecución: jueves 17:00 (ART).");
 };
+
+//INDEX
 
 iniciar();

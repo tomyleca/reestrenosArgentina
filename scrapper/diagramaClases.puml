@@ -1,65 +1,181 @@
 @startuml
 
-class Pelicula{
--id: Long
--cines: List<cine>
--poster: Imagen
--descripcion: String
--genero: Genero
--categoria: Categoria
--List<Idioma>
+skinparam classAttributeIconSize 0
+skinparam groupInheritance 2
+
+' ─── DOMINIO ───────────────────────────────────────────────────────────
+package "core/domain" {
+  interface Pelicula {
+    +id: number
+    +titulo: string
+    +descripcion: string
+    +duracionMinutos: number
+    +categoria: Categoria
+    +activa: boolean
+    +tmdbId?: number
+    +poster_path?: string
+    +popularidad?: number
+    +fechaLanzamiento?: string
+    +generos: Genero[]
+    +cines: Cine[]
+  }
+
+  interface Cine {
+    +id: number
+    +nombre: string
+    +localidad: Localidad
+    +url: string
+    +api_url?: string
+    +selectors?: PeliculaSelectors
+  }
+
+  interface Genero {
+    +tmdbId: number
+    +nombre: string
+  }
+
+  enum Categoria {
+    ESTRENOS
+    REESTRENOS
+  }
+
+  enum Localidad {
+    CABA
+    GBA
+  }
+
+  Pelicula --> Genero
+  Pelicula --> Cine
+  Pelicula --> Categoria
+  Cine --> Localidad
 }
 
-
-class Cine{
--id: Long
--nombre: String
--localidad: Localidad
--url: String
+' ─── DTOs ──────────────────────────────────────────────────────────────
+package "core/dtos" {
+  interface PeliculaInput {
+    +titulo: string
+    +idiomas?: string[]
+    +cine: Cine
+  }
 }
 
-class Localidad{
--id: Long
-nombre: String
+' ─── PROVIDER ──────────────────────────────────────────────────────────
+package "provider" {
+  interface ICineProvider {
+    +cine: Cine
+    +obtenerPeliculas(): Promise<PeliculaInput[]>
+  }
+
+  class ApiWithFallbackProvider implements ICineProvider {
+    +cine: Cine
+    -requester: ICineApiRequester
+    -scraper: Scraper
+    -pageFactory: () => Promise<Page>
+    +obtenerPeliculas(): Promise<PeliculaInput[]>
+  }
+
+  class ScraperOnlyProvider implements ICineProvider {
+    +cine: Cine
+    -scraper: Scraper
+    -pageFactory: () => Promise<Page>
+    +obtenerPeliculas(): Promise<PeliculaInput[]>
+  }
+
+  class CineApiRequester<T> {
+    -cine: Cine
+    -mapper: (data: T, cine: Cine) => PeliculaInput[]
+    +obtenerPeliculas(): Promise<PeliculaInput[]>
+  }
+
+  abstract class Scraper {
+    +{abstract} cine: Cine
+    +ejecutar(page): Promise<PeliculaInput[]>
+    #prepararPagina(page): Promise<void>
+    #scrapear(page): Promise<PeliculaInput[]>
+  }
+
+  class CinemarkScrapper extends Scraper {
+    +cine: Cine
+    #prepararPagina(page): Promise<void>
+  }
+
+  class CinepolisScrapper extends Scraper {
+    +cine: Cine
+    #prepararPagina(page): Promise<void>
+  }
+
+  ApiWithFallbackProvider --> CineApiRequester
+  ApiWithFallbackProvider --> Scraper
+  ScraperOnlyProvider --> Scraper
 }
 
-enum Categoria{
--ESTRENO
--REESTRENO
+' ─── ADAPTADORES ────────────────────────────────────────────────────────
+package "adapters" {
+  interface ITMDBAdapter {
+    +getPeliculasFromScrapeado(inputs): Promise<Pelicula[]>
+    +getPeliculaFromScrapeado(input): Promise<Pelicula>
+  }
+
+  class TMDBAdapter implements ITMDBAdapter {
+    +tmdb: TMDB
+    +carteleraRepository: ICarteleraRepository
+  }
+
+  class TMDB {
+    +buscarPeliculaId(titulo): Promise<number>
+    +buscarDetallesDePelicula(id): Promise<DetallePelicula>
+  }
+
+  TMDBAdapter --> TMDB
 }
 
-class Genero{
--id: Long
--nombre:String
+' ─── SERVICIOS ──────────────────────────────────────────────────────────
+package "services" {
+  interface IPeliculaService {
+    +refrescarPeliculas(providers): Promise<Pelicula[]>
+    +obtenerPeliculas(providers): Promise<PeliculaInput[]>
+    +normalizarPeliculas(inputs): Promise<Pelicula[]>
+  }
+
+  class PeliculaService implements IPeliculaService {
+    +normalizador: INormalizadorPeliculas
+    +carteleraRepository: ICarteleraRepository
+  }
+
+  PeliculaService --> ICineProvider
 }
 
-class Localidad{
--id: Long
--nombre:String
+' ─── REPOSITORIOS ───────────────────────────────────────────────────────
+package "repositories" {
+  interface ICarteleraRepository {
+    +upsertPelicula(p): Promise<void>
+    +upsertPeliculas(ps): Promise<void>
+    +upsertCine(c): Promise<Cine>
+    +getPeliculas(): Promise<Pelicula[]>
+    +getPeliculaByName(n): Promise<Pelicula|null>
+    +buscarPorTMDBId(id): Promise<Pelicula|null>
+    +getCineByNombre(n): Promise<Cine|null>
+  }
+
+  class PrismaCarteleraRepository implements ICarteleraRepository
 }
 
-class Imagen{
--path: String
+' ─── UTILS ──────────────────────────────────────────────────────────────
+package "utils" {
+  interface INormalizadorPeliculas {
+    +normalizar(inputs): Promise<Pelicula[]>
+  }
+
+  class NormalizadorPeliculas implements INormalizadorPeliculas {
+    -tmdbAdapter: ITMDBAdapter
+  }
+
+  NormalizadorPeliculas --> ITMDBAdapter
 }
 
-
-
-abstract class Scraper{
-+scrape(): List<PeliculaDTO>
-}
-
-class CinemarkScrapper extends Scraper{
-
-}
-
-
-
-Pelicula --> Cine
-Pelicula --> Genero
-Pelicula --> Categoria
-Pelicula --> Imagen
-Cine --> Localidad
-
-
+' ─── RELACIONES ENTRE CAPAS ─────────────────────────────────────────────
+PeliculaService --> ICarteleraRepository
+PeliculaService --> INormalizadorPeliculas
+TMDBAdapter --> ICarteleraRepository
 
 @enduml
