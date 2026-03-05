@@ -5,14 +5,9 @@
       "type": "node",
       "request": "launch",
       "name": "Debug: Vitest (archivo actual)",
-      "program": "${workspaceFolder}/scrapper/node_modules/vitest/vitest.mjs",
-      "args": [
-        "run",
-        "--config",
-        "vitest.integration.config.ts",
-        "${relativeFile}"
-      ],
-      "cwd": "${workspaceFolder}/scrapper",
+      "program": "${workspaceFolder}/agregadorCines/node_modules/vitest/vitest.mjs",
+      "args": ["run", "--config", "vitest.integration.config.ts", "${file}"],
+      "cwd": "${workspaceFolder}/agregadorCines",
       "console": "integratedTerminal",
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
@@ -21,9 +16,9 @@
       "type": "node",
       "request": "launch",
       "name": "Debug: Vitest (todos)",
-      "program": "${workspaceFolder}/scrapper/node_modules/vitest/vitest.mjs",
+      "program": "${workspaceFolder}/agregadorCines/node_modules/vitest/vitest.mjs",
       "args": ["run"],
-      "cwd": "${workspaceFolder}/scrapper",
+      "cwd": "${workspaceFolder}/agregadorCines",
       "console": "integratedTerminal",
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]
@@ -31,10 +26,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug: scrapper (index.ts)",
+      "name": "Debug: agregadorCines (index.ts)",
       "runtimeArgs": ["--loader", "ts-node/esm"],
       "args": ["src/index.ts"],
-      "cwd": "${workspaceFolder}/scrapper",
+      "cwd": "${workspaceFolder}/agregadorCines",
       "console": "integratedTerminal",
       "sourceMaps": true,
       "skipFiles": ["<node_internals>/**"]

@@ -3,10 +3,10 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import type { BrowserContext } from "playwright";
-import type { Cine } from "../src/core/domain/cine.js";
-import { CinePixelScrapper } from "../src/provider/scrappers/cinePixelScrapper.js";
-import { cinePixel } from "../src/config/cinesConfig.js";
-import { crearContextoScraping } from "../src/provider/browserContext.js";
+import type { Cine } from "../../src/core/domain/cine.js";
+import { CinePixelScrapper } from "../../src/provider/scrappers/cinePixelScrapper.js";
+import { cinePixel } from "../../src/config/cinesConfig.js";
+import { crearContextoScraping } from "../../src/provider/browserContext.js";
 
 const CINE_PIXEL_CINE: Cine = { ...cinePixel, id: 99 };
 

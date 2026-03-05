@@ -19,5 +19,12 @@
     "title": "p.truncate",
     "idiomas": "#formatAndReleaseStatus p.text-xxs",
     "link": "a:has(.movieItem)"
+  },
+
+  "cineMalba": {
+    "ciclo": ".elementor-loop-container .e-loop-item a.elementor-button-link",
+    "containerPelicula": ".elementor-widget-theme-post-content p:has(a[href*='malba.org.ar/evento/'])",
+    "title": "a[href*='malba.org.ar/evento/']",
+    "nombreBoton": "Leer más"
   }
 }

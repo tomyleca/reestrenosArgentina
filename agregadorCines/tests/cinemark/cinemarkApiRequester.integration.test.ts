@@ -4,10 +4,10 @@
 // los datos provienen del API mapper y no del scraping de DOM.
 
 import { describe, test, expect } from "vitest";
-import type { Cine } from "../src/core/domain/cine.js";
-import { CineApiRequester } from "../src/provider/cineApiRequester.js";
-import { cinemarkApiMapper } from "../src/provider/mappers/cinemarkMapper.js";
-import { cinemarkHoyts } from "../src/config/cinesConfig.js";
+import type { Cine } from "../../src/core/domain/cine.js";
+import { CineApiRequester } from "../../src/provider/cineApiRequester.js";
+import { cinemarkApiMapper } from "../../src/provider/mappers/cinemarkMapper.js";
+import { cinemarkHoyts } from "../../src/config/cinesConfig.js";
 
 const CINEMARK_CINE: Cine = { ...cinemarkHoyts, id: 1 };
 

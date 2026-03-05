@@ -37,4 +37,20 @@ export const cinePixel: CineConfig = {
   },
 };
 
-export const cinesConfig: CineConfig[] = [cinemarkHoyts, cinepolis, cinePixel];
+export const cineMalba: CineConfig = {
+  nombre: "Cine Malba",
+  localidad: "CABA",
+  url: "https://malba.org.ar/cine/",
+  selectors: {
+    containerPelicula: selectorsData.cineMalba.containerPelicula,
+    titulo: selectorsData.cineMalba.title,
+    ciclo: selectorsData.cineMalba.ciclo,
+  },
+};
+
+export const cinesConfig: CineConfig[] = [
+  cinemarkHoyts,
+  cinepolis,
+  cinePixel,
+  cineMalba,
+];

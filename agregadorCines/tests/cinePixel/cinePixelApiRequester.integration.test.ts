@@ -4,10 +4,10 @@
 // procesó correctamente la respuesta.
 
 import { describe, test, expect } from "vitest";
-import type { Cine } from "../src/core/domain/cine.js";
-import { CineApiRequester } from "../src/provider/cineApiRequester.js";
-import { cinePixelApiMapper } from "../src/provider/mappers/cinePixelMapper.js";
-import { cinePixel } from "../src/config/cinesConfig.js";
+import type { Cine } from "../../src/core/domain/cine.js";
+import { CineApiRequester } from "../../src/provider/cineApiRequester.js";
+import { cinePixelApiMapper } from "../../src/provider/mappers/cinePixelMapper.js";
+import { cinePixel } from "../../src/config/cinesConfig.js";
 
 const CINE_PIXEL_CINE: Cine = { ...cinePixel, id: 99 };
 

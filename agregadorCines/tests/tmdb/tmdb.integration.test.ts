@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { TMDB } from "../src/adapters/tmdb.js";
+import { TMDB } from "../../src/adapters/tmdb.js";
 
 describe("TMDB (integración real)", () => {
   const tmdb = new TMDB();

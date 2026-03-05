@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import type { Browser, Page } from "playwright";
-import { CinepolisScrapper } from "../src/scrapers/providers/cinepolisScrapper.js";
-import type { Cine } from "../src/core/domain/cine.js";
-import { cinepolis } from "../src/config/cines.js";
-import { crearContextoScraping } from "../src/scrapers/browserContext.js";
+import { CinepolisScrapper } from "../../src/provider/scrappers/cinepolisScrapper.js";
+import type { Cine } from "../../src/core/domain/cine.js";
+import { cinepolis } from "../../src/config/cinesConfig.js";
+import { crearContextoScraping } from "../../src/provider/browserContext.js";
 import path from "path";
 import { fileURLToPath } from "url";
 

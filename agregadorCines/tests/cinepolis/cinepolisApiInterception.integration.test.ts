@@ -7,10 +7,10 @@
 //TODO chequear estos test
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import type { BrowserContext } from "playwright";
-import type { Cine } from "../src/core/domain/cine.js";
-import { CinepolisScrapper } from "../src/provider/scrappers/cinepolisScrapper.js";
-import { cinepolis } from "../src/config/cinesConfig.js";
-import { crearContextoScraping } from "../src/provider/browserContext.js";
+import type { Cine } from "../../src/core/domain/cine.js";
+import { CinepolisScrapper } from "../../src/provider/scrappers/cinepolisScrapper.js";
+import { cinepolis } from "../../src/config/cinesConfig.js";
+import { crearContextoScraping } from "../../src/provider/browserContext.js";
 
 const CINEPOLIS_CINE: Cine = { ...cinepolis, id: 2 };
 
