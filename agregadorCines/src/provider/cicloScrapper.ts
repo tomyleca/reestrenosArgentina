@@ -6,30 +6,32 @@ import { Scraper } from "./scraper.js";
 // Navega a cada ciclo y acumula las películas de todos.
 // Requiere que selectors.ciclo esté definido — si no, lanza un error en tiempo de ejecución.
 export abstract class CicloScrapper extends Scraper {
-  public override async ejecutar(page: Page): Promise<PeliculaInput[]> {
+  protected override async scrapear(page: Page): Promise<PeliculaInput[]> {
     if (!this.cine.selectors?.ciclo) {
       throw new Error(
         `CicloScrapper requiere el selector "ciclo" para el cine "${this.cine.nombre}".`,
       );
     }
-
-    await page.goto(this.cine.url, {
-      waitUntil: "networkidle",
-      timeout: 60000,
-    });
-    await this.prepararPagina(page);
-
+	//obtengo urls de los distintos ciclos
     const urlsCiclos = await this.obtenerUrlsCiclos(
       page,
       this.cine.selectors.ciclo,
     );
 
+    console.log(
+      `[CicloScrapper] ${this.cine.nombre} - Ciclos encontrados: ${urlsCiclos.length}`,
+    );
+
     const resultados: PeliculaInput[] = [];
 
     for (const url of urlsCiclos) {
-      await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+      // Navegamos al ciclo usando domcontentloaded por consistencia
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+      // Cada página de ciclo también podría necesitar preparación básica
       await this.prepararPagina(page);
-      const peliculasCiclo = await this.scrapear(page);
+
+      // Llamamos al scrapeo de DOM estándar (el del padre) para obtener las pelis de esta página
+      const peliculasCiclo = await super.scrapear(page);
       resultados.push(...peliculasCiclo);
     }
 
@@ -40,13 +42,14 @@ export abstract class CicloScrapper extends Scraper {
     page: Page,
     selectorCiclo: string,
   ): Promise<string[]> {
-    return page.$$eval(selectorCiclo, (elementos) =>
-      elementos
+    return page.$$eval(selectorCiclo, (elementos) => {
+      const urls = elementos
         .map((el) => {
           const anchor = el.tagName === "A" ? el : el.closest("a");
           return (anchor as HTMLAnchorElement | null)?.href ?? null;
         })
-        .filter((href): href is string => href !== null),
-    );
+        .filter((href): href is string => href !== null);
+      return [...new Set(urls)];
+    });
   }
 }

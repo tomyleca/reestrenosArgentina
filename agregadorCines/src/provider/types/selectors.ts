@@ -4,4 +4,5 @@ export interface PeliculaSelectors {
   idiomas?: string[];
   nombreBoton?: string;
   ciclo?: string; // selector de los links de ciclo en la home
+  fecha?: string;
 }

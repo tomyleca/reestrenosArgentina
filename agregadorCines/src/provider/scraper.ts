@@ -39,6 +39,7 @@ export abstract class Scraper {
           titulo:
             el.querySelector(sel.titulo)?.textContent?.trim() || "Sin título",
           cine: cine, // tengo que pasarlo como parametro pq eval se ejecuta en el navegador
+		  fecha: sel.fecha ? el.querySelector(sel.fecha)?.textContent?.trim() : null,
         }));
       },
       { sel: this.cine.selectors, cine: this.cine },

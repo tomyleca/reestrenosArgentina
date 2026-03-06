@@ -41,7 +41,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/normalizadorFechas.test.ts"],
   "exclude": [
     "node_modules",
     "tests/**/*",

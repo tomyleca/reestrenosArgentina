@@ -2,8 +2,13 @@ import type { Pelicula } from "../core/domain/pelicula.js";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { IDatosPeliculaGetter } from "../core/interfaces/IDatosPeliculaGetter.js";
 import { TMDB } from "./tmdb.js";
-import { agregarCine, calcularCategoria } from "../core/domain/pelicula.js";
+import {
+  agregarCine,
+  calcularCategoria,
+  agregarFechaFuncion,
+} from "../core/domain/pelicula.js";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
+import { randomUUID } from "node:crypto";
 
 export interface ITMDBAdapter extends IDatosPeliculaGetter {
   tmdb: TMDB;
@@ -31,15 +36,22 @@ export class TMDBAdapter implements ITMDBAdapter {
       peliculasInput.map((p) => this.getPeliculaFromScrapeado(p)),
     );
 
-    return resultados.flatMap((resultado, i) => {
+    const peliculas: Pelicula[] = [];
+
+    for (let i = 0; i < resultados.length; i++) {
+      const resultado = resultados[i]!;
       if (resultado.status === "fulfilled") {
-        return [resultado.value];
+        peliculas.push(resultado.value);
+      } else {
+        await this.carteleraRepository.agregarAlerta({
+          id: randomUUID(),
+          mensaje: `No se pudo obtener datos de TMDB para "${peliculasInput[i]?.titulo}": ${resultado.reason instanceof Error ? resultado.reason.message : resultado.reason}`,
+          fecha: new Date(),
+        });
       }
-      console.warn(
-        `⚠️  No se pudo obtener datos de TMDB para "${peliculasInput[i]?.titulo}": ${resultado.reason instanceof Error ? resultado.reason.message : resultado.reason}`,
-      );
-      return [];
-    });
+    }
+
+    return peliculas;
   }
 
   async getPeliculaFromScrapeado(
@@ -56,6 +68,7 @@ export class TMDBAdapter implements ITMDBAdapter {
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
       agregarCine(peliculaExistente, peliculaInput.cine);
+      agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
       return peliculaExistente;
     }
 
@@ -79,7 +92,12 @@ export class TMDBAdapter implements ITMDBAdapter {
       activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],
+      fechaFunciones: [],
     };
+
+    if (peliculaInput.fecha) {
+      agregarFechaFuncion(pelicula, peliculaInput.fecha);
+    }
 
     return Promise.resolve(pelicula);
   }

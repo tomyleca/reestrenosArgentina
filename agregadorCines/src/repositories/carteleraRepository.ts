@@ -1,10 +1,20 @@
 import type { Pelicula } from "../core/domain/pelicula.js";
 import type { Cine } from "../core/domain/cine.js";
+import type { Alerta } from "../core/domain/alerta.js";
 import type { ICarteleraRepository } from "./ICarteleraRepository.js";
 import prisma from "../lib/db.js";
-import { Prisma } from "@prisma/client";
 
 export class PrismaCarteleraRepository implements ICarteleraRepository {
+  async agregarAlerta(alerta: Alerta): Promise<void> {
+    await prisma.alerta.create({
+      data: {
+        id: alerta.id,
+        mensaje: alerta.mensaje,
+        fecha: alerta.fecha,
+      },
+    });
+  }
+
   async upsertPelicula(pelicula: Pelicula): Promise<void> {
     const relaciones = {
       generos: {
@@ -29,6 +39,9 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       }),
       ...(pelicula.fechaLanzamiento != null && {
         fechaLanzamiento: pelicula.fechaLanzamiento,
+      }),
+      ...(pelicula.fechaFunciones != null && {
+        fechaFunciones: pelicula.fechaFunciones,
       }),
     };
 

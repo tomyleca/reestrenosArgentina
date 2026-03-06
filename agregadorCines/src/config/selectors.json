@@ -25,6 +25,7 @@
     "ciclo": ".elementor-loop-container .e-loop-item a.elementor-button-link",
     "containerPelicula": ".elementor-widget-theme-post-content p:has(a[href*='malba.org.ar/evento/'])",
     "title": "a[href*='malba.org.ar/evento/']",
-    "nombreBoton": "Leer más"
+    "nombreBoton": "Leer más",
+	"fecha": "" //TODO VER COMO IMPLEMENTAR LO DE LA FECHA, PQ SOLO ME DICE JUEVES 5 EJ
   }
 }

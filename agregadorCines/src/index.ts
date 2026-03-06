@@ -45,9 +45,15 @@ const iniciar = async () => {
     //    evitando que múltiples providers compartan la misma instancia de Page.
     // El cierre del browser está garantizado en el finally.
     let browserContext: BrowserContext | undefined;
+    let contextPromise: Promise<BrowserContext> | undefined;
 
     const pageFactory = async () => {
-      if (!browserContext) browserContext = await crearContextoScraping();
+      if (!browserContext) {
+        if (!contextPromise) {
+          contextPromise = crearContextoScraping();
+        }
+        browserContext = await contextPromise;
+      }
       return browserContext.newPage();
     };
 
@@ -63,8 +69,11 @@ const iniciar = async () => {
         return factory(cine, pageFactory);
       });
 
-      await peliculaService.refrescarPeliculas(providers);
-      console.log("✅ Cartelera actualizada correctamente.");
+      console.log(`🔍 Procesando ${providers.length} cines...`);
+      const peliculas = await peliculaService.refrescarPeliculas(providers);
+      console.log(
+        `✅ Cartelera actualizada. Total películas procesadas: ${peliculas.length}`,
+      );
     } catch (error) {
       console.error("❌ Error al refrescar la cartelera:", error);
     } finally {

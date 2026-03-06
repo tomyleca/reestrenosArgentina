@@ -32,19 +32,21 @@ export class PeliculaService implements IPeliculaService {
   }
 
   async obtenerPeliculas(providers: ICineProvider[]): Promise<PeliculaInput[]> {
-    const results = await Promise.all(
-      providers.map(async (provider) => {
-        try {
-          return await provider.obtenerPeliculas();
-        } catch (error) {
-          console.error(
-            `❌ Error al obtener películas de ${provider.cine.nombre}:`,
-            error,
-          );
-          return [];
-        }
-      }),
-    );
+    const results: PeliculaInput[][] = [];
+    for (const provider of providers) {
+      try {
+        const peliculas = await provider.obtenerPeliculas();
+        console.log(
+          `🎬 ${provider.cine.nombre}: ${peliculas.length} películas obtenidas.`,
+        );
+        results.push(peliculas);
+      } catch (error) {
+        console.error(
+          `❌ Error al obtener películas de ${provider.cine.nombre}:`,
+          error,
+        );
+      }
+    }
     return results.flat();
   }
 

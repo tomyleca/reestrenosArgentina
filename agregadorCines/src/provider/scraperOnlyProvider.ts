@@ -13,6 +13,11 @@ export class ScraperOnlyProvider implements ICineProvider {
 
   async obtenerPeliculas(): Promise<PeliculaInput[]> {
     const page = await this.pageFactory();
-    return this.scraper.ejecutar(page);
+    try {
+      console.log(`🎬 Iniciando scraper para ${this.cine.nombre}...`);
+      return await this.scraper.ejecutar(page);
+    } finally {
+      await page.close();
+    }
   }
 }

@@ -20,6 +20,7 @@ model Pelicula {
   poster_path      String?
   popularidad      Float?
   fechaLanzamiento DateTime?
+  fechaFunciones   DateTime[]
 }
 
 model Cine {
@@ -35,6 +36,12 @@ model Genero {
   tmdbId    Int        @id
   nombre    String
   peliculas Pelicula[]
+}
+
+model Alerta {
+  id      String   @id @default(uuid())
+  mensaje String
+  fecha   DateTime @default(now())
 }
 
 enum Localidad {

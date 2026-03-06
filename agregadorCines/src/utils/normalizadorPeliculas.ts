@@ -1,6 +1,7 @@
 import type { Pelicula } from "../core/domain/pelicula.js";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { IDatosPeliculaGetter } from "../core/interfaces/IDatosPeliculaGetter.js";
+import { NormalizadorFechas } from "./normalizadorFechas.js";
 
 export interface INormalizadorPeliculas {
   normalizar(peliculasInput: PeliculaInput[]): Promise<Pelicula[]>;
@@ -19,6 +20,7 @@ export class NormalizadorPeliculas implements INormalizadorPeliculas {
     const peliculasNormalizadas = peliculasInput.map((pelicula) => ({
       ...pelicula,
       titulo: this.limpiarTitulo(pelicula.titulo),
+      fecha: pelicula.fecha ? NormalizadorFechas.normalizar(pelicula.fecha.toString()) : pelicula.fecha,
     }));
     return this.datosPeliculaGetter.getPeliculasFromScrapeado(peliculasNormalizadas);
   }
