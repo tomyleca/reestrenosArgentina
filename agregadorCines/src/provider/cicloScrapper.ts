@@ -30,12 +30,37 @@ export abstract class CicloScrapper extends Scraper {
       // Cada página de ciclo también podría necesitar preparación básica
       await this.prepararPagina(page);
 
-      // Llamamos al scrapeo de DOM estándar (el del padre) para obtener las pelis de esta página
-      const peliculasCiclo = await super.scrapear(page);
+      // Delegamos la extracción de esta página particular
+      const peliculasCiclo = await this.scrapearPaginaCiclo(page);
       resultados.push(...peliculasCiclo);
     }
 
     return resultados;
+  }
+
+  protected async scrapearPaginaCiclo(page: Page): Promise<PeliculaInput[]> {
+    if (!this.cine.selectors) return [];
+
+    return await page.$$eval(
+      this.cine.selectors.containerPelicula,
+      (elements, { sel, cine }) => {
+        return elements.flatMap((el) => {
+          const titulos = el.querySelectorAll(sel.titulo);
+          const fecha = sel.fecha
+            ? el.querySelector(sel.fecha)?.textContent?.trim()
+            : null;
+
+          if (titulos.length === 0) return [];
+
+          return Array.from(titulos).map((tituloEl) => ({
+            titulo: tituloEl.textContent?.trim() || "Sin título",
+            cine: cine,
+            fecha: fecha,
+          }));
+        });
+      },
+      { sel: this.cine.selectors, cine: this.cine },
+    );
   }
 
   private async obtenerUrlsCiclos(

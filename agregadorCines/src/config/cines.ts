@@ -15,8 +15,8 @@ export const cinemarkHoyts: CineConfig = {
   localidad: "CABA",
   url: "https://www.cinemark.com.ar/",
   selectors: {
-    containerPelicula: selectorsData.cinemarkHoyts.container,
-    titulo: selectorsData.cinemarkHoyts.title,
+    containerPelicula: selectorsData.cinemarkHoyts.containerPelicula,
+    titulo: selectorsData.cinemarkHoyts.titulo,
     nombreBoton: selectorsData.cinemarkHoyts.nombreBoton,
   },
 };
@@ -26,8 +26,8 @@ export const cinepolis: CineConfig = {
   localidad: "CABA",
   url: "https://www.cinepolis.com.ar/",
   selectors: {
-    containerPelicula: selectorsData.cinepolis.container,
-    titulo: selectorsData.cinepolis.title,
+    containerPelicula: selectorsData.cinepolis.containerPelicula,
+    titulo: selectorsData.cinepolis.titulo,
   },
 };
 

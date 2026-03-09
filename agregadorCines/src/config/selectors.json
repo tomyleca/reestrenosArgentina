@@ -1,31 +1,38 @@
 {
   "cinemarkHoyts": {
-    "container": "div.MuiGrid-item",
-    "title": "[data-testid='movie-title']",
+    "containerPelicula": "div.MuiGrid-item",
+    "titulo": "[data-testid='movie-title']",
     "idiomas": "[data-testid='movie-description'] p",
     "nombreBoton": "Ver más"
   },
 
   "cinepolis": {
-    "container": "div.featured-movies-grid-view-component div[data-v-93e448ca]",
-    "title": ".movie-thumb-text",
+    "containerPelicula": "div.featured-movies-grid-view-component div[data-v-93e448ca]",
+    "titulo": ".movie-thumb-text",
     "idiomas": ".ribbon-content",
     "image": ".movie-thumb-image",
     "link": "a.movie-thumb"
   },
 
   "cinePixel": {
-    "container": ".movieItem",
-    "title": "p.truncate",
+    "containerPelicula": ".movieItem",
+    "titulo": "p.truncate",
     "idiomas": "#formatAndReleaseStatus p.text-xxs",
     "link": "a:has(.movieItem)"
   },
 
   "cineMalba": {
     "ciclo": ".elementor-loop-container .e-loop-item a.elementor-button-link",
-    "containerPelicula": ".elementor-widget-theme-post-content p:has(a[href*='malba.org.ar/evento/'])",
-    "title": "a[href*='malba.org.ar/evento/']",
+    "containerPelicula": ".elementor-widget-theme-post-content",
+    "titulo": "a[href*='malba.org.ar/evento/']",
     "nombreBoton": "Leer más",
-	"fecha": "" //TODO VER COMO IMPLEMENTAR LO DE LA FECHA, PQ SOLO ME DICE JUEVES 5 EJ
+    "fecha": "h3, p, h4"
+  },
+
+  "salaLugones": {
+    "ciclo": ".list-item a[href*='/ver/']",
+    "containerPelicula": ".details",
+    "titulo": "p span[style*='color: #993366'] strong, p strong span[style*='color: #993366']",
+    "fecha": "p strong"
   }
 }

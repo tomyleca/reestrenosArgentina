@@ -7,11 +7,12 @@ import { CinepolisScrapper } from "../provider/scrappers/cinepolisScrapper.js";
 import { CinePixelScrapper } from "../provider/scrappers/cinePixelScrapper.js";
 import { ApiWithFallbackProvider } from "../provider/apiWithFallbackProvider.js";
 import { cinepolisApiMapper } from "../provider/mappers/cinepolisMapper.js";
-import { cinemarkHoyts, cinepolis, cinePixel, cineMalba } from "./cinesConfig.js";
 import { cinemarkApiMapper } from "../provider/mappers/cinemarkMapper.js";
 import { cinePixelApiMapper } from "../provider/mappers/cinePixelMapper.js";
 import { ScraperOnlyProvider } from "../provider/scraperOnlyProvider.js";
 import { CineMalbaScrapper } from "../provider/scrappers/cineMalbaScrapper.js";
+import { CineSalaLugonesScrapper } from "../provider/scrappers/cineSalaLugonesScrapper.js";
+import { cinemarkHoyts, cinepolis, cinePixel, cineMalba, cineSalaLugones } from "./cinesConfig.js";
 
 type ProviderFactory = (
   cine: Cine,
@@ -48,5 +49,10 @@ export const providerRegistry = new Map<string, ProviderFactory>([
     cineMalba.nombre,
     (cine, pageFactory) =>
       new ScraperOnlyProvider(cine, new CineMalbaScrapper(cine), pageFactory),
+  ],
+  [
+    cineSalaLugones.nombre,
+    (cine, pageFactory) =>
+      new ScraperOnlyProvider(cine, new CineSalaLugonesScrapper(cine), pageFactory),
   ],
 ]);

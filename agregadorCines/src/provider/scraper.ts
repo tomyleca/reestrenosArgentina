@@ -35,12 +35,18 @@ export abstract class Scraper {
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
       (elements, { sel, cine }) => {
-        return elements.map((el) => ({
-          titulo:
-            el.querySelector(sel.titulo)?.textContent?.trim() || "Sin título",
-          cine: cine, // tengo que pasarlo como parametro pq eval se ejecuta en el navegador
-		  fecha: sel.fecha ? el.querySelector(sel.fecha)?.textContent?.trim() : null,
-        }));
+        return elements.map((el) => {
+          const titulo = el.querySelector(sel.titulo)?.textContent?.trim();
+          const fecha = sel.fecha
+            ? el.querySelector(sel.fecha)?.textContent?.trim()
+            : null;
+
+          return {
+            titulo: titulo || "Sin título",
+            cine: cine,
+            fecha: fecha,
+          };
+        });
       },
       { sel: this.cine.selectors, cine: this.cine },
     ); //Paso los parametros al eval

@@ -39,7 +39,9 @@ export class NormalizadorFechas {
   ): Date | null {
     if (!texto) return null;
 
-    const limpio = texto.toLowerCase().trim();
+    const limpio = texto.
+	
+	toLowerCase().trim();
 
     // Casos especiales directos
     if (limpio === "hoy") return new Date(fechaReferencia);

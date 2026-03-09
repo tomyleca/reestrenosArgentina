@@ -9,8 +9,8 @@ export const cinemarkHoyts: CineConfig = {
   url: "https://www.cinemark.com.ar/",
   api_url: "https://bff.cinemark.com.ar/api/cinema/movies",
   selectors: {
-    containerPelicula: selectorsData.cinemarkHoyts.container,
-    titulo: selectorsData.cinemarkHoyts.title,
+    containerPelicula: selectorsData.cinemarkHoyts.containerPelicula,
+    titulo: selectorsData.cinemarkHoyts.titulo,
     nombreBoton: selectorsData.cinemarkHoyts.nombreBoton,
   },
 };
@@ -21,8 +21,8 @@ export const cinepolis: CineConfig = {
   url: "https://www.cinepolis.com.ar/",
   api_url: "https://www.cinepolis.com.ar/api/movies",
   selectors: {
-    containerPelicula: selectorsData.cinepolis.container,
-    titulo: selectorsData.cinepolis.title,
+    containerPelicula: selectorsData.cinepolis.containerPelicula,
+    titulo: selectorsData.cinepolis.titulo,
   },
 };
 
@@ -32,8 +32,8 @@ export const cinePixel: CineConfig = {
   url: "https://www.cinespixel.com.ar/",
   api_url: "https://apiv2.gaf.adro.studio/nowPlaying/103",
   selectors: {
-    containerPelicula: selectorsData.cinePixel.container,
-    titulo: selectorsData.cinePixel.title,
+    containerPelicula: selectorsData.cinePixel.containerPelicula,
+    titulo: selectorsData.cinePixel.titulo,
   },
 };
 
@@ -43,8 +43,20 @@ export const cineMalba: CineConfig = {
   url: "https://malba.org.ar/cine/",
   selectors: {
     containerPelicula: selectorsData.cineMalba.containerPelicula,
-    titulo: selectorsData.cineMalba.title,
+    titulo: selectorsData.cineMalba.titulo,
     ciclo: selectorsData.cineMalba.ciclo,
+  },
+};
+
+export const cineSalaLugones: CineConfig = {
+  nombre: "Sala Lugones",
+  localidad: "CABA",
+  url: "https://complejoteatral.gob.ar/cine",
+  selectors: {
+    containerPelicula: selectorsData.salaLugones.containerPelicula,
+    titulo: selectorsData.salaLugones.titulo,
+    ciclo: selectorsData.salaLugones.ciclo,
+    fecha: selectorsData.salaLugones.fecha,
   },
 };
 
@@ -53,4 +65,5 @@ export const cinesConfig: CineConfig[] = [
   cinepolis,
   cinePixel,
   cineMalba,
+  cineSalaLugones,
 ];
