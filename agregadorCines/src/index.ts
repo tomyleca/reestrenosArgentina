@@ -109,4 +109,8 @@ const iniciar = async () => {
 
 //INDEX
 
-iniciar();
+iniciar().catch((err) => {
+  console.error("❌ Error fatal al iniciar la aplicación:");
+  console.error(err);
+  process.exit(1);
+});

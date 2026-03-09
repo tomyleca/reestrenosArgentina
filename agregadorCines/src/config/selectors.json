@@ -34,5 +34,10 @@
     "containerPelicula": ".details",
     "titulo": "p span[style*='color: #993366'] strong, p strong span[style*='color: #993366']",
     "fecha": "p strong"
+  },
+  "casaPBA": {
+    "containerPelicula": ".field-name-body",
+    "titulo": "p",
+    "fecha": "h2, h3, p strong"
   }
 }

@@ -60,10 +60,22 @@ export const cineSalaLugones: CineConfig = {
   },
 };
 
+export const cineCasaPBA: CineConfig = {
+  nombre: "Casa PBA",
+  localidad: "CABA",
+  url: "https://gba.gob.ar/casaPBA/agenda_cultural_casa_pba",
+  selectors: {
+    containerPelicula: selectorsData.casaPBA.containerPelicula,
+    titulo: selectorsData.casaPBA.titulo,
+    fecha: selectorsData.casaPBA.fecha,
+  },
+};
+
 export const cinesConfig: CineConfig[] = [
   cinemarkHoyts,
   cinepolis,
   cinePixel,
   cineMalba,
   cineSalaLugones,
+  cineCasaPBA,
 ];

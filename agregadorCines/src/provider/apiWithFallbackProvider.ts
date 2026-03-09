@@ -4,7 +4,7 @@ import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { ICineProvider } from "./ICineProvider.js";
 import type { Scraper } from "./scraper.js";
 
-interface ICineApiRequester {
+export interface ICineApiRequester {
   obtenerPeliculas(): Promise<PeliculaInput[]>;
 }
 
