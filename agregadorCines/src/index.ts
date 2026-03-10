@@ -1,5 +1,5 @@
 import "dotenv/config";
-import http from "http";
+import express from "express";
 import cron from "node-cron";
 import type { BrowserContext } from "playwright";
 
@@ -11,6 +11,8 @@ import { PeliculaService } from "./services/peliculaService.js";
 import { cinesConfig } from "./config/cinesConfig.js";
 import { providerRegistry } from "./config/providerRegistry.js";
 import { crearContextoScraping } from "./provider/browserContext.js";
+import { PeliculaController } from "./api/peliculaController.js";
+import { crearPeliculaRouter } from "./api/peliculaRouter.js";
 
 //DEFINICIONES
 
@@ -85,22 +87,25 @@ const iniciar = async () => {
     timezone: "America/Argentina/Buenos_Aires",
   });
 
-  const server = http.createServer(async (req, res) => {
-    if (req.method !== "POST" || req.url !== "/refresh") {
-      res.writeHead(404).end();
-      return;
-    }
+  const app = express();
+  app.use(express.json());
 
+  // API pública de películas
+  const peliculaController = new PeliculaController(carteleraRepository);
+  app.use("/", crearPeliculaRouter(peliculaController));
+
+  // Endpoint interno para forzar refresco de cartelera
+  app.post("/refresh", async (req, res) => {
     if (req.headers.authorization !== `Bearer ${REFRESH_SECRET}`) {
-      res.writeHead(401).end();
+      res.status(401).end();
       return;
     }
 
-    res.writeHead(202).end("Refresco iniciado.");
+    res.status(202).send("Refresco iniciado.");
     await refrescarCartelera();
   });
 
-  server.listen(3000, "0.0.0.0", () => {
+  app.listen(3000, "0.0.0.0", () => {
     console.log("🌐 HTTP server escuchando en :3000");
   });
 

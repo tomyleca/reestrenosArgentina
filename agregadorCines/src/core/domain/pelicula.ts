@@ -1,6 +1,7 @@
 import type { Genero } from "./genero.js";
 import { Categoria } from "./categoria.js";
 import type { Cine } from "./cine.js";
+import type { Funcion } from "./funcion.js";
 
 export interface Pelicula {
   id: number;
@@ -15,7 +16,7 @@ export interface Pelicula {
   poster_path?: string | null;
   popularidad?: number | null;
   fechaLanzamiento?: Date | null;
-  fechaFunciones?: Date[] | null;
+  funciones?: Funcion[];
 }
 
 const UN_ANIO_MS = 1000 * 60 * 60 * 24 * 365;
@@ -43,11 +44,11 @@ export function agregarFechaFuncion(
   const date = fecha instanceof Date ? fecha : new Date(fecha);
   if (isNaN(date.getTime())) return;
 
-  if (!pelicula.fechaFunciones) {
-    pelicula.fechaFunciones = [];
+  if (!pelicula.funciones) {
+    pelicula.funciones = [];
   }
 
-  if (!pelicula.fechaFunciones.some((f) => f.getTime() === date.getTime())) {
-    pelicula.fechaFunciones.push(date);
+  if (!pelicula.funciones.some((f) => f.fecha.getTime() === date.getTime())) {
+    pelicula.funciones.push({ fecha: date });
   }
 }

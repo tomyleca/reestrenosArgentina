@@ -92,7 +92,7 @@ export class TMDBAdapter implements ITMDBAdapter {
       activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],
-      fechaFunciones: [],
+      funciones: [],
     };
 
     if (peliculaInput.fecha) {

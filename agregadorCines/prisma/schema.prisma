@@ -20,8 +20,19 @@ model Pelicula {
   poster_path      String?
   popularidad      Float?
   fechaLanzamiento DateTime?
-  fechaFunciones   DateTime[]
+  funciones        Funcion[]
 }
+
+model Funcion {
+  id         Int      @id @default(autoincrement())
+  fecha      DateTime
+  pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
+  peliculaId Int
+
+  @@unique([peliculaId, fecha])
+}
+
+
 
 model Cine {
   id        Int       @id @default(autoincrement())

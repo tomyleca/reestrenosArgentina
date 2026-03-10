@@ -2,6 +2,8 @@ import type { Pelicula } from "../core/domain/pelicula.js";
 import type { Cine } from "../core/domain/cine.js";
 import type { Alerta } from "../core/domain/alerta.js";
 import type { ICarteleraRepository } from "./ICarteleraRepository.js";
+import type { Categoria } from "../core/domain/categoria.js";
+import type { QueryOpciones } from "../api/types.js";
 import prisma from "../lib/db.js";
 
 export class PrismaCarteleraRepository implements ICarteleraRepository {
@@ -40,9 +42,6 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       ...(pelicula.fechaLanzamiento != null && {
         fechaLanzamiento: pelicula.fechaLanzamiento,
       }),
-      ...(pelicula.fechaFunciones != null && {
-        fechaFunciones: pelicula.fechaFunciones,
-      }),
     };
 
     const where =
@@ -50,7 +49,7 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         ? { tmdbId: pelicula.tmdbId }
         : { titulo: pelicula.titulo };
 
-    await prisma.pelicula.upsert({
+    const result = await prisma.pelicula.upsert({
       where,
       update: { ...camposComunes, ...relaciones },
       create: {
@@ -59,7 +58,20 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         ...camposComunes,
         ...relaciones,
       },
+      select: { id: true },
     });
+
+    // Agrega las funciones con skipDuplicates para evitar duplicados
+    // (garantizado por el unique constraint [peliculaId, fecha] en el schema)
+    if (pelicula.funciones && pelicula.funciones.length > 0) {
+      await prisma.funcion.createMany({
+        data: pelicula.funciones.map((f) => ({
+          fecha: f.fecha,
+          peliculaId: result.id,
+        })),
+        skipDuplicates: true,
+      });
+    }
   }
 
   async upsertPeliculas(listaPeliculas: Pelicula[]): Promise<void> {
@@ -71,26 +83,58 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     }
   }
 
-  async getPeliculas(): Promise<Pelicula[]> {
+  async getPeliculas(opciones?: QueryOpciones): Promise<Pelicula[]> {
+    const soloActivas = opciones?.soloActivas ?? true;
     return await prisma.pelicula.findMany({
-      include: {
-        generos: true,
-        cines: true,
+      where: { activa: soloActivas },
+      include: { generos: true, cines: true, funciones: true },
+      ...(opciones?.ordenarPorPopularidad && {
+        orderBy: { popularidad: "desc" },
+      }),
+    });
+  }
+
+  async getPeliculaById(id: number): Promise<Pelicula | null> {
+    return await prisma.pelicula.findUnique({
+      where: { id },
+      include: { generos: true, cines: true, funciones: true },
+    });
+  }
+
+  async getPeliculasByCategoria(
+    categoria: Categoria,
+    opciones?: QueryOpciones,
+  ): Promise<Pelicula[]> {
+    const soloActivas = opciones?.soloActivas ?? true;
+
+    const funcionesFiltro = opciones?.filtroPeriodo
+      ? buildFuncionesFiltro(opciones.filtroPeriodo)
+      : undefined;
+
+    return await prisma.pelicula.findMany({
+      where: {
+        categoria,
+        activa: soloActivas,
+        ...(funcionesFiltro && { funciones: funcionesFiltro }),
       },
+      include: { generos: true, cines: true, funciones: true },
+      ...(opciones?.ordenarPorPopularidad && {
+        orderBy: { popularidad: "desc" },
+      }),
     });
   }
 
   async getPeliculaByName(nombre: string): Promise<Pelicula | null> {
     return await prisma.pelicula.findFirst({
       where: { titulo: nombre },
-      include: { generos: true, cines: true },
+      include: { generos: true, cines: true, funciones: true },
     });
   }
 
   async buscarPorTMDBId(tmdbId: number): Promise<Pelicula | null> {
     return await prisma.pelicula.findFirst({
       where: { tmdbId },
-      include: { generos: true, cines: true },
+      include: { generos: true, cines: true, funciones: true },
     });
   }
 
@@ -116,4 +160,24 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       },
     });
   }
+}
+
+function buildFuncionesFiltro(periodo: "hoy" | "semana") {
+  const ahora = new Date();
+
+  const desde = new Date(ahora);
+  desde.setHours(0, 0, 0, 0);
+
+  const hasta = new Date(ahora);
+
+  if (periodo === "hoy") {
+    hasta.setHours(23, 59, 59, 999);
+  } else {
+    // "semana": desde hoy hasta 6 días después (7 días en total)
+    hasta.setDate(hasta.getDate() + 6);
+    hasta.setHours(23, 59, 59, 999);
+  }
+
+  // El filtro `some` genera un subquery SQL en lugar de filtrado en memoria
+  return { some: { fecha: { gte: desde, lte: hasta } } };
 }
