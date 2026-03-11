@@ -15,11 +15,12 @@ export class PeliculaController {
 
   getEstrenos = async (req: Request, res: Response): Promise<void> => {
     const soloActivas = parseSoloActivas(req.query.activas as string | undefined);
-    const peliculas = await this.repository.getPeliculasByCategoria(
+    const { page, limit } = parsePaginacion(req);
+    const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.ESTRENOS,
-      { soloActivas },
+      { soloActivas, page, limit },
     );
-    res.json(peliculas);
+    res.json(resultado);
   };
 
   getReestrenos = async (req: Request, res: Response): Promise<void> => {
@@ -32,11 +33,12 @@ export class PeliculaController {
     }
 
     const soloActivas = parseSoloActivas(req.query.activas as string | undefined);
-    const peliculas = await this.repository.getPeliculasByCategoria(
+    const { page, limit } = parsePaginacion(req);
+    const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
-      { filtroPeriodo, soloActivas },
+      { filtroPeriodo, soloActivas, page, limit },
     );
-    res.json(peliculas);
+    res.json(resultado);
   };
 
   getPeliculaById = async (req: Request, res: Response): Promise<void> => {
@@ -65,4 +67,10 @@ function parsePeriodo(valor: string | undefined): FiltroPeriodo {
 // Por defecto devuelve solo activas. Solo se desactiva con ?activas=false explícito.
 function parseSoloActivas(valor: string | undefined): boolean {
   return valor !== "false";
+}
+
+function parsePaginacion(req: Request): { page: number; limit: number } {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+  return { page, limit };
 }

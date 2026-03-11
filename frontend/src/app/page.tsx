@@ -1,11 +1,13 @@
 import CarruselPeliculas from "@/components/CarruselPeliculas/CarruselPeliculas";
-import { PELICULAS_MOCK } from "@/mocks/peliculas";
+import { Categoria } from "@/types/api";
 import styles from "./page.module.css";
 
 export default function Home() {
   return (
     <main className={styles.main}>
-      <CarruselPeliculas peliculas={PELICULAS_MOCK} titulo="En cartelera" />
+      <CarruselPeliculas categoria={Categoria.ESTRENOS} titulo="Estrenos" />
+      <CarruselPeliculas categoria={Categoria.REESTRENOS} titulo="Reestrenos" />
     </main>
   );
 }
+

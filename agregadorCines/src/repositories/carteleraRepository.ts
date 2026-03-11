@@ -3,8 +3,10 @@ import type { Cine } from "../core/domain/cine.js";
 import type { Alerta } from "../core/domain/alerta.js";
 import type { ICarteleraRepository } from "./ICarteleraRepository.js";
 import type { Categoria } from "../core/domain/categoria.js";
-import type { QueryOpciones } from "../api/types.js";
+import type { QueryOpciones, PaginatedResult } from "../api/types.js";
 import prisma from "../lib/db.js";
+
+const DEFAULT_LIMIT = 10;
 
 export class PrismaCarteleraRepository implements ICarteleraRepository {
   async agregarAlerta(alerta: Alerta): Promise<void> {
@@ -122,6 +124,49 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         orderBy: { popularidad: "desc" },
       }),
     });
+  }
+
+  async getPeliculasByCategoriaPaginadas(
+    categoria: Categoria,
+    opciones?: QueryOpciones,
+  ): Promise<PaginatedResult<Pelicula>> {
+    const soloActivas = opciones?.soloActivas ?? true;
+    const limit = opciones?.limit ?? DEFAULT_LIMIT;
+    const page = opciones?.page ?? 1;
+    const skip = (page - 1) * limit;
+
+    const funcionesFiltro = opciones?.filtroPeriodo
+      ? buildFuncionesFiltro(opciones.filtroPeriodo)
+      : undefined;
+
+    const where = {
+      categoria,
+      activa: soloActivas,
+      ...(funcionesFiltro && { funciones: funcionesFiltro }),
+    };
+
+    const orderBy = opciones?.ordenarPorPopularidad
+      ? { popularidad: "desc" as const }
+      : undefined;
+
+    const [total, data] = await prisma.$transaction([
+      prisma.pelicula.count({ where }),
+      prisma.pelicula.findMany({
+        where,
+        include: { generos: true, cines: true, funciones: true },
+        ...(orderBy && { orderBy }),
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      hasMore: skip + data.length < total,
+    };
   }
 
   async getPeliculaByName(nombre: string): Promise<Pelicula | null> {

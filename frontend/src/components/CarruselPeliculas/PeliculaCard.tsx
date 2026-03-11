@@ -1,10 +1,11 @@
 import Image from "next/image";
 import type { Pelicula } from "@/types/pelicula";
 
+
 interface PeliculaCardProps {
   pelicula: Pelicula;
   activa: boolean;
-  onClick: () => void;
+  onMouseEnter: () => void;
 }
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
@@ -24,14 +25,16 @@ function formatearDuracion(minutos: number): string {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
+
+
 export default function PeliculaCard({
   pelicula,
   activa,
-  onClick,
+  onMouseEnter,
 }: PeliculaCardProps) {
   return (
     <article
-      onClick={onClick}
+      onMouseEnter={onMouseEnter}
       className={[
         "relative flex-none w-64 h-96 rounded-2xl overflow-hidden cursor-pointer",
         "transition-all duration-300 ease-out",

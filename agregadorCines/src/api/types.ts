@@ -8,8 +8,21 @@ export interface QueryReestrenos {
   periodo?: FiltroPeriodo;
 }
 
-export interface QueryOpciones {
+export interface PaginacionOpciones {
+  page?: number;
+  limit?: number;
+}
+
+export interface QueryOpciones extends PaginacionOpciones {
   ordenarPorPopularidad?: boolean;
   filtroPeriodo?: FiltroPeriodo;
   soloActivas?: boolean;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }
