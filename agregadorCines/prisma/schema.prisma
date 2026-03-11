@@ -11,42 +11,40 @@ model Pelicula {
   id               Int       @id @default(autoincrement())
   titulo           String    @unique
   descripcion      String
-  generos          Genero[]
   duracionMinutos  Int
   categoria        Categoria
-  cines            Cine[]
   activa           Boolean
   tmdbId           Int?      @unique
-  poster_path      String?
   popularidad      Float?
+  poster_path      String?
   fechaLanzamiento DateTime?
   funciones        Funcion[]
+  cines            Cine[]    @relation("CineToPelicula")
+  generos          Genero[]  @relation("GeneroToPelicula")
 }
 
 model Funcion {
   id         Int      @id @default(autoincrement())
   fecha      DateTime
-  pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
   peliculaId Int
+  pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
 
   @@unique([peliculaId, fecha])
 }
 
-
-
 model Cine {
-  id        Int       @id @default(autoincrement())
-  nombre    String    @unique
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
   localidad Localidad
   url       String
   api_url   String?
-  peliculas Pelicula[] // las relaciones de primas SIEMPRE deben estar de los dos lados
+  peliculas Pelicula[] @relation("CineToPelicula")
 }
 
 model Genero {
-  tmdbId    Int        @id
   nombre    String
-  peliculas Pelicula[]
+  tmdbId    Int        @id
+  peliculas Pelicula[] @relation("GeneroToPelicula")
 }
 
 model Alerta {

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import cron from "node-cron";
 import type { BrowserContext } from "playwright";
 
@@ -88,6 +89,7 @@ const iniciar = async () => {
   });
 
   const app = express();
+  app.use(cors());
   app.use(express.json());
 
   // API pública de películas

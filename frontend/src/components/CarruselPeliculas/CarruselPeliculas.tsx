@@ -1,17 +1,19 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { Categoria } from "@/types/api";
+import type { Categoria, PaginatedResult } from "@/types/api";
+import type { Pelicula } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import PeliculaCard from "./PeliculaCard";
 
 interface CarruselPeliculasProps {
   categoria: Categoria;
   titulo?: string;
+  initialData?: PaginatedResult<Pelicula>;
 }
 
-// w-64 = 256px, gap-5 = 20px
-const CARD_WIDTH_PX = 256 + 20;
+// w-250 = 250px, gap-5 = 20px
+const CARD_WIDTH_PX = 250 + 20;
 const CARDS_VISIBLES = 4;
 // Cuántas cards antes del final se triggerean la carga de la próxima página
 const UMBRAL_CARGA = 3;
@@ -19,9 +21,10 @@ const UMBRAL_CARGA = 3;
 export default function CarruselPeliculas({
   categoria,
   titulo = "En cartelera",
+  initialData,
 }: CarruselPeliculasProps) {
   const { peliculas, hasMore, cargando, error, cargarMas } =
-    usePeliculasPaginadas(categoria);
+    usePeliculasPaginadas(categoria, initialData);
 
   const [indexActivo, setIndexActivo] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -95,7 +98,7 @@ export default function CarruselPeliculas({
             Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
-                className="flex-none w-64 h-96 rounded-2xl bg-white/5 animate-pulse"
+                className="flex-none w-[250px] h-[375px] rounded-2xl bg-white/5 animate-pulse"
               />
             ))}
         </div>

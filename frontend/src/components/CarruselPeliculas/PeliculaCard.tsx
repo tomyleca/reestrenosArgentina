@@ -36,7 +36,7 @@ export default function PeliculaCard({
     <article
       onMouseEnter={onMouseEnter}
       className={[
-        "relative flex-none w-64 h-96 rounded-2xl overflow-hidden cursor-pointer",
+        "relative flex-none w-[250px] h-[375px] rounded-2xl overflow-hidden cursor-pointer",
         "transition-all duration-300 ease-out",
         activa
           ? "opacity-100 scale-105 z-10 card-shadow-active"
@@ -52,7 +52,7 @@ export default function PeliculaCard({
           src={`${TMDB_IMAGE_BASE}${pelicula.poster_path}`}
           alt={`Poster de ${pelicula.titulo}`}
           fill
-          sizes="256px"
+          sizes="250px"
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center placeholder-gradient text-5xl font-black tracking-tighter text-accent">

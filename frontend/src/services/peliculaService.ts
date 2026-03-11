@@ -2,7 +2,7 @@ import type { Pelicula } from "@/types/pelicula";
 import type { GetPeliculasParams, PaginatedResult } from "@/types/api";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -41,16 +41,16 @@ export const peliculaService = {
 
 
 
-  /** GET /peliculas/estrenos/paginadas */
+  /** GET /peliculas/estrenos */
   getEstrenosPaginados(params: GetPeliculasParams = {}): Promise<PaginatedResult<Pelicula>> {
-    return get<PaginatedResult<Pelicula>>("/peliculas/estrenos/paginadas", toSearchParams(params));
+    return get<PaginatedResult<Pelicula>>("/peliculas/estrenos", toSearchParams(params));
   },
 
 
 
-  /** GET /peliculas/reestrenos/paginadas */
+  /** GET /peliculas/reestrenos */
   getReestrenosPaginados(params: GetPeliculasParams = {}): Promise<PaginatedResult<Pelicula>> {
-    return get<PaginatedResult<Pelicula>>("/peliculas/reestrenos/paginadas", toSearchParams(params));
+    return get<PaginatedResult<Pelicula>>("/peliculas/reestrenos", toSearchParams(params));
   },
 
   /** GET /peliculas/:id */
