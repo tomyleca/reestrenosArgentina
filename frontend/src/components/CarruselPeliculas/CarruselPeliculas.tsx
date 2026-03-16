@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { Categoria, PaginatedResult } from "@/types/api";
+import { Categoria } from "@/types/api";
+import type { PaginatedResult, FiltroPeriodo } from "@/types/api";
 import type { Pelicula } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import PeliculaCard from "./PeliculaCard";
@@ -23,8 +24,10 @@ export default function CarruselPeliculas({
   titulo = "En cartelera",
   initialData,
 }: CarruselPeliculasProps) {
+  const [periodo, setPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
+
   const { peliculas, hasMore, cargando, error, cargarMas } =
-    usePeliculasPaginadas(categoria, initialData);
+    usePeliculasPaginadas(categoria, initialData, periodo);
 
   const [indexActivo, setIndexActivo] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -39,6 +42,12 @@ export default function CarruselPeliculas({
       cargarMas();
     }
   }, [indexActivo, peliculas.length, cargarMas]);
+
+  const handlePeriodoChange = useCallback((nuevoPeriodo: FiltroPeriodo | undefined) => {
+    setPeriodo(nuevoPeriodo);
+    setIndexActivo(0);
+    setOffset(0);
+  }, []);
 
   const irAnterior = useCallback(() => {
     setOffset((prev) => Math.max(0, prev - 1));
@@ -70,9 +79,35 @@ export default function CarruselPeliculas({
     <section className="relative w-full overflow-hidden py-8 pb-12 bg-linear-to-b from-bg-base to-bg-elevated">
       {/* Header */}
       <div className="flex items-center justify-between px-[5%] mb-6">
-        <h2 className="text-2xl font-bold tracking-tight text-white">
-          <span className="text-accent">🎬</span> {titulo}
-        </h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            <span className="text-accent">🎬</span> {titulo}
+          </h2>
+          {categoria === Categoria.REESTRENOS && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePeriodoChange(periodo === "hoy" ? undefined : "hoy")}
+                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer ${
+                  periodo === "hoy"
+                    ? "bg-accent/20 border-accent/60 text-accent"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                }`}
+              >
+                Hoy
+              </button>
+              <button
+                onClick={() => handlePeriodoChange(periodo === "semana" ? undefined : "semana")}
+                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer ${
+                  periodo === "semana"
+                    ? "bg-accent/20 border-accent/60 text-accent"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                }`}
+              >
+                Esta semana
+              </button>
+            </div>
+          )}
+        </div>
         {cargando && (
           <span className="text-xs text-white/40 animate-pulse">Cargando…</span>
         )}
@@ -85,14 +120,20 @@ export default function CarruselPeliculas({
           className="flex gap-5 px-[5%] transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(${translateX}px)` }}
         >
-          {peliculas.map((pelicula, index) => (
-            <PeliculaCard
-              key={pelicula.id}
-              pelicula={pelicula}
-              activa={index === indexActivo}
-              onMouseEnter={() => hoverPelicula(index)}
-            />
-          ))}
+          {peliculas.length == 0 ? (
+            <div className="flex items-center justify-center w-full h-full text-3xl text-white/400 p-8">
+              No hay películas disponibles.
+            </div>
+          ) : (
+            peliculas.map((pelicula, index) => (
+              <PeliculaCard
+                key={pelicula.id}
+                pelicula={pelicula}
+                activa={index === indexActivo}
+                onMouseEnter={() => hoverPelicula(index)}
+              />
+            ))
+          )}
           {/* Skeleton de carga al final */}
           {cargando &&
             Array.from({ length: 3 }).map((_, i) => (

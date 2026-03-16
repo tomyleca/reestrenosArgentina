@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import type { Pelicula } from "@/types/pelicula";
-import { Categoria, PaginatedResult } from "@/types/api";
+import { Categoria, PaginatedResult, FiltroPeriodo } from "@/types/api";
 import { peliculaService } from "@/services/peliculaService";
 
 const LIMIT = 10;
@@ -16,7 +16,8 @@ interface UsePeliculasPaginadasResult {
 //Si fuese un context tendria un provider
 export function usePeliculasPaginadas(
   categoria: Categoria,
-  initialData?: PaginatedResult<Pelicula>
+  initialData?: PaginatedResult<Pelicula>,
+  periodo?: FiltroPeriodo
 ): UsePeliculasPaginadasResult {
   const [peliculas, setPeliculas] = useState<Pelicula[]>(initialData?.data || []);
   const [page, setPage] = useState(initialData ? 2 : 1); //arranca en 2 pq la 1 se carga como SSR
@@ -24,15 +25,17 @@ export function usePeliculasPaginadas(
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const prevPeriodoRef = useRef<FiltroPeriodo | undefined>(periodo);
+
   // Evita doble fetch si el componente renderiza dos veces (StrictMode)
   const cargandoRef = useRef(false);
   // Registra qué páginas ya fueron cargadas para no repetir
   const paginasCargadasRef = useRef(new Set<number>(initialData ? [1] : []));
 
   const fetchPagina = useCallback(
-    async (paginaACargar: number) => {
+    async (paginaACargar: number, forceLimpiar = false) => {
       if (cargandoRef.current) return;
-      if (paginasCargadasRef.current.has(paginaACargar)) return;
+      if (!forceLimpiar && paginasCargadasRef.current.has(paginaACargar)) return;
 
       cargandoRef.current = true;
       setCargando(true);
@@ -44,10 +47,15 @@ export function usePeliculasPaginadas(
             ? peliculaService.getEstrenosPaginados
             : peliculaService.getReestrenosPaginados;
 
-        const resultado = await fetcher({ page: paginaACargar, limit: LIMIT });
+        const resultado = await fetcher({ page: paginaACargar, limit: LIMIT, periodo });
 
-        paginasCargadasRef.current.add(paginaACargar);
-        setPeliculas((prev) => [...prev, ...resultado.data]);
+        if (forceLimpiar) {
+          paginasCargadasRef.current = new Set([paginaACargar]);
+          setPeliculas(resultado.data);
+        } else {
+          paginasCargadasRef.current.add(paginaACargar);
+          setPeliculas((prev) => [...prev, ...resultado.data]);
+        }
         setHasMore(resultado.hasMore);
         setPage(paginaACargar + 1);
       } catch (e) {
@@ -57,7 +65,7 @@ export function usePeliculasPaginadas(
         setCargando(false);
       }
     },
-    [categoria],
+    [categoria, periodo],
   );
 
   // Carga la primera página al montar — solo una vez si no vino en initialData
@@ -68,6 +76,13 @@ export function usePeliculasPaginadas(
       // Diferimos con setTimeout 0 para que React no se queje de side-effects en render
       setTimeout(() => fetchPagina(1), 0);
     }
+  }
+
+  // Detectar cambio manual de periodo
+  if (prevPeriodoRef.current !== periodo) {
+    prevPeriodoRef.current = periodo;
+    // Disparamos la carga de la página 1 limpiando lo anterior
+    setTimeout(() => fetchPagina(1, true), 0);
   }
 
   const cargarMas = useCallback(() => {

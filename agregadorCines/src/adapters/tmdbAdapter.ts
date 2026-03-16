@@ -7,6 +7,7 @@ import {
   calcularCategoria,
   agregarFechaFuncion,
 } from "../core/domain/pelicula.js";
+import { Categoria } from "../core/domain/categoria.js";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
 import { randomUUID } from "node:crypto";
 
@@ -74,6 +75,11 @@ export class TMDBAdapter implements ITMDBAdapter {
 
     const detallePelicula =
       await this.tmdb.buscarDetallesDePelicula(idTMDBPelicula);
+
+	//new Date devuelve NaN si la fecha es invalida
+    const releaseDateObj = detallePelicula.release_date ? new Date(detallePelicula.release_date) : null;
+    const isValidDate = releaseDateObj && !isNaN(releaseDateObj.getTime());
+
     const pelicula: Pelicula = {
       id: detallePelicula.id,
       titulo: detallePelicula.title,
@@ -81,14 +87,14 @@ export class TMDBAdapter implements ITMDBAdapter {
       poster_path: detallePelicula.poster_path,
       duracionMinutos: detallePelicula.runtime,
       popularidad: detallePelicula.popularity,
-      fechaLanzamiento: new Date(detallePelicula.release_date),
+      fechaLanzamiento: isValidDate ? releaseDateObj : null,
       generos: detallePelicula.genres.map((g) => {
         return {
           tmdbId: g.id,
           nombre: g.name,
         };
       }),
-      categoria: calcularCategoria(new Date(detallePelicula.release_date)),
+      categoria: isValidDate ? calcularCategoria(releaseDateObj) : Categoria.ESTRENOS,
       activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],
