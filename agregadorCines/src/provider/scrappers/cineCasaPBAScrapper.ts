@@ -34,26 +34,34 @@ export class CineCasaPBAScrapper extends Scraper {
         const elements = Array.from(content.querySelectorAll(selectorCombinado));
 
         elements.forEach((el) => {
-          const text = el.textContent?.trim() || "";
+          // Si el elemento no es nulo, dividimos su contenido HTML por saltos de línea (<br> o similares)
+          const lines = el.innerHTML.split(/<br\s*\/?>/i);
           
-          const matchFecha = text.match(/(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+(\d+)/i);
-          
-          if (sel.fecha && el.matches(sel.fecha) && matchFecha) {
-            fechaActual = `${matchFecha[1]} ${matchFecha[2]}`;
-          }
+          lines.forEach((lineHtml) => {
+            // Creamos un dummy element para extraer limpiamente el texto de la línea
+            const text = lineHtml.replace(/<[^>]+>/g, "").trim();
+            if (!text) return;
 
-          const esPelicula = /\d{2}\.\d{2}\s*h\./i.test(text);
+            const matchFecha = text.match(/(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+(\d+)/i);
+            
+            // Si la línea contiene una fecha, actualizamos la fecha global
+            if (sel.fecha && el.matches(sel.fecha) && matchFecha || matchFecha) {
+              fechaActual = `${matchFecha[1]} ${matchFecha[2]}`;
+            }
 
-          if (esPelicula && el.tagName === "P") {
-            const match = text.match(/\d{2}\.\d{2}\s*h\.\s*([^(\.]+)/i);
-            const titulo = (match && match[1]) ? match[1].trim() : text;
+            const esPelicula = /\d{2}\.\d{2}\s*h\./i.test(text);
 
-            results.push({
-              titulo: titulo,
-              cine: cine,
-              fecha: fechaActual,
-            });
-          }
+            if (esPelicula && el.tagName === "P") {
+              const match = text.match(/\d{2}\.\d{2}\s*h\.\s*([^(\.]+)/i);
+              const titulo = (match && match[1]) ? match[1].trim() : text;
+
+              results.push({
+                titulo: titulo,
+                cine: cine,
+                fecha: fechaActual,
+              });
+            }
+          });
         });
 
         return results;

@@ -31,49 +31,56 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
     // Las fechas y horarios son textos en negrita (strong).
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
-      (containers, { sel, cine }) => {
+      (containers, { cine }) => {
         const results: any[] = [];
         let fechaActual: string | null = null;
-        let horarioActual: string | null = null;
+        let ultimoTexto: string | null = null;
 
         const container = containers[0];
         if (!container) return [];
 
-        // Buscamos todos los elementos p que contienen la información
         const paragraphs = Array.from(container.querySelectorAll("p"));
+
+        // Definimos las variables con las regex tal como pidio el usuariolog
+        const regexFichaCompleta = /^\([^;]+;\s*[^;]+;\s*\d{4}\)$/i; // (texto; texto; año)
+        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i; // (texto; año)
+        const regexFichaAnio = /^\(\d{4}\)$/i; // (año)
+
+        const regexDiaSemana = /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+\d+/i;
 
         paragraphs.forEach((p) => {
           const text = p.textContent?.trim() || "";
           if (!text) return;
 
           // 1. Detectar Fecha (ej: "Jueves 19", "Sábado 21")
-          const diasSemana = /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+\d+/i;
-          if (diasSemana.test(text)) {
+          if (regexDiaSemana.test(text)) {
             fechaActual = text;
+            ultimoTexto = text;
             return;
           }
 
-          // 2. Ignorar Horarios (ya no son importantes)
-          if (text.toLowerCase().includes("a las") && text.toLowerCase().includes("horas")) {
-            return;
-          }
+          // 2. Comprobar si es la ficha técnica que sigue al título
+          const esFichaTecnica = 
+            regexFichaCompleta.test(text) || 
+            regexFichaCorta.test(text) || 
+            regexFichaAnio.test(text);
 
-          // 3. Detectar Título
-          const tituloEl = p.querySelector(sel.titulo);
-          if (tituloEl) {
-            const titulo = tituloEl.textContent?.trim() || "Sin título";
-
+          if (esFichaTecnica && ultimoTexto) {
+            // El texto del párrafo anterior es el título
             results.push({
-              titulo: titulo,
+              titulo: ultimoTexto,
               cine: cine,
               fecha: fechaActual,
             });
           }
+
+          // Guardamos el texto actual para la siguiente iteración
+          ultimoTexto = text;
         });
 
         return results;
       },
-      { sel: this.cine.selectors, cine: this.cine },
+      { cine: this.cine },
     );
   }
 }
