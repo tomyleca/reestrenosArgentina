@@ -6,6 +6,7 @@ import type { PaginatedResult, FiltroPeriodo } from "@/types/api";
 import type { Pelicula } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import PeliculaCard from "./PeliculaCard";
+import PeliculaModal from "./PeliculaModal";
 
 interface CarruselPeliculasProps {
   categoria: Categoria;
@@ -30,6 +31,7 @@ export default function CarruselPeliculas({
     usePeliculasPaginadas(categoria, initialData, periodo);
 
   const [indexActivo, setIndexActivo] = useState(0);
+  const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
   const [offset, setOffset] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +89,7 @@ export default function CarruselPeliculas({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePeriodoChange(periodo === "hoy" ? undefined : "hoy")}
-                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer ${
+                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base ${
                   periodo === "hoy"
                     ? "bg-accent/20 border-accent/60 text-accent"
                     : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white"
@@ -97,7 +99,7 @@ export default function CarruselPeliculas({
               </button>
               <button
                 onClick={() => handlePeriodoChange(periodo === "semana" ? undefined : "semana")}
-                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer ${
+                className={`px-3 py-1 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base ${
                   periodo === "semana"
                     ? "bg-accent/20 border-accent/60 text-accent"
                     : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white"
@@ -131,6 +133,7 @@ export default function CarruselPeliculas({
                 pelicula={pelicula}
                 activa={index === indexActivo}
                 onMouseEnter={() => hoverPelicula(index)}
+                onClick={() => setPeliculaSeleccionada(pelicula)}
               />
             ))
           )}
@@ -151,7 +154,7 @@ export default function CarruselPeliculas({
           onClick={irAnterior}
           disabled={indexActivo === 0}
           aria-label="Película anterior"
-          className="w-10 h-10 rounded-full border border-accent/40 bg-accent/8 text-accent text-lg flex items-center justify-center backdrop-blur-sm transition-all duration-200 hover:bg-accent/20 hover:border-accent/70 hover:scale-110 disabled:opacity-25 disabled:cursor-not-allowed disabled:scale-100"
+          className="w-10 h-10 rounded-full border border-accent/40 bg-accent/8 text-accent text-lg flex items-center justify-center backdrop-blur-sm transition-all duration-200 hover:bg-accent/20 hover:border-accent/70 hover:scale-110 disabled:opacity-25 disabled:cursor-not-allowed disabled:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           ←
         </button>
@@ -163,7 +166,7 @@ export default function CarruselPeliculas({
               onClick={() => hoverPelicula(index)}
               aria-label={`Ir a película ${index + 1}`}
               className={[
-                "h-1.5 rounded-full border-none cursor-pointer p-0 transition-all duration-300",
+                "h-1.5 rounded-full border-none cursor-pointer p-0 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
                 index === indexActivo ? "w-5 bg-accent" : "w-1.5 bg-white/20",
               ].join(" ")}
             />
@@ -177,11 +180,16 @@ export default function CarruselPeliculas({
           onClick={irSiguiente}
           disabled={indexActivo === peliculas.length - 1 && !hasMore}
           aria-label="Película siguiente"
-          className="w-10 h-10 rounded-full border border-accent/40 bg-accent/8 text-accent text-lg flex items-center justify-center backdrop-blur-sm transition-all duration-200 hover:bg-accent/20 hover:border-accent/70 hover:scale-110 disabled:opacity-25 disabled:cursor-not-allowed disabled:scale-100"
+          className="w-10 h-10 rounded-full border border-accent/40 bg-accent/8 text-accent text-lg flex items-center justify-center backdrop-blur-sm transition-all duration-200 hover:bg-accent/20 hover:border-accent/70 hover:scale-110 disabled:opacity-25 disabled:cursor-not-allowed disabled:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           →
         </button>
       </div>
+
+      <PeliculaModal
+        pelicula={peliculaSeleccionada}
+        onClose={() => setPeliculaSeleccionada(null)}
+      />
     </section>
   );
 }

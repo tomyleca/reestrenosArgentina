@@ -6,6 +6,7 @@ export interface Genero {
 export interface Cine {
   id: number;
   nombre: string;
+  url: string;
 }
 
 export interface Pelicula {

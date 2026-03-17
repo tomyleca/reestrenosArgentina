@@ -1,0 +1,26 @@
+{
+  "name": "carteleracineargentino",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {},
+ "scripts": {
+  "dev:back": "npm run dev --prefix agregadorCines",
+  "dev:front": "npm run dev --prefix frontend",
+  "dev": "start cmd /k \"npm run dev --prefix agregadorCines\" & start cmd /k \"npm run dev --prefix frontend\""
+}, 
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomyleca/carteleraCineArgentino.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tomyleca/carteleraCineArgentino/issues"
+  },
+  "homepage": "https://github.com/tomyleca/carteleraCineArgentino#readme"
+}

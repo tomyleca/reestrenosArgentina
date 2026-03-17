@@ -6,6 +6,7 @@ interface PeliculaCardProps {
   pelicula: Pelicula;
   activa: boolean;
   onMouseEnter: () => void;
+  onClick: () => void;
 }
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
@@ -31,13 +32,25 @@ export default function PeliculaCard({
   pelicula,
   activa,
   onMouseEnter,
+  onClick,
 }: PeliculaCardProps) {
   return (
     <article
+      tabIndex={0}
+      role="button"
+      aria-label={`Ver detalles de ${pelicula.titulo}`}
       onMouseEnter={onMouseEnter}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className={[
         "relative flex-none w-[250px] h-[375px] rounded-2xl overflow-hidden cursor-pointer",
-        "transition-all duration-300 ease-out",
+        "transition-all duration-300 ease-out outline-none",
+        "focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg-base",
         activa
           ? "opacity-100 scale-105 z-10 card-shadow-active"
           : "opacity-60 card-shadow",
