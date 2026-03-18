@@ -58,17 +58,6 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
       {/* Modal Content */}
       <div className="relative w-full max-w-2xl max-h-[90vh] bg-black/40 rounded-3xl overflow-y-auto overflow-x-hidden shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-500 custom-scrollbar overscroll-contain">
         
-        {/* Background Blurred Poster (for atmosphere) */}
-        {pelicula.poster_path && (
-          <div className="absolute inset-0 -z-10 opacity-30 blur-3xl scale-150">
-             <Image
-              src={`${TMDB_IMAGE_BASE_ORIGINAL}${pelicula.poster_path}`}
-              alt=""
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
 
         <div className="flex flex-col items-center p-8 lg:p-12 text-center">
           {/* Close Button */}
@@ -81,7 +70,7 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
           </button>
 
           {/* 1. Poster at the top */}
-          <div className="relative w-64 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border-2 border-white/5 mb-8 transform hover:scale-105 transition-transform duration-500">
+          <div className="relative w-64 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border-2 border-white/5 mb-5 transform hover:scale-105 transition-transform duration-500">
             {pelicula.poster_path ? (
               <Image
                 src={`${TMDB_IMAGE_BASE_ORIGINAL}${pelicula.poster_path}`}
@@ -98,11 +87,11 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
           </div>
 
           {/* 2. Title */}
-          <h2 className="text-3xl lg:text-5xl font-black text-white mb-4 uppercase tracking-tighter leading-tight drop-shadow-lg">
+          <h2 className="text-3xl lg:text-5xl font-black text-white mb-2 uppercase tracking-tighter leading-tight drop-shadow-lg">
             {pelicula.titulo}
           </h2>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
             {pelicula.generos.map((g) => (
               <span 
                 key={g.tmdbId}
@@ -111,15 +100,16 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
                 {g.nombre}
               </span>
             ))}
-            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-bold">
+
+          </div>
+		    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-bold mb-4">
               ⏱ {pelicula.duracionMinutos} MIN
             </span>
-          </div>
 
           {/* 3. Description */}
-          <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
+          <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-1" />
           
-          <p className="text-base lg:text-lg text-white/70 leading-relaxed mb-10 font-medium max-w-prose text-balance">
+          <p className="text-base lg:text-lg text-white/70 leading-relaxed mb-4 font-medium max-w-prose text-balance">
             {pelicula.descripcion}
           </p>
 
