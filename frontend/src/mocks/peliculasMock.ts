@@ -1,4 +1,4 @@
-import type { Pelicula } from "@/types/pelicula";
+import type { Pelicula } from "@/types/pelicula.js";
 
 export const PELICULAS_MOCK: Pelicula[] = [
   {
@@ -12,8 +12,8 @@ export const PELICULAS_MOCK: Pelicula[] = [
     ],
     duracionMinutos: 166,
     cines: [
-      { id: 1, nombre: "Cinemark Palermo" },
-      { id: 2, nombre: "Cinepolís Recoleta" },
+      { id: 1, nombre: "Cinemark Palermo", url: "https://www.cinemarkhoyts.com.ar/" },
+      { id: 2, nombre: "Cinepolís Recoleta", url: "https://www.cinepolis.com.ar/" },
     ],
     poster_path: "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
     popularidad: 385.4,
@@ -30,8 +30,8 @@ export const PELICULAS_MOCK: Pelicula[] = [
     ],
     duracionMinutos: 180,
     cines: [
-      { id: 1, nombre: "Cinemark Palermo" },
-      { id: 3, nombre: "Malba" },
+      { id: 1, nombre: "Cinemark Palermo", url: "https://www.cinemarkhoyts.com.ar/" },
+      { id: 3, nombre: "Malba", url: "https://malba.org.ar/cine/" },
     ],
     poster_path: "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
     popularidad: 290.1,
@@ -47,7 +47,7 @@ export const PELICULAS_MOCK: Pelicula[] = [
       { tmdbId: 12, nombre: "Aventura" },
     ],
     duracionMinutos: 144,
-    cines: [{ id: 2, nombre: "Cinepolís Recoleta" }],
+    cines: [{ id: 2, nombre: "Cinepolís Recoleta", url: "https://www.cinepolis.com.ar/" }],
     poster_path: "/2e853FDVSIso600RqAMunJ7xdMG.jpg",
     popularidad: 176.8,
     fechaLanzamiento: "2024-01-04",
@@ -63,9 +63,9 @@ export const PELICULAS_MOCK: Pelicula[] = [
     ],
     duracionMinutos: 104,
     cines: [
-      { id: 1, nombre: "Cinemark Palermo" },
-      { id: 2, nombre: "Cinepolís Recoleta" },
-      { id: 4, nombre: "Hoyts Abasto" },
+      { id: 1, nombre: "Cinemark Palermo", url: "https://www.cinemarkhoyts.com.ar/" },
+      { id: 2, nombre: "Cinepolís Recoleta", url: "https://www.cinepolis.com.ar/" },
+      { id: 4, nombre: "Hoyts Abasto", url: "https://www.cinemarkhoyts.com.ar/" },
     ],
     poster_path: "/b5kXc1q1xZkCLQFLTPiXbWRfCqX.jpg",
     popularidad: 220.5,
@@ -82,8 +82,8 @@ export const PELICULAS_MOCK: Pelicula[] = [
     ],
     duracionMinutos: 119,
     cines: [
-      { id: 1, nombre: "Cinemark Palermo" },
-      { id: 4, nombre: "Hoyts Abasto" },
+      { id: 1, nombre: "Cinemark Palermo", url: "https://www.cinemarkhoyts.com.ar/" },
+      { id: 4, nombre: "Hoyts Abasto", url: "https://www.cinemarkhoyts.com.ar/" },
     ],
     poster_path: "/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg",
     popularidad: 198.3,

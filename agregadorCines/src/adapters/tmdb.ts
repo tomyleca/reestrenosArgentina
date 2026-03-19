@@ -2,11 +2,10 @@ import "dotenv/config";
 import axios from "axios";
 import type { TMDBPeliculaDetalleDTO } from "../core/dtos/tmdbPeliculaDetalleDTO.js";
 
-
 import stringSimilarity from "string-similarity";
 
-const TREINTA_DIAS_MS = 30 * 24 * 60 * 60 * 1000;
-let MARGEN_FECHA = TREINTA_DIAS_MS;
+const CUATRO_MESES_MS = 4 * 30 * 24 * 60 * 60 * 1000;
+let MARGEN_FECHA = CUATRO_MESES_MS; //Es tan grande pq las peliculas tardan en estrenarse en arg.
 const MIN_SIMILARITY_SCORE = 0.1; // Umbral de similitud para aceptar un resultado. Es conveniente que sea muy bajo hasta lo podría eliminar.
 
 export class TMDB {
@@ -41,13 +40,13 @@ export class TMDB {
         this.normalizarTitulo(p.title),
       );
 
-	  //le asigno un score tambien al titulo en ingles
+      //le asigno un score tambien al titulo en ingles
       const scoreOriginal = stringSimilarity.compareTwoStrings(
         tituloBusquedaNorm,
         this.normalizarTitulo(p.original_title),
       );
 
-	  //me quedo con el score mas alto
+      //me quedo con el score mas alto
       return { ...p, score: Math.max(scoreTitulo, scoreOriginal) };
     });
 
@@ -58,7 +57,9 @@ export class TMDB {
     );
 
     if (candidatosValidos.length === 0) {
-      console.warn(`⚠️ No se encontró una coincidencia con similitud suficiente para: "${titulo}"`);
+      console.warn(
+        `⚠️ No se encontró una coincidencia con similitud suficiente para: "${titulo}"`,
+      );
       return null;
     }
 
@@ -68,15 +69,29 @@ export class TMDB {
       : candidatosValidos;
 
     // 5. Si el filtro de fecha dejó candidatos, elegimos el de mayor score de similitud.
-    // Si hay empate en similitud (score > 0.95), caemos en popularidad.
-    const pool = candidatosPorFecha.length > 0 ? candidatosPorFecha : candidatosValidos;
+    // Si hay empate en similitud (max 0.15 de diferencia), caemos en popularidad.
+    const pool =
+      candidatosPorFecha.length > 0 ? candidatosPorFecha : candidatosValidos;
 
-    // Ordenamos primero por score (descendente) 
+    // Ordenamos primero por score (descendente)
+    const ahora = Date.now();
     const ganador = pool.sort((a: any, b: any) => {
-      if (Math.abs(b.score - a.score) > 0.05) {
-        return b.score - a.score; 
+      if (Math.abs(b.score - a.score) > 0.15) {
+        return b.score - a.score;
       }
-      // y luego por popularidad(si el score es muy cercano).
+      // si el score es cercano, priorizamos la peli con fecha dentro del margen
+	  //importante para remakes que se estrenan en cines de los que no me traigo la fecha
+      const cercanoA = a.release_date
+        ? Math.abs(new Date(a.release_date).getTime() - ahora) <= MARGEN_FECHA
+        : false;
+      const cercanoB = b.release_date
+        ? Math.abs(new Date(b.release_date).getTime() - ahora) <= MARGEN_FECHA
+        : false;
+      if (cercanoA !== cercanoB) return cercanoA ? -1 : 1; //-1=> a es mayor, 1=> b es mayor
+
+
+
+      // si ambos estan dentro o fuera del margen, desempato por popularidad
       return b.popularity - a.popularity;
     })[0];
 
@@ -103,10 +118,7 @@ export class TMDB {
     ).id;
   }
 
-  private filtrarPorFecha(
-    resultados: any[],
-    fechaLanzamiento: Date,
-  ): any[] {
+  private filtrarPorFecha(resultados: any[], fechaLanzamiento: Date): any[] {
     return resultados.filter((p) => {
       if (!p.release_date) return false;
       const diff = Math.abs(
