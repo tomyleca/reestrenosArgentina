@@ -34,13 +34,6 @@ async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
 // ─── service ─────────────────────────────────────────────────────────────────
 
 export const peliculaService = {
-  /** GET /peliculas — todas las películas */
-  getPeliculas(params: GetPeliculasParams = {}): Promise<Pelicula[]> {
-    return get<Pelicula[]>("/peliculas", toSearchParams(params));
-  },
-
-
-
   /** GET /peliculas/estrenos */
   getEstrenosPaginados(params: GetPeliculasParams = {}): Promise<PaginatedResult<Pelicula>> {
     return get<PaginatedResult<Pelicula>>("/peliculas/estrenos", toSearchParams(params));

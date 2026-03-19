@@ -6,13 +6,6 @@ import type { FiltroPeriodo } from "./types.js";
 export class PeliculaController {
   constructor(private readonly repository: ICarteleraRepository) {}
 
-  getPeliculas = async (req: Request, res: Response): Promise<void> => {
-    const ordenarPorPopularidad = req.query.ordenarPorPopularidad === "true";
-    const soloActivas = parseSoloActivas(req.query.activas as string | undefined);
-    const peliculas = await this.repository.getPeliculas({ ordenarPorPopularidad, soloActivas });
-    res.json(peliculas);
-  };
-
   getEstrenos = async (req: Request, res: Response): Promise<void> => {
     const soloActivas = parseSoloActivas(req.query.activas as string | undefined);
     const { page, limit } = parsePaginacion(req);

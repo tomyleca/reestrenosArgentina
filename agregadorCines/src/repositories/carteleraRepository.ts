@@ -85,16 +85,6 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     }
   }
 
-  async getPeliculas(opciones?: QueryOpciones): Promise<Pelicula[]> {
-    const soloActivas = opciones?.soloActivas ?? true;
-    return await prisma.pelicula.findMany({
-      where: { activa: soloActivas },
-      include: { generos: true, cines: true, funciones: true },
-      ...(opciones?.ordenarPorPopularidad && {
-        orderBy: { popularidad: "desc" },
-      }),
-    });
-  }
 
   async getPeliculaById(id: number): Promise<Pelicula | null> {
     return await prisma.pelicula.findUnique({
@@ -103,28 +93,6 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     });
   }
 
-  async getPeliculasByCategoria(
-    categoria: Categoria,
-    opciones?: QueryOpciones,
-  ): Promise<Pelicula[]> {
-    const soloActivas = opciones?.soloActivas ?? true;
-
-    const funcionesFiltro = opciones?.filtroPeriodo
-      ? buildFuncionesFiltro(opciones.filtroPeriodo)
-      : undefined;
-
-    return await prisma.pelicula.findMany({
-      where: {
-        categoria,
-        activa: soloActivas,
-        ...(funcionesFiltro && { funciones: funcionesFiltro }),
-      },
-      include: { generos: true, cines: true, funciones: true },
-      ...(opciones?.ordenarPorPopularidad && {
-        orderBy: { popularidad: "desc" },
-      }),
-    });
-  }
 
   async getPeliculasByCategoriaPaginadas(
     categoria: Categoria,
@@ -145,16 +113,12 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       ...(funcionesFiltro && { funciones: funcionesFiltro }),
     };
 
-    const orderBy = opciones?.ordenarPorPopularidad
-      ? { popularidad: "desc" as const }
-      : undefined;
-
     const [total, data] = await prisma.$transaction([
       prisma.pelicula.count({ where }),
       prisma.pelicula.findMany({
         where,
         include: { generos: true, cines: true, funciones: true },
-        ...(orderBy && { orderBy }),
+        orderBy: { popularidad: "desc" }, //siempre devuelve las peliculas ordenadas por popularidad
         skip,
         take: limit,
       }),
