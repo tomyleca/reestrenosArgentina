@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 interface HeroCarouselProps {
@@ -47,7 +48,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       aria-label="Galería destacada"
       style={{ "--hero-interval": `${INTERVAL_MS}ms` } as React.CSSProperties}
     >
-      {/* Background Slides Track - Sliding Transition */}
+      {/* Pista de diapositivas de fondo - Transición de deslizamiento */}
       <div
         className="absolute inset-0 flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
@@ -58,23 +59,24 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
             className="relative shrink-0 w-full h-full overflow-hidden"
             aria-hidden
           >
-            <div
-              className={`absolute -inset-4 bg-cover bg-position-[center_25%] transition-transform duration-8000 ${
+            <Image
+              src={url}
+              alt={`Imagen destacada de cartelera ${i + 1}`}
+              fill
+              priority={i === 0}
+              className={`object-cover object-center transition-transform duration-8000 ${
                 i === activeIndex ? "scale-100" : "scale-105"
               }`}
-              style={{
-                backgroundImage: `url(${url})`,
-              }}
             />
-            {/* Overlay Gradient for contrast */}
+            {/* Gradiente superpuesto para contraste */}
             <div className="absolute inset-0 bg-radial-[circle_at_center,rgba(10,10,15,0.2)_0%,rgba(10,10,15,0.6)_100%] after:absolute after:inset-0 after:bg-linear-to-t after:from-bg-base after:to-transparent after:opacity-40" />
           </div>
         ))}
       </div>
 
-      {/* Content — Branding + Indicadores */}
+      {/* Contenido — Marca + Indicadores */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5">
-        {/* Transparent text box for legibility */}
+        {/* Caja de texto transparente para legibilidad */}
         <div className="bg-black/20 p-12 md:p-4 border md:pr-30 md:pl-30 border-white/10 max-w-[95%] md:max-w-10xl flex flex-col gap-10 ">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-white m-0 drop-shadow-2xl">
             <span className="bg-linear-to-br from-accent to-accent-light bg-clip-text text-transparent">
@@ -91,7 +93,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
           </p>
         </div>
 
-        {/* Progress indicators container (absolute at bottom) */}
+        {/* Contenedor de indicadores de progreso (absoluto en la parte inferior) */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 w-full max-w-[250px] md:max-width-[400px] px-5 z-30">
           {images.map((_, i) => (
             <button
@@ -121,7 +123,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
         </div>
       </div>
 
-      {/* Blurred fade-out at the bottom for smooth transition */}
+      {/* Desvanecimiento desenfocado en la parte inferior para una transición suave */}
       <div className="absolute bottom-0 left-0 right-0 h-32  bg-linear-to-t from-bg-base to-transparent pointer-events-none z-20" />
     </section>
   );

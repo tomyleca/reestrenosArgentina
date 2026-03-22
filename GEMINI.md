@@ -10,3 +10,15 @@ Cada vez que te paso los datos de un cine para implementarlo tenes que hacer su 
 ## React
 
 Seguí las mejores prácticas de react para implementar la funcionalidad. Por ej.: componetizar la funcionalidad, usar hooks, etc.
+
+## Estilos
+
+Usá TailwindCSS para los estilos.
+
+## Buscar en el código
+
+Antes de buscar algo en el código fijate si no esta en el doc.md de la carpeta correspondiente.
+
+## Documentación
+
+Mantene el doc.md de cada carpeta actualizado.
