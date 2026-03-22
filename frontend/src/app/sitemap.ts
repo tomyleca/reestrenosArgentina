@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { peliculaService } from '@/services/peliculaService';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'http://localhost:3001';
+  const baseUrl = process.env.NEXT_APP_URL || "http://localhost:3001";
 
   // Buscamos todas las películas para generar rutas dinámicas
   // Nota: Podríamos necesitar un método para obtener TODAS las películas sin paginación si la lista crece,

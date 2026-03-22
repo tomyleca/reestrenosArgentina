@@ -63,7 +63,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
    npm run dev
    ```
 
-3. Abre [http://localhost:3001](http://localhost:3001) (o el puerto que asigne Next.js) en tu navegador.
+3. Abre [http://localhost:3001](http://localhost:3001) (o el puerto que asigne Next.js)
 
 ## Scripts Disponibles
 

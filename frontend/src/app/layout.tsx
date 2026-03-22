@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"),
+  metadataBase: new URL(process.env.NEXT_APP_URL || "http://localhost:3001"),
   title: {
     default: "Cartelera Cine Argentino | Todas las Películas",
     template: "%s | Cartelera Cine Argentino",

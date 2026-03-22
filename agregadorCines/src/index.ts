@@ -89,7 +89,12 @@ const iniciar = async () => {
   });
 
   const app = express();
-  app.use(cors());
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3001";
+  app.use(
+    cors({
+      origin: FRONTEND_URL,
+    }),
+  );
   app.use(express.json());
 
   // API pública de películas

@@ -64,7 +64,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
               alt={`Imagen destacada de cartelera ${i + 1}`}
               fill
               priority={i === 0}
-              className={`object-cover object-center transition-transform duration-8000 ${
+              className={`object-cover object-[center_15%] transition-transform duration-8000 ${
                 i === activeIndex ? "scale-100" : "scale-105"
               }`}
             />
@@ -87,7 +87,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
           </h1>
 
           <p className="text-base md:text-lg lg:text-2xl text-white/90 leading-relaxed font-medium drop-shadow-md">
-           Todas las películas, 
+           Todos los cines, 
 		   <span className="text-accent-light "> en un solo lugar.</span>
            
           </p>
