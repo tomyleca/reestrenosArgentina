@@ -8,7 +8,7 @@ interface PeliculaCardProps {
   onClick: () => void;
 }
 
-const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
+const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780";
 
 function iniciales(titulo: string): string {
   return titulo

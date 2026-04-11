@@ -13,7 +13,6 @@ export function cinemarkApiMapper(
 ): PeliculaInput[] {
     return responseObject.data.map((item) => ({
         titulo: item.title,
-		fechaLanzamiento: new Date(item.openingDate),
         cine,
     }));
 }

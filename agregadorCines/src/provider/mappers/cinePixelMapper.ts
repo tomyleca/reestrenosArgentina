@@ -3,7 +3,6 @@ import type { PeliculaInput } from "../../core/dtos/peliculaInput.js";
 
 interface CinePixelApiItem {
   nombre: string;
-  lenguaje: string;
 }
 
 interface CinePixelApiResponse {
@@ -17,10 +16,6 @@ export function cinePixelApiMapper(
 ): PeliculaInput[] {
   return responseJson.data.map((item) => ({
     titulo: item.nombre,
-    idiomas: item.lenguaje
-      .split(",")
-      .map((l) => l.trim())
-      .filter(Boolean),
     cine,
   }));
 }

@@ -11,7 +11,6 @@ export function cinepolisApiMapper(
 ): PeliculaInput[] {
   return responseJson.data.map((item) => ({
     titulo: item.title_translated,
-	fechaLanzamiento: new Date(item.release_date),
     cine,
   }));
 }
