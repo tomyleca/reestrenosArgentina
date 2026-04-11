@@ -14,7 +14,8 @@ const QueryEstrenosSchema = PaginacionSchema.extend({
 });
 
 const QueryReestrenosSchema = QueryEstrenosSchema.extend({
-  periodo: z.enum(["hoy", "semana"]).nullable().catch(null),
+  periodo: z.enum(["hoy", "semana", "mes"]).nullable().catch(null),
+  cineId: z.coerce.number().int().positive().optional(),
 });
 
 const ParamsIdSchema = z.object({
@@ -47,13 +48,18 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, activas: soloActivas, periodo: filtroPeriodo } = parse.data;
+    const { page, limit, activas: soloActivas, periodo: filtroPeriodo, cineId } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
-      { filtroPeriodo, soloActivas, page, limit },
+      { filtroPeriodo, soloActivas, page, limit, ...(cineId !== undefined && { cineId }) },
     );
     res.json(resultado);
+  };
+
+  getCines = async (_req: Request, res: Response): Promise<void> => {
+    const cines = await this.repository.getCines();
+    res.json(cines);
   };
 
   getPeliculaById = async (req: Request, res: Response): Promise<void> => {

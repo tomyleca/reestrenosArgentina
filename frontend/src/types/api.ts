@@ -1,4 +1,4 @@
-export type FiltroPeriodo = "hoy" | "semana";
+export type FiltroPeriodo = "hoy" | "semana" | "mes";
 
 export enum Categoria {
   ESTRENOS = "estrenos",
@@ -12,6 +12,7 @@ export interface GetPeliculasParams {
   activas?: boolean;
   page?: number;
   limit?: number;
+  cineId?: number;
 }
 
 export interface PaginatedResult<T> {

@@ -15,6 +15,7 @@ export interface ICarteleraRepository {
   getPeliculaByName(nombre: string): Promise<Pelicula | null>;
   buscarPorTMDBId(tmdbId: number): Promise<Pelicula | null>;
   getCineByNombre(nombre: string): Promise<Cine | null>;
+  getCines(): Promise<Cine[]>;
   upsertCine(cine: Omit<Cine, "id">): Promise<Cine>;
   agregarAlerta(alerta: Alerta): Promise<void>;
 }

@@ -8,6 +8,7 @@ export function crearPeliculaRouter(controller: PeliculaController): Router {
   router.get("/peliculas/estrenos", controller.getEstrenos);
   router.get("/peliculas/reestrenos", controller.getReestrenos);
   router.get("/peliculas/:id", controller.getPeliculaById);
+  router.get("/cines", controller.getCines);
 
   return router;
 }

@@ -17,7 +17,8 @@ interface UsePeliculasPaginadasResult {
 export function usePeliculasPaginadas(
   categoria: Categoria,
   initialData?: PaginatedResult<Pelicula>,
-  periodo?: FiltroPeriodo
+  periodo?: FiltroPeriodo,
+  cineId?: number,
 ): UsePeliculasPaginadasResult {
   const [peliculas, setPeliculas] = useState<Pelicula[]>(initialData?.data || []);
   const [page, setPage] = useState(initialData ? 2 : 1); //arranca en 2 pq la 1 se carga como SSR
@@ -26,6 +27,7 @@ export function usePeliculasPaginadas(
   const [error, setError] = useState<string | null>(null);
 
   const prevPeriodoRef = useRef<FiltroPeriodo | undefined>(periodo);
+  const prevCineIdRef = useRef<number | undefined>(cineId);
 
   // Evita doble fetch si el componente renderiza dos veces (StrictMode)
   const cargandoRef = useRef(false);
@@ -47,7 +49,7 @@ export function usePeliculasPaginadas(
             ? peliculaService.getEstrenosPaginados
             : peliculaService.getReestrenosPaginados;
 
-        const resultado = await fetcher({ page: paginaACargar, limit: LIMIT, periodo });
+        const resultado = await fetcher({ page: paginaACargar, limit: LIMIT, periodo, cineId });
 
         if (forceLimpiar) {
           paginasCargadasRef.current = new Set([paginaACargar]);
@@ -65,7 +67,7 @@ export function usePeliculasPaginadas(
         setCargando(false);
       }
     },
-    [categoria, periodo],
+    [categoria, periodo, cineId],
   );
 
   // Carga la primera página al montar — solo una vez si no vino en initialData
@@ -78,9 +80,10 @@ export function usePeliculasPaginadas(
     }
   }
 
-  // Detectar cambio manual de periodo
-  if (prevPeriodoRef.current !== periodo) {
+  // Detectar cambio de filtros (periodo o cineId)
+  if (prevPeriodoRef.current !== periodo || prevCineIdRef.current !== cineId) {
     prevPeriodoRef.current = periodo;
+    prevCineIdRef.current = cineId;
     // Disparamos la carga de la página 1 limpiando lo anterior
     setTimeout(() => fetchPagina(1, true), 0);
   }

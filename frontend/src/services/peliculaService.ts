@@ -1,4 +1,4 @@
-import type { Pelicula } from "@/types/pelicula";
+import type { Pelicula, Cine } from "@/types/pelicula";
 import type { GetPeliculasParams, PaginatedResult } from "@/types/api";
 
 const API_BASE_URL =
@@ -49,5 +49,10 @@ export const peliculaService = {
   /** GET /peliculas/:id */
   getPeliculaById(id: number): Promise<Pelicula> {
     return get<Pelicula>(`/peliculas/${id}`);
+  },
+
+  /** GET /cines */
+  getCines(): Promise<Cine[]> {
+    return get<Cine[]>("/cines");
   },
 };

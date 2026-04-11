@@ -9,7 +9,7 @@ interface PeliculaModalProps {
   onClose: () => void;
 }
 
-const TMDB_IMAGE_BASE_ORIGINAL = "https://image.tmdb.org/t/p/original";
+const TMDB_IMAGE_BASE_ORIGINAL = "https://image.tmdb.org/t/p/w780";
 
 export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps) {
   const [isVisible, setIsVisible] = useState(false);

@@ -1,4 +1,4 @@
-export type FiltroPeriodo = "hoy" | "semana" | null;
+export type FiltroPeriodo = "hoy" | "semana" | "mes" | null;
 
 export interface QueryReestrenos {
   periodo?: FiltroPeriodo;
@@ -12,6 +12,7 @@ export interface PaginacionOpciones {
 export interface QueryOpciones extends PaginacionOpciones {
   filtroPeriodo?: FiltroPeriodo;
   soloActivas?: boolean;
+  cineId?: number;
 }
 
 export interface PaginatedResult<T> {

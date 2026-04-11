@@ -4,7 +4,8 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 
 ## Características
 
-- **Visualización de Estrenos y Reestrenos**: Carruseles interactivos con posters de películas.
+- **Visualización de Reestrenos**: Grilla infinita con scroll infinito (IntersectionObserver).
+- **Filtros interactivos**: Por período (Hoy / Esta semana / Este mes) y por cine.
 - **Server-Side Rendering (SSR)**: La carga inicial se realiza en el servidor para mejorar el SEO y la velocidad.
 - **Integración con Cloudinary**: Imágenes dinámicas para el Hero Carousel.
 - **Diseño Moderno**: Uso de CSS Modules para un estilo limpio y mantenible.
@@ -23,14 +24,16 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 src/
 ├── app/                # Rutas y páginas (App Router)
 │   ├── layout.tsx      # Layout global (Navbar, Footer, etc.)
-│   ├── page.tsx        # Página principal (Home)
+│   ├── page.tsx        # Página principal (Home): solo reestrenos
 │   └── page.module.css # Estilos de la home
 ├── components/         # Componentes de UI reutilizables
-│   ├── CarruselPeliculas/
+│   ├── GrillaReestrenos/  # Grilla con scroll infinito + filtros (componente principal)
+│   ├── CarruselPeliculas/ # Componente legacy (PeliculaCard, PeliculaModal)
 │   └── HeroCarousel/
 ├── hooks/              # Custom hooks de React
+│   └── usePeliculasPaginadas.ts  # Paginación con soporte de período y cineId
 ├── services/           # Llamadas a APIs externas
-│   ├── peliculaService.ts   # Conexión con el Backend (agregadorCines)
+│   ├── peliculaService.ts   # Conexión con el Backend (incluye getCines)
 │   └── cloudinaryService.ts # Conexión con Cloudinary
 ├── types/              # Definiciones de TypeScript (Interfaces y Enums)
 └── mocks/              # Datos de prueba para desarrollo

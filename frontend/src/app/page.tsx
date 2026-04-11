@@ -1,17 +1,15 @@
-import CarruselPeliculas from "@/components/CarruselPeliculas/CarruselPeliculas";
 import HeroCarousel from "@/components/HeroCarousel/HeroCarousel";
-import { Categoria } from "@/types/api";
+import GrillaReestrenos from "@/components/GrillaReestrenos/GrillaReestrenos";
 import { peliculaService } from "@/services/peliculaService";
 import { getCloudinaryFolderImages } from "@/services/cloudinaryService";
 import styles from "./page.module.css";
 
 export default async function Home() {
-  // SSR: Traemos la 1ra página desde el servidor antes de mandar el HTML al cliente
+  // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
   // Esto hace que el primer renderizado ya tenga las películas (mejor carga inicial y SEO)
-  const [initialEstrenos, initialReestrenos, cloudinaryImages] = await Promise.all([
-    peliculaService.getEstrenosPaginados({ page: 1, limit: 10 }),
-    peliculaService.getReestrenosPaginados({ page: 1, limit: 10 }),
-    getCloudinaryFolderImages("agregadorCines"), // Trae todo lo de la carpeta "agregadorCines"
+  const [initialReestrenos, cloudinaryImages] = await Promise.all([
+    peliculaService.getReestrenosPaginados({ page: 1, limit: 12 }),
+    getCloudinaryFolderImages("agregadorCines"),
   ]);
 
   // Si Cloudinary no devuelve nada (ej: todavia no configuraste las keys), usamos estas de backup
@@ -25,17 +23,7 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <HeroCarousel images={heroImages} />
-      <CarruselPeliculas 
-        categoria={Categoria.ESTRENOS} 
-        titulo="Estrenos" 
-        initialData={initialEstrenos}
-      />
-      <CarruselPeliculas 
-        categoria={Categoria.REESTRENOS} 
-        titulo="Reestrenos"
-        initialData={initialReestrenos}
-      />
+      <GrillaReestrenos initialData={initialReestrenos} />
     </main>
   );
 }
-

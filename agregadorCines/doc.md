@@ -66,8 +66,9 @@ La lógica de `fetch → json → mapper` es común a todas las APIs. El mapper,
 | Método | Endpoint | Descripción |
 | :--- | :--- | :--- |
 | `GET` | `/peliculas/estrenos` | Obtiene películas en cartelera de estrenos (paginado). |
-| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). |
+| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). Soporta `?periodo=hoy\|semana\|mes` y `?cineId=<id>`. |
 | `GET` | `/peliculas/:id` | Obtiene el detalle de una película por ID. |
+| `GET` | `/cines` | Devuelve la lista de todos los cines en la base de datos (ordenados por nombre). |
 
 ### Internos
 | Método | Endpoint | Descripción |

@@ -107,10 +107,15 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       ? buildFuncionesFiltro(opciones.filtroPeriodo)
       : undefined;
 
+    const cineFiltro = opciones?.cineId
+      ? { some: { id: opciones.cineId } }
+      : undefined;
+
     const where = {
       categoria,
       activa: soloActivas,
       ...(funcionesFiltro && { funciones: funcionesFiltro }),
+      ...(cineFiltro && { cines: cineFiltro }),
     };
 
     const [total, data] = await prisma.$transaction([
@@ -153,6 +158,12 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     });
   }
 
+  async getCines(): Promise<Cine[]> {
+    return await prisma.cine.findMany({
+      orderBy: { nombre: "asc" },
+    });
+  }
+
   async upsertCine(cine: Omit<Cine, "id">): Promise<Cine> {
     return await prisma.cine.upsert({
       where: { nombre: cine.nombre },
@@ -171,7 +182,7 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   }
 }
 
-function buildFuncionesFiltro(periodo: "hoy" | "semana") {
+function buildFuncionesFiltro(periodo: "hoy" | "semana" | "mes") {
   const ahora = new Date();
 
   const desde = new Date(ahora);
@@ -181,9 +192,13 @@ function buildFuncionesFiltro(periodo: "hoy" | "semana") {
 
   if (periodo === "hoy") {
     hasta.setHours(23, 59, 59, 999);
-  } else {
-    // "semana": desde hoy hasta 6 días después (7 días en total)
+  } else if (periodo === "semana") {
+    // desde hoy hasta 6 días después (7 días en total)
     hasta.setDate(hasta.getDate() + 6);
+    hasta.setHours(23, 59, 59, 999);
+  } else {
+    // "mes": desde hoy hasta 29 días después (30 días en total)
+    hasta.setDate(hasta.getDate() + 29);
     hasta.setHours(23, 59, 59, 999);
   }
 
