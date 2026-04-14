@@ -3,6 +3,8 @@ import GrillaReestrenos from "@/components/GrillaReestrenos/GrillaReestrenos";
 import { peliculaService } from "@/services/peliculaService";
 import { getCloudinaryFolderImages } from "@/services/cloudinaryService";
 import styles from "./page.module.css";
+import { Analytics } from "@vercel/analytics/next"
+
 
 export default async function Home() {
   // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
