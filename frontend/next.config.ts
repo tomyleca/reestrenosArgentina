@@ -14,6 +14,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-};
+}; //dominios permitidos de imagenes
 
 export default nextConfig;

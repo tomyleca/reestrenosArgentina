@@ -1,8 +1,7 @@
 import type { Pelicula, Cine } from "@/types/pelicula";
 import type { GetPeliculasParams, PaginatedResult } from "@/types/api";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -25,7 +24,9 @@ async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
   const res = await fetch(url.toString(), { cache: "no-store" });
 
   if (!res.ok) {
-    throw new Error(`Error ${res.status} al obtener ${path}: ${await res.text()}`);
+    throw new Error(
+      `Error ${res.status} al obtener ${path}: ${await res.text()}`,
+    );
   }
 
   return res.json() as Promise<T>;
@@ -35,15 +36,23 @@ async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
 
 export const peliculaService = {
   /** GET /peliculas/estrenos */
-  getEstrenosPaginados(params: GetPeliculasParams = {}): Promise<PaginatedResult<Pelicula>> {
-    return get<PaginatedResult<Pelicula>>("/peliculas/estrenos", toSearchParams(params));
+  getEstrenosPaginados(
+    params: GetPeliculasParams = {},
+  ): Promise<PaginatedResult<Pelicula>> {
+    return get<PaginatedResult<Pelicula>>(
+      "/peliculas/estrenos",
+      toSearchParams(params),
+    );
   },
 
-
-
   /** GET /peliculas/reestrenos */
-  getReestrenosPaginados(params: GetPeliculasParams = {}): Promise<PaginatedResult<Pelicula>> {
-    return get<PaginatedResult<Pelicula>>("/peliculas/reestrenos", toSearchParams(params));
+  getReestrenosPaginados(
+    params: GetPeliculasParams = {},
+  ): Promise<PaginatedResult<Pelicula>> {
+    return get<PaginatedResult<Pelicula>>(
+      "/peliculas/reestrenos",
+      toSearchParams(params),
+    );
   },
 
   /** GET /peliculas/:id */
