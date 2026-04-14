@@ -29,7 +29,7 @@ export class PeliculaService implements IPeliculaService {
     await this.carteleraRepository.limpiarCartelera();
     const peliculasInput = await this.obtenerPeliculas(providers);
     const peliculas = await this.normalizarPeliculas(peliculasInput);
-    this.carteleraRepository.upsertPeliculas(peliculas);
+    await this.carteleraRepository.upsertPeliculas(peliculas);
     return peliculas;
   }
 
