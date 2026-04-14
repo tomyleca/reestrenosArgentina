@@ -42,7 +42,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
 
   return (
     <section
-      className="relative w-full h-[60vh] md:h-[70vh] min-h-[350px] md:min-h-[500px] max-h-[400px] overflow-hidden bg-bg-base"
+      className="relative w-full h-[45vh] md:h-[60vh] min-h-[250px] md:min-h-[400px] max-h-[300px] overflow-hidden bg-bg-base"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       aria-label="Galería destacada"
@@ -68,8 +68,11 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
                 i === activeIndex ? "scale-100" : "scale-105"
               }`}
             />
-            {/* Gradiente superpuesto para contraste */}
-            <div className="absolute inset-0 bg-radial-[circle_at_center,rgba(10,10,15,0.2)_0%,rgba(10,10,15,0.6)_100%] after:absolute after:inset-0 after:bg-linear-to-t after:from-bg-base after:to-transparent after:opacity-40" />
+            {/* Vignette lateral izquierdo */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-linear-to-r from-black/70 to-transparent pointer-events-none" />
+            {/* Vignette lateral derecho */}
+            <div className="absolute inset-y-0 right-0 w-24 bg-linear-to-l from-black/70 to-transparent pointer-events-none" />
+
           </div>
         ))}
       </div>
@@ -78,18 +81,18 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5">
         {/* Caja de texto transparente para legibilidad */}
         <div className="bg-black/20 p-12 md:p-4 border md:pr-30 md:pl-30 border-white/10 max-w-[95%] md:max-w-10xl flex flex-col gap-10 ">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-white m-0 drop-shadow-2xl">
+          <h1 className="text-4xl md:text-6xl lg:text-6xl font-black tracking-tighter leading-tight text-white m-0 drop-shadow-2xl flex flex-col gap-1">
             <span className="bg-linear-to-br from-accent to-accent-light bg-clip-text text-transparent">
-              Cartelera
+              Reestrenos
             </span>
-            <br />
-            Cine Argentino
+            <span className=" from-[#74ACDF] via-white to-[#74ACDF]  text-2xl md:text-xl lg:text-6xl">
+              Argentina
+            </span>
           </h1>
 
           <p className="text-base md:text-lg lg:text-2xl text-white/90 leading-relaxed font-medium drop-shadow-md">
-           Todos los cines, 
-		   <span className="text-accent-light "> en un solo lugar.</span>
-           
+            Todos los cines,
+            <span className="text-accent-light "> en un solo lugar.</span>
           </p>
         </div>
 

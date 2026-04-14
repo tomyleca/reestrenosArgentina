@@ -6,8 +6,8 @@ import type { PaginatedResult, FiltroPeriodo } from "@/types/api";
 import type { Pelicula, Cine } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import { peliculaService } from "@/services/peliculaService";
-import PeliculaCard from "@/components/CarruselPeliculas/PeliculaCard";
-import PeliculaModal from "@/components/CarruselPeliculas/PeliculaModal";
+import PeliculaCard from "@/components/Pelicula/PeliculaCard";
+import PeliculaModal from "@/components/Pelicula/PeliculaModal";
 
 interface GrillaReestrenosProps {
   initialData?: PaginatedResult<Pelicula>;
