@@ -29,6 +29,11 @@ jobs:
       - name: Compilar TypeScript
         run: npm run build
 
+      - name: Aplicar migraciones de base de datos
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Correr proceso de actualización
         run: node dist/actualizarCartelera.js  #Compilo toda la app pero solo 
         env:                                   # ejecuto el compilado del actualizarCartelera.ts, que es donde esta el codigo de refrescar
