@@ -184,6 +184,10 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   async limpiarCartelera(): Promise<void> {
     await prisma.pelicula.updateMany({ data: { activa: false } });
   }
+
+  async disconnect(): Promise<void> {
+    await prisma.$disconnect();
+  }
 }
 
 function buildFuncionesFiltro(periodo: "hoy" | "semana" | "mes") {

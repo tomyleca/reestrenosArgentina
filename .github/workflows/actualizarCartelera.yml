@@ -1,0 +1,36 @@
+name: Actualizar Cartelera
+
+on:
+  schedule:
+    - cron: '0 20 * * 4'   # Jueves 20:00 UTC = 17:00 ART
+  workflow_dispatch:         # Permite ejecución manual desde GitHub
+
+jobs:
+  refrescarPeliculas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agregadorCines
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: agregadorCines/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Compilar TypeScript
+        run: npm run build
+
+      - name: Correr proceso de actualización
+        run: node dist/actualizarCartelera.js  #Compilo toda la app pero solo 
+        env:                                   # ejecuto el compilado del actualizarCartelera.ts, que es donde esta el codigo de refrescar
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}

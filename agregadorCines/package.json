@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:scraper": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
     "test": "vitest",

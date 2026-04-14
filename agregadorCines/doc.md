@@ -1,21 +1,27 @@
-# Cartelera Cine Argentino — Scrapper
+# Cartelera Cine Argentino — Backend & Scraper
 
-Servicio que recopila la cartelera de cines argentinos, la enriquece con datos de TMDB y la persiste en una base de datos PostgreSQL.
+Sistema compuesto por una API serverless (Vercel) para visualizar la cartelera y un scraper automatizado (GitHub Actions) que obtiene, enriquece con TMDB y persiste datos en PostgreSQL (Neon).
 
 ## Descripción
+
+El proyecto está dividido en dos partes principales:
+
+1. **API Serverless**: Sirve los datos de la base de datos PostgreSQL a través de Endpoints REST usando Express. Está diseñado para ejecutarse en [Vercel](https://vercel.com/) como Serverless Functions.
+2. **Scraper Standalone**: Un script de Node.js que se ejecuta periódicamente (vía GitHub Actions). Usa Playwright para extraer la cartelera de los cines y la API de TMDB para enriquecer los datos antes de guardarlos.
+
+### Flujo de Obtención de Datos
 
 El scrapper obtiene las películas en cartelera para cada cine configurado. Cada cine puede tener dos estrategias de obtención:
 
 - **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, se activa el scraping con Playwright como respaldo (ej: Cinemark, Cinépolis).
 - **Solo scraper**: Para cines que no exponen una API pública (ej: Malba, Sala Lugones, Casa PBA, Pixel).
 
-Luego de obtener los títulos, se consulta la API de TMDB para enriquecer cada película con descripción, géneros, póster, duración y fecha de lanzamiento. Finalmente se persiste en la base de datos mediante Prisma.
-
 ### Directorios
 
 ```
 src/
-├── index.ts                    # Entry point: cron + HTTP server
+├── index.ts                    # Entry point de la API (Handler para Vercel)
+├── actualizarCartelera.ts      # Entry point standalone del Scraper
 ├── config/
 │   ├── cinesConfig.ts          # Datos de cada cine (URL, localidad, selectores)
 │   ├── providerRegistry.ts     # Mapeo nombre → factory de ICineProvider
@@ -26,12 +32,6 @@ src/
 │   ├── ICineProvider.ts        # Interfaz unificadora de obtención de películas
 │   ├── mappers/                # Mappers de API a PeliculaInput
 │   └── scrappers/              # Implementaciones de Playwright
-│       ├── cinemarkScrapper.ts
-│       ├── cinepolisScrapper.ts
-│       ├── cineCasaPBAScrapper.ts
-│       ├── cineMalbaScrapper.ts
-│       ├── cinePixelScrapper.ts
-│       └── cineSalaLugonesScrapper.ts
 ├── api/                        # Controladores y rutas de la API pública
 │   ├── peliculaController.ts
 │   └── peliculaRouter.ts
@@ -56,9 +56,10 @@ Abstracción que desacopla `PeliculaService` del mecanismo concreto de obtenció
 
 El `BrowserContext` de Playwright se crea **solo si algún provider necesita el fallback**. Si todas las APIs responden correctamente, el browser nunca se abre. Cada llamada a `pageFactory()` devuelve una nueva `Page` dentro del mismo contexto compartido.
 
-### CineApiRequester genérico
+### Arquitectura Serverless (Vercel + GitHub Actions)
 
-La lógica de `fetch → json → mapper` es común a todas las APIs. El mapper, inyectado como dependencia, recibe `(data: T, cine: Cine)` para poder construir el `PeliculaInput` completo. Los mappers viven en archivos separados (`provider/mappers/`).
+- **API Liviana**: Al remover el cron y Playwright del servidor de Express, la API se convierte en un proceso muy liviano que puede arrancar rápidamente (cold starts de ~200ms) en Vercel, evitando costos de hosting continuo.
+- **Scraping sin Tiempos de Espera (Timeouts)**: Los procesos de serverless suelen tener límites de tiempo cortos de ejecución (ej: 10 a 60 segundos). El scraping a veces demora minutos, por eso se decidio su ejecución en **GitHub Actions**, lo cual además es totalmente gratis.
 
 ## API Endpoints
 
@@ -70,19 +71,11 @@ La lógica de `fetch → json → mapper` es común a todas las APIs. El mapper,
 | `GET` | `/peliculas/:id` | Obtiene el detalle de una película por ID. |
 | `GET` | `/cines` | Devuelve la lista de todos los cines en la base de datos (ordenados por nombre). |
 
-### Internos
-| Método | Endpoint | Descripción |
-| :--- | :--- | :--- |
-| `POST` | `/refresh` | Fuerza un refresco de la cartelera. Requiere `Authorization: Bearer <REFRESH_SECRET>`. |
-
-### providerRegistry
-
-Mapea el nombre del cine a una factory `(cine, pageFactory) => ICineProvider`. Es la única pieza que conoce qué implementación concreta usar para cada cine. Agregar un nuevo cine requiere solo agregar una entrada al registry y su mapper/scraper correspondiente.
-
-
 ## Scheduler
 
-Se ejecuta automáticamente todos los **jueves a las 17:00 (ART)**.
+El scraper se ejecuta automáticamente todos los **jueves a las 17:00 (ART)** mediante un Workflow de **GitHub Actions** (`.github/workflows/scraper.yml`).
+
+Si se requiere refrescar la cartelera manualmente, se puede lanzar el workflow desde la pestaña **Actions** en GitHub usando *Workflow Dispatch*.
 
 ## Tests
 
@@ -100,9 +93,8 @@ npx vitest run --config vitest.integration.config.ts tests/cinepolisScrapper.int
 
 ## Stack
 
-- **Runtime**: Node.js + TypeScript (ESM)
-- **Scraping**: Playwright (Chromium)
-- **DB ORM**: Prisma + PostgreSQL
-- **Scheduler**: node-cron
+- **API Runtime**: Node.js + Express (Serverless for Vercel)
+- **Scraping**: Playwright Chromium (sobre GitHub Actions)
+- **DB ORM**: Prisma + PostgreSQL (vía Neon)
 - **Datos de películas**: TMDB API
 - **Tests**: Vitest
