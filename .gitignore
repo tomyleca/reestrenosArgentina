@@ -1,3 +1,7 @@
 .github/agents
 logs/
 fotos/
+node_modules/
+tests/
+.agents/
+.vscode/
