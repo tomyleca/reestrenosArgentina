@@ -18,4 +18,5 @@ export interface ICarteleraRepository {
   getCines(): Promise<Cine[]>;
   upsertCine(cine: Omit<Cine, "id">): Promise<Cine>;
   agregarAlerta(alerta: Alerta): Promise<void>;
+  limpiarCartelera(): Promise<void>;
 }

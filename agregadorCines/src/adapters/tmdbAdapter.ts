@@ -68,6 +68,7 @@ export class TMDBAdapter implements ITMDBAdapter {
     const peliculaExistente =
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
+      peliculaExistente.activa = true;
       agregarCine(peliculaExistente, peliculaInput.cine);
       agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
       return peliculaExistente;

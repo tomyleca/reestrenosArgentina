@@ -180,6 +180,10 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       },
     });
   }
+
+  async limpiarCartelera(): Promise<void> {
+    await prisma.pelicula.updateMany({ data: { activa: false } });
+  }
 }
 
 function buildFuncionesFiltro(periodo: "hoy" | "semana" | "mes") {

@@ -56,7 +56,10 @@ export function usePeliculasPaginadas(
           setPeliculas(resultado.data);
         } else {
           paginasCargadasRef.current.add(paginaACargar);
-          setPeliculas((prev) => [...prev, ...resultado.data]);
+          setPeliculas((prev) => {
+            const idsExistentes = new Set(prev.map((p) => p.id));
+            return [...prev, ...resultado.data.filter((p) => !idsExistentes.has(p.id))];
+          });
         }
         setHasMore(resultado.hasMore);
         setPage(paginaACargar + 1);

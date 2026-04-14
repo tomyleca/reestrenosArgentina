@@ -26,6 +26,7 @@ export class PeliculaService implements IPeliculaService {
   }
 
   async refrescarPeliculas(providers: ICineProvider[]): Promise<Pelicula[]> {
+    await this.carteleraRepository.limpiarCartelera();
     const peliculasInput = await this.obtenerPeliculas(providers);
     const peliculas = await this.normalizarPeliculas(peliculasInput);
     this.carteleraRepository.upsertPeliculas(peliculas);
