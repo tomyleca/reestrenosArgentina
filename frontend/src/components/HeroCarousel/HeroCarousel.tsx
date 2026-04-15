@@ -91,7 +91,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
           </h1>
 
           <p className="text-base md:text-lg lg:text-2xl text-white/90 leading-relaxed font-medium drop-shadow-md">
-            Todos los cines,
+            Toda la cartelera,
             <span className="text-accent-light "> en un solo lugar.</span>
           </p>
         </div>
