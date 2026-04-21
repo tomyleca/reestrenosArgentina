@@ -14,8 +14,23 @@ export class TMDB {
   async buscarPeliculaId(
     titulo: string,
     fechaLanzamiento?: Date,
+    anioLanzamiento?: number,
   ): Promise<number | null> {
     tmdbLogger.busqueda(titulo, fechaLanzamiento);
+
+    const params: Record<string, string | number> = {
+      query: titulo,
+      language: "es-AR",
+      region: "AR",
+    };
+
+    // Si tenemos el año exacto, lo usamos como filtro directo en TMDB.
+    // primary_release_year es más preciso que filtrar por margen de fechas,
+	// luego se le aplicaran todos los filtros, pero lo mas probable es que haya devuelto solo 1 pelicula
+    // es la única opción cuando el scrapper solo provee el año (ej: Lugones).
+    if (anioLanzamiento) {
+      params.primary_release_year = anioLanzamiento;
+    }
 
     const response = await axios.get(
       "https://api.themoviedb.org/3/search/movie",
@@ -23,11 +38,7 @@ export class TMDB {
         headers: {
           Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
         },
-        params: {
-          query: titulo,
-          language: "es-AR",
-          region: "AR",
-        },
+        params,
       },
     );
 

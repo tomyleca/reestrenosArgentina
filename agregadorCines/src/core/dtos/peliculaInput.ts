@@ -5,5 +5,6 @@ export interface PeliculaInput {
   idiomas?: string[];
   cine: Cine;
   fechaLanzamiento?: Date;
+  anioLanzamiento?: number;
   fecha?: string | Date | null | undefined;
 }

@@ -66,11 +66,15 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
             regexFichaAnio.test(text);
 
           if (esFichaTecnica && ultimoTexto) {
-            // El texto del párrafo anterior es el título
+            // Extraemos el año del final de la ficha técnica: ej "(EE.UU; 1932)" → 1932
+            const matchAnio = text.match(/(\d{4})\s*\)$/);
+            const anioLanzamiento = matchAnio?.[1] ? parseInt(matchAnio[1], 10) : undefined;
+
             results.push({
               titulo: ultimoTexto,
               cine: cine,
               fecha: fechaActual,
+              anioLanzamiento,
             });
           }
 

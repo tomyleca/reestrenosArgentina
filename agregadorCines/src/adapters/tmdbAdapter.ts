@@ -58,6 +58,8 @@ export class TMDBAdapter implements ITMDBAdapter {
   ): Promise<Pelicula> {
     const idTMDBPelicula = await this.tmdb.buscarPeliculaId(
       peliculaInput.titulo,
+      peliculaInput.fechaLanzamiento,
+      peliculaInput.anioLanzamiento,
     );
     if (!idTMDBPelicula) {
       throw new Error("No se encontro la pelicula en TMDB");
