@@ -33,20 +33,18 @@ export class TMDBAdapter implements ITMDBAdapter {
   async getPeliculasFromScrapeado(
     peliculasInput: PeliculaInput[],
   ): Promise<Pelicula[]> {
-    const resultados = await Promise.allSettled(
-      peliculasInput.map((p) => this.getPeliculaFromScrapeado(p)),
-    );
-
+    // Procesamiento secuencial para no saturar el connection pool de Neon (límite: 3 conexiones).
+    // Promise.allSettled lanzaría todas las queries en paralelo y agotaría el pool.
     const peliculas: Pelicula[] = [];
 
-    for (let i = 0; i < resultados.length; i++) {
-      const resultado = resultados[i]!;
-      if (resultado.status === "fulfilled") {
-        peliculas.push(resultado.value);
-      } else {
+    for (const peliculaInput of peliculasInput) {
+      try {
+        const pelicula = await this.getPeliculaFromScrapeado(peliculaInput);
+        peliculas.push(pelicula);
+      } catch (reason) {
         await this.carteleraRepository.agregarAlerta({
           id: randomUUID(),
-          mensaje: `No se pudo obtener datos de TMDB para "${peliculasInput[i]?.titulo}": ${resultado.reason instanceof Error ? resultado.reason.message : resultado.reason}`,
+          mensaje: `No se pudo obtener datos de TMDB para "${peliculaInput.titulo}": ${reason instanceof Error ? reason.message : reason}`,
           fecha: new Date(),
         });
       }
