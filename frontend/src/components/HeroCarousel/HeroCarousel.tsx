@@ -64,7 +64,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
               alt={`Imagen destacada de cartelera ${i + 1}`}
               fill
               priority={i === 0}
-              className={`object-cover object-[center_15%] transition-transform duration-8000 ${
+              className={`object-cover object-center transition-transform duration-8000 ${
                 i === activeIndex ? "scale-100" : "scale-105"
               }`}
             />

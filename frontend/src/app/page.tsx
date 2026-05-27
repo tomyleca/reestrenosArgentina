@@ -14,8 +14,9 @@ export default async function Home() {
 
   // Si Cloudinary no devuelve nada (ej: todavia no configuraste las keys), usamos estas de backup
   const fallbackImages = [
-    "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-    "https://res.cloudinary.com/demo/image/upload/v1312461204/horse.jpg",
+    "/hero/hero1.jpg",
+    "/hero/hero2.jpg",
+    "/hero/hero3.jpg",
   ];
 
   const heroImages = cloudinaryImages.length > 0 ? cloudinaryImages : fallbackImages;
