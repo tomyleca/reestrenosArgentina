@@ -27,7 +27,7 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
     }
 
     // Sala Lugones tiene una estructura "flat" secuencial dentro de .details.
-    // Los títulos tienen un estilo de color específico (#993366).
+    // Los títulos tienen un estilo de color específico (#800080).
     // Las fechas y horarios son textos en negrita (strong).
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
@@ -41,10 +41,15 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
 
         const paragraphs = Array.from(container.querySelectorAll("p"));
 
-        // Definimos las variables con las regex tal como pidio el usuariolog
-        const regexFichaCompleta = /^\([^;]+;\s*[^;]+;\s*\d{4}\)$/i; // (texto; texto; año)
-        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i; // (texto; año)
-        const regexFichaAnio = /^\(\d{4}\)$/i; // (año)
+        // Sala Lugones tiene dos formatos de ficha técnica:
+        //   - Con coma:       (Italia, 1951)
+        //   - Con punto coma: (Rocco e i suoi fratelli; Italia/Francia, 1960)
+        //   - Solo año:       (1951)
+        // Excluimos fichas de duración como (108'; DCP). que terminan en punto.
+        const regexFichaConComa = /^\([^,]+,\s*\d{4}\)$/i;              // (texto, año)
+        const regexFichaCompleta = /^\([^;]+;\s*[^;]+[;,]\s*\d{4}\)$/i; // (texto; texto; año) o (texto; texto, año)
+        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i;                // (texto; año)
+        const regexFichaAnio = /^\(\d{4}\)$/i;                          // (año)
 
         const regexDiaSemana = /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+\d+/i;
 
@@ -60,13 +65,14 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
           }
 
           // 2. Comprobar si es la ficha técnica que sigue al título
-          const esFichaTecnica = 
-            regexFichaCompleta.test(text) || 
-            regexFichaCorta.test(text) || 
+          const esFichaTecnica =
+            regexFichaConComa.test(text) ||
+            regexFichaCompleta.test(text) ||
+            regexFichaCorta.test(text) ||
             regexFichaAnio.test(text);
 
           if (esFichaTecnica && ultimoTexto) {
-            // Extraemos el año del final de la ficha técnica: ej "(EE.UU; 1932)" → 1932
+            // Extraemos el año del final de la ficha técnica: ej "(Italia, 1951)" → 1951
             const matchAnio = text.match(/(\d{4})\s*\)$/);
             const anioLanzamiento = matchAnio?.[1] ? parseInt(matchAnio[1], 10) : undefined;
 
@@ -88,3 +94,5 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
     );
   }
 }
+
+

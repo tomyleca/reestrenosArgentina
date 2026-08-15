@@ -8,7 +8,9 @@ export class CineApiRequester<T> {
   ) {}
 
   async obtenerPeliculas(): Promise<PeliculaInput[]> {
-    const response = await fetch(this.cine.api_url!);
+    const response = await fetch(this.cine.api_url!, {
+      ...(this.cine.api_headers && { headers: this.cine.api_headers }),
+    });
     if (!response.ok) {
       throw new Error(
         `HTTP ${response.status} al consultar ${this.cine.api_url}`,
@@ -18,3 +20,4 @@ export class CineApiRequester<T> {
     return this.mapper(responseJson, this.cine);
   }
 }
+

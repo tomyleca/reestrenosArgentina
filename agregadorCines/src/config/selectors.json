@@ -7,8 +7,8 @@
   },
 
   "cinepolis": {
-    "containerPelicula": "div.featured-movies-grid-view-component div[data-v-93e448ca]",
-    "titulo": ".movie-thumb-text",
+    "containerPelicula": "div.mf-locations-flex.mf-locations-gap-2.mf-locations-flex-col",
+    "titulo": "p.mf-locations-text-sm",
     "idiomas": ".ribbon-content",
     "image": ".movie-thumb-image",
     "link": "a.movie-thumb"
@@ -32,7 +32,7 @@
   "salaLugones": {
     "ciclo": ".list-item a[href*='/ver/']",
     "containerPelicula": ".details",
-    "titulo": "p span[style*='color: #993366'] strong, p strong span[style*='color: #993366']",
+    "titulo": "p span[style*='color: #800080'] strong, p strong span[style*='color: #800080']",
     "fecha": "p strong"
   },
   "casaPBA": {

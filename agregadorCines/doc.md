@@ -83,13 +83,16 @@ Si se requiere refrescar la cartelera manualmente, se puede lanzar el workflow d
 # Tests unitarios (excluye integración)
 npm test
 
-# Tests de integración (requieren red y credenciales)
-# Se deben correr individualmente para no saturar la API de TMDB
-npx vitest run --config vitest.integration.config.ts tests/cinepolisScrapper.integration.test.ts
+# Ejecutar TODOS los tests de integración (*.integration.test.ts)
+npm run test:integration
+
+# Ejecutar un test de integración específico
+npx vitest run --config vitest.integration.config.ts tests/cinepolis/cinepolisScrapper.integration.test.ts
 ```
 
 > [!IMPORTANT]
-> Los tests de integración que usen la API key de TMDB deben estar marcados como `.integration.test.ts` (o similar configurado en `vitest.integration.config.ts`) y son excluidos del run general para cuidar el rate limit de la API.
+> Los tests de integración que usen la API key de TMDB o scraping deben estar marcados como `.integration.test.ts` (configurado en `vitest.integration.config.ts`) y son excluidos del run unitario general (`npm test`) para cuidar el rate limit de la API y evitar ejecuciones pesadas innecesarias.
+
 
 ## Stack
 

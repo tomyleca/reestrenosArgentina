@@ -8,6 +8,10 @@ export const cinemarkHoyts: CineConfig = {
   localidad: "CABA",
   url: "https://www.cinemark.com.ar/",
   api_url: "https://bff.cinemark.com.ar/api/cinema/movies",
+  api_headers: {
+    "country": "AR",
+    "origin": "https://www.cinemark.com.ar",
+  },
   selectors: {
     containerPelicula: selectorsData.cinemarkHoyts.containerPelicula,
     titulo: selectorsData.cinemarkHoyts.titulo,

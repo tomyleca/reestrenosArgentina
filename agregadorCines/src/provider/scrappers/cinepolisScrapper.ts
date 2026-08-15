@@ -2,7 +2,7 @@ import type { Cine } from "../../core/domain/cine.js";
 import type { Page } from "playwright";
 import { Scraper } from "../scraper.js";
 import type { PeliculaInput } from "../../core/dtos/peliculaInput.js";
-import { cinepolisApiMapper } from "../mappers/cinepolisMapper.js";
+import { cinepolisApiMapper, cinepolisGraphqlMapper } from "../mappers/cinepolisMapper.js";
 
 export class CinepolisScrapper extends Scraper {
   cine: Cine;
@@ -12,18 +12,27 @@ export class CinepolisScrapper extends Scraper {
     this.cine = cine;
   }
 
-  // Cinepolis protege su API con Cloudflare Bot Management (cookie cf_bm),
-  // lo que impide consumirla directamente con un fetch. Sin embargo, al navegar
-  // con Playwright el challenge se resuelve de forma transparente y la página
-  // llama a la API internamente. Interceptamos esa response desde dentro del
-  // browser para obtener el JSON limpio, evitando parsear el DOM.
+  // Cinepolis migró a Next.js con una API GraphQL en api-g.cinepolis.com.
+  // Los microfrontends se cargan asincrónicamente. Interceptamos las requests
+  // GraphQL al servicio de miscellaneous (donde están las películas en cartelera).
   // Si la intercepción falla (timeout u otro error), se pasa al scraping de DOM.
- //  Osea esta clase viene a ser un hibrido entre scraper y api requester.(es lo que hay!)
+  // Osea esta clase viene a ser un híbrido entre scraper y api requester.(es lo que hay!)
   public override async ejecutar(page: Page): Promise<PeliculaInput[]> {
     try {
+      // Interceptamos específicamente la query que trae las películas en el endpoint de billboards
       const responsePromise = page.waitForResponse(
-        (r) => r.url().includes("/api/movies") && r.status() === 200,
-        { timeout: 15000 },
+        async (r) => {
+          if (!r.url().includes("v2/billboards/graphql") || r.status() !== 200) {
+            return false;
+          }
+          try {
+            const json = await r.json();
+            return !!(json?.data?.movies?.edges);
+          } catch {
+            return false;
+          }
+        },
+        { timeout: 35000 },
       );
 
       await page.goto(this.cine.url, {
@@ -33,12 +42,12 @@ export class CinepolisScrapper extends Scraper {
 
       const apiResponse = await responsePromise;
       const data = await apiResponse.json();
-      return cinepolisApiMapper(data, this.cine);
-    } catch {
+      return cinepolisGraphqlMapper(data, this.cine);
+    } catch (err: any) {
       console.warn(
-        `⚠️ Intercepción de API fallida para ${this.cine.nombre}, usando scraping de DOM.`,
+        `⚠️ Intercepción de API fallida para ${this.cine.nombre} (${err.message}), usando scraping de DOM como fallback.`,
       );
-	  //si falla eso, scrappeo normalmente
+      // si falla eso, scrappeo normalmente
       return super.ejecutar(page);
     }
   }
@@ -49,3 +58,4 @@ export class CinepolisScrapper extends Scraper {
       .catch(() => {});
   }
 }
+

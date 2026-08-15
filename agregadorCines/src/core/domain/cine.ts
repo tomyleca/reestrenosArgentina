@@ -8,5 +8,6 @@ export interface Cine {
   localidad: Localidad;
   url: string;
   api_url?: string | null;
+  api_headers?: Record<string, string>;
   selectors?: PeliculaSelectors;
 }

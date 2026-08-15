@@ -11,7 +11,7 @@
     "dev": "nodemon",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:integration": "vitest run --config vitest.integration.config.ts -- --poolOptions.threads.maxThreads=2"
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "keywords": [],
   "author": "",

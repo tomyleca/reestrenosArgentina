@@ -17,10 +17,13 @@ npm run test:watch
 # Con interfaz gráfica
 npm run test:ui
 
-# Tests de integración (requieren red y credenciales)
-# Se deben correr individualmente para cuidar el rate limit de TMDB
-npx vitest run --config vitest.integration.config.ts tests/nombreDelTest.integration.test.ts
+# Ejecutar TODOS los tests de integración (*.integration.test.ts)
+npm run test:integration
+
+# Ejecutar un test de integración específico
+npx vitest run --config vitest.integration.config.ts tests/casaPBA/casaPBA.integration.test.ts
 ```
 
 > [!IMPORTANT]
-> Los tests que consumen la API de TMDB deben estar marcados con la extensión `.integration.test.ts`. Estos tests están excluidos de la ejecución general (`npm test`) y deben ejecutarse de forma individual para evitar alcanzar el límite de llamadas de la API key.
+> Los tests que consumen la API de TMDB o scrapping web deben estar marcados con la extensión `.integration.test.ts`. Estos tests están excluidos de la ejecución general unitaria (`npm test`). Se puede usar `npm run test:integration` para correr la totalidad de los tests de integración o ejecutarlos de forma individual especificado la ruta exacta del archivo.
+
