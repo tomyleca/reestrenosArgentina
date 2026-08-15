@@ -1,6 +1,7 @@
 # ReestrenosArg
-https://reestrenosarg.vercel.app/
-Agregador de reestrenos de películas en cines de Argentina, tanto comerciales como independientes. 
+### https://reestrenosarg.vercel.app/
+
+### Agregador de reestrenos de películas en cines de Argentina, tanto comerciales como independientes. 
 ![alt text](image.png)
 
 ## Stack
