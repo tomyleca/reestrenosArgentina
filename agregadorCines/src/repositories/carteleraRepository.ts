@@ -46,22 +46,39 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       }),
     };
 
-    const where =
-      pelicula.tmdbId != null
-        ? { tmdbId: pelicula.tmdbId }
-        : { titulo: pelicula.titulo };
-
-    const result = await prisma.pelicula.upsert({
-      where,
-      update: { ...camposComunes, ...relaciones },
-      create: {
-        titulo: pelicula.titulo,
-        ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
-        ...camposComunes,
-        ...relaciones,
+    // Buscamos si ya existe por tmdbId o por titulo para evitar violaciones de unicidad cruzadas (P2002)
+    const peliculaExistente = await prisma.pelicula.findFirst({
+      where: {
+        OR: [
+          ...(pelicula.tmdbId != null ? [{ tmdbId: pelicula.tmdbId }] : []),
+          { titulo: pelicula.titulo },
+        ],
       },
-      select: { id: true },
     });
+
+    let result;
+    if (peliculaExistente) {
+      result = await prisma.pelicula.update({
+        where: { id: peliculaExistente.id },
+        data: {
+          titulo: pelicula.titulo,
+          ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
+          ...camposComunes,
+          ...relaciones,
+        },
+        select: { id: true },
+      });
+    } else {
+      result = await prisma.pelicula.create({
+        data: {
+          titulo: pelicula.titulo,
+          ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
+          ...camposComunes,
+          ...relaciones,
+        },
+        select: { id: true },
+      });
+    }
 
     // Agrega las funciones con skipDuplicates para evitar duplicados
     // (garantizado por el unique constraint [peliculaId, fecha] en el schema)
