@@ -3,7 +3,7 @@ import type { Pelicula } from "@/types/pelicula";
 import { Categoria, PaginatedResult, FiltroPeriodo } from "@/types/api";
 import { peliculaService } from "@/services/peliculaService";
 
-const LIMIT = 10;
+const LIMIT = 25;
 
 interface UsePeliculasPaginadasResult {
   peliculas: Pelicula[];

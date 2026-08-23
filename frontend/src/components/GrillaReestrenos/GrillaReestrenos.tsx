@@ -22,6 +22,8 @@ const PERIODOS: { valor: FiltroPeriodo; label: string }[] = [
 export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps) {
   const [periodo, setPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
   const [cineId, setCineId] = useState<number | undefined>(undefined);
+  const [tempPeriodo, setTempPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
+  const [tempCineId, setTempCineId] = useState<number | undefined>(undefined);
   const [cines, setCines] = useState<Cine[]>([]);
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
 
@@ -65,12 +67,26 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
   }, [hasMore, cargando, cargarMas]);
 
   const handlePeriodo = useCallback((valor: FiltroPeriodo) => {
-    setPeriodo((prev) => (prev === valor ? undefined : valor));
+    setTempPeriodo((prev) => (prev === valor ? undefined : valor));
   }, []);
 
   const handleCine = useCallback((id: number) => {
-    setCineId((prev) => (prev === id ? undefined : id));
+    setTempCineId((prev) => (prev === id ? undefined : id));
   }, []);
+
+  const handleAplicar = useCallback(() => {
+    setPeriodo(tempPeriodo);
+    setCineId(tempCineId);
+  }, [tempPeriodo, tempCineId]);
+
+  const handleLimpiar = useCallback(() => {
+    setTempPeriodo(undefined);
+    setTempCineId(undefined);
+    setPeriodo(undefined);
+    setCineId(undefined);
+  }, []);
+
+  const hayCambiosPendientes = tempPeriodo !== periodo || tempCineId !== cineId;
 
   if (error) {
     return (
@@ -98,11 +114,11 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
                   <button
                     key={cine.id}
                     onClick={() => handleCine(cine.id)}
-                    aria-pressed={cineId === cine.id}
+                    aria-pressed={tempCineId === cine.id}
                     className={[
                       "px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer",
                       "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-                      cineId === cine.id
+                      tempCineId === cine.id
                         ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
                         : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm",
                     ].join(" ")}
@@ -122,11 +138,11 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
                 <button
                   key={valor}
                   onClick={() => handlePeriodo(valor)}
-                  aria-pressed={periodo === valor}
+                  aria-pressed={tempPeriodo === valor}
                   className={[
                     "px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer",
                     "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-                    periodo === valor
+                    tempPeriodo === valor
                       ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
                       : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm",
                   ].join(" ")}
@@ -137,15 +153,30 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
             </div>
           </div>
 
-          {/* Limpiar filtros */}
-          {(periodo || cineId) && (
+          {/* Acciones de filtro */}
+          <div className="flex items-center gap-3 mt-2">
             <button
-              onClick={() => { setPeriodo(undefined); setCineId(undefined); }}
-              className="self-start text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2 cursor-pointer"
+              onClick={handleAplicar}
+              disabled={!hayCambiosPendientes}
+              className={[
+                "px-5 py-2 text-sm font-bold rounded-full transition-all duration-200 cursor-pointer",
+                hayCambiosPendientes
+                  ? "bg-violet-900 text-white hover:bg-violet-700 shadow-[0_0_15px_rgba(124,58,237,0.4)] scale-105"
+                  : "bg-white/10 text-white/40 cursor-not-allowed",
+              ].join(" ")}
             >
-              Limpiar filtros
+              Aplicar
             </button>
-          )}
+
+            {(tempPeriodo !== undefined || tempCineId !== undefined || periodo !== undefined || cineId !== undefined) && (
+              <button
+                onClick={handleLimpiar}
+                className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-2 cursor-pointer"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

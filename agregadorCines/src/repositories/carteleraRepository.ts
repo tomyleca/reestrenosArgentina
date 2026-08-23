@@ -6,7 +6,7 @@ import type { Categoria } from "../core/domain/categoria.js";
 import type { QueryOpciones, PaginatedResult } from "../api/types.js";
 import prisma from "../lib/db.js";
 
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 25;
 
 export class PrismaCarteleraRepository implements ICarteleraRepository {
   async agregarAlerta(alerta: Alerta): Promise<void> {

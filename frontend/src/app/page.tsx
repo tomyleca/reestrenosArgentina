@@ -8,7 +8,7 @@ export default async function Home() {
   // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
   // Esto hace que el primer renderizado ya tenga las películas (mejor carga inicial y SEO)
   const [initialReestrenos, cloudinaryImages] = await Promise.all([
-    peliculaService.getReestrenosPaginados({ page: 1, limit: 12 }),
+    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }),
     getCloudinaryFolderImages("agregadorCines"),
   ]);
 
