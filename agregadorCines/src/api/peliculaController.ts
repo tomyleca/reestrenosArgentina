@@ -6,7 +6,7 @@ import { Categoria } from "../core/domain/categoria.js";
 // SCHEMAS DE VALIDACIÓN
 const PaginacionSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(10),
+  limit: z.coerce.number().int().min(1).max(50).default(25),
 });
 
 const QueryEstrenosSchema = PaginacionSchema.extend({
