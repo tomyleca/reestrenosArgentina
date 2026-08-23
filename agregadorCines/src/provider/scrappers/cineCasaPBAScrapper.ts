@@ -27,6 +27,8 @@ export class CineCasaPBAScrapper extends Scraper {
         const content = container[0];
         if (!content) return [];
 
+        const tituloCiclo = document.querySelector(".page-title, h1, h2")?.textContent?.trim();
+
         const results: any[] = [];
         let fechaActual: string | null = null;
 
@@ -34,17 +36,14 @@ export class CineCasaPBAScrapper extends Scraper {
         const elements = Array.from(content.querySelectorAll(selectorCombinado));
 
         elements.forEach((el) => {
-          // Si el elemento no es nulo, dividimos su contenido HTML por saltos de línea (<br> o similares)
           const lines = el.innerHTML.split(/<br\s*\/?>/i);
-          
+
           lines.forEach((lineHtml) => {
-            // Creamos un dummy element para extraer limpiamente el texto de la línea
             const text = lineHtml.replace(/<[^>]+>/g, "").trim();
             if (!text) return;
 
             const matchFecha = text.match(/(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+(\d+)/i);
-            
-            // Si la línea contiene una fecha, actualizamos la fecha global
+
             if (sel.fecha && el.matches(sel.fecha) && matchFecha || matchFecha) {
               fechaActual = `${matchFecha[1]} ${matchFecha[2]}`;
             }
@@ -55,10 +54,20 @@ export class CineCasaPBAScrapper extends Scraper {
               const match = text.match(/\d{2}\.\d{2}\s*h\.\s*([^(\.]+)/i);
               const titulo = (match && match[1]) ? match[1].trim() : text;
 
+              // En Casa PBA el formato verificado en vivo es: "[Hora] h. [Título] ([Director], [Año])."
+              // Ejemplo: "16.50 h. Los siete pecados capitales (David Fincher, 1995)."
+              const matchParen = text.match(/\(([^,]+),\s*(\d{4})\)/);
+              const director = matchParen?.[1] ? matchParen[1].trim() : undefined;
+              const anioLanzamiento = matchParen?.[2] ? parseInt(matchParen[2], 10) : undefined;
+
               results.push({
                 titulo: titulo,
                 cine: cine,
                 fecha: fechaActual,
+                anioLanzamiento,
+                ciclo: tituloCiclo || undefined,
+                director,
+                textoRaw: text,
               });
             }
           });

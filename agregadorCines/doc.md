@@ -37,7 +37,11 @@ src/
 │   └── peliculaRouter.ts
 ├── adapters/
 │   ├── tmdb.ts                 # Cliente HTTP de TMDB
-│   └── tmdbAdapter.ts          # Orquesta búsqueda y enriquecimiento
+│   ├── tmdbAdapter.ts          # Orquesta búsqueda y enriquecimiento
+│   └── desambiguadores/        # Implementaciones del patrón Strategy para desambiguar candidatos
+│       ├── desambiguadorHeuristico.ts
+│       ├── desambiguadorIA.ts
+│       └── desambiguadorHibrido.ts
 ├── services/
 │   └── peliculaService.ts      # Orquesta el flujo completo
 ├── repositories/
@@ -47,6 +51,13 @@ src/
 ```
 
 ## Decisiones de diseño
+
+### IDesambiguadorPelicula (Patrón Strategy)
+
+Abstracción que desacopla el cliente de metadatos (`TMDB`) del mecanismo de selección y desempate de candidatos. Soporta tres estrategias:
+- **`DesambiguadorHeuristico`**: Algoritmo tradicional basado en similitud de títulos, fecha de release y popularidad.
+- **`DesambiguadorIA`**: Evaluación por LLM (Gemini Flash) basada en contexto rico (`ciclo`, `director`, `textoRaw`).
+- **`DesambiguadorHibrido`**: Estrategia híbrida que invoca la IA cuando hay metadatos contextuales del cine y realiza fallback automático al desambiguador heurístico si es necesario.
 
 ### ICineProvider
 

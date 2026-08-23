@@ -67,6 +67,9 @@ function formatTitulo(titulo: string, releaseDate?: string): string {
   return anio ? `${titulo} (${anio})` : titulo;
 }
 
+let llamadasIACount = 0;
+let peliculasProcesadasCount = 0;
+
 export const tmdbLogger = {
   busqueda(titulo: string, fechaLanzamiento?: Date): void {
     baseLogger.debug(
@@ -168,5 +171,58 @@ export const tmdbLogger = {
       },
       `Ganador: "${formatTitulo(candidato.title, candidato.release_date)}" (id: ${candidato.id})`,
     );
+  },
+
+  incrementarProcesadas(): void {
+    peliculasProcesadasCount++;
+  },
+
+  invocacionIA(titulo: string, cine: string, candidatosCount: number): void {
+    llamadasIACount++;
+    baseLogger.debug(
+      { titulo, cine, candidatosCount },
+      `🤖 Invocando Gemini AI para desambiguar "${titulo}" en ${cine} (${candidatosCount} candidatos)`,
+    );
+  },
+
+  ganadorIA(
+    tituloBuscado: string,
+    ganador: { id: number; title: string },
+    razonamiento: string,
+  ): void {
+    baseLogger.info(
+      { tituloBuscado, id: ganador.id, tituloGanador: ganador.title, razonamiento },
+      `🤖 DesambiguadorIA eligió ID ${ganador.id} ("${ganador.title}") para "${tituloBuscado}". Razón: ${razonamiento}`,
+    );
+  },
+
+  sinGanadorIA(tituloBuscado: string, razonamiento: string): void {
+    baseLogger.info(
+      { tituloBuscado, razonamiento },
+      `🤖 DesambiguadorIA no eligió ningún candidato para "${tituloBuscado}". Razón: ${razonamiento}`,
+    );
+  },
+
+  errorIA(tituloBuscado: string, error: unknown): void {
+    baseLogger.error(
+      { tituloBuscado, error: error instanceof Error ? error.message : error },
+      `❌ Error en DesambiguadorIA para "${tituloBuscado}": ${error instanceof Error ? error.message : error}`,
+    );
+  },
+
+  resumenIA(): void {
+    const porcentaje =
+      peliculasProcesadasCount > 0
+        ? ((llamadasIACount / peliculasProcesadasCount) * 100).toFixed(1)
+        : "0";
+    baseLogger.info(
+      { llamadasIA: llamadasIACount, peliculasProcesadas: peliculasProcesadasCount, porcentaje: `${porcentaje}%` },
+      `📊 Resumen de desambiguación: Se invocó la IA ${llamadasIACount} veces de ${peliculasProcesadasCount} películas procesadas (${porcentaje}%).`,
+    );
+  },
+
+  resetContadores(): void {
+    llamadasIACount = 0;
+    peliculasProcesadasCount = 0;
   },
 };

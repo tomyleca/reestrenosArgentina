@@ -1,22 +1,42 @@
 import "dotenv/config";
 import axios from "axios";
 import type { TMDBPeliculaDetalleDTO } from "../core/dtos/tmdbPeliculaDetalleDTO.js";
-
+import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
+import type { CandidatoPelicula } from "../core/dtos/candidatoPelicula.js";
+import type { IDesambiguadorPelicula } from "../core/interfaces/IDesambiguadorPelicula.js";
+import { DesambiguadorHibrido } from "./desambiguadores/desambiguadorHibrido.js";
 import stringSimilarity from "string-similarity";
-import { tmdbLogger, type CandidatoConScore } from "./tmdbLogger.js";
-
-const CUATRO_MESES_MS = 4 * 30 * 24 * 60 * 60 * 1000;
-const CUATRO_MESES_DIAS = 4 * 30;
-let MARGEN_FECHA = CUATRO_MESES_MS; //Es tan grande pq las peliculas tardan en estrenarse en arg.
-const MIN_SIMILARITY_SCORE = 0.1; // Umbral de similitud para aceptar un resultado. Es conveniente que sea muy bajo hasta lo podría eliminar.
+import { tmdbLogger } from "./tmdbLogger.js";
 
 export class TMDB {
+  private desambiguador: IDesambiguadorPelicula;
+
+  constructor(desambiguador?: IDesambiguadorPelicula) {
+    this.desambiguador = desambiguador || new DesambiguadorHibrido();
+  }
+
   async buscarPeliculaId(
-    titulo: string,
+    peliculaInputOrTitulo: PeliculaInput | string,
     fechaLanzamiento?: Date,
     anioLanzamiento?: number,
   ): Promise<number | null> {
-    tmdbLogger.busqueda(titulo, fechaLanzamiento);
+    let peliculaInput: PeliculaInput;
+    if (typeof peliculaInputOrTitulo === "string") {
+      peliculaInput = {
+        titulo: peliculaInputOrTitulo,
+        cine: { id: 0, nombre: "Desconocido", localidad: "CABA", url: "" },
+      };
+      if (fechaLanzamiento) peliculaInput.fechaLanzamiento = fechaLanzamiento;
+      if (anioLanzamiento) peliculaInput.anioLanzamiento = anioLanzamiento;
+    } else {
+      peliculaInput = peliculaInputOrTitulo;
+    }
+
+    const titulo = peliculaInput.titulo;
+    const fechaLanz = peliculaInput.fechaLanzamiento ?? fechaLanzamiento;
+    const anioLanz = peliculaInput.anioLanzamiento ?? anioLanzamiento;
+
+    tmdbLogger.busqueda(titulo, fechaLanz);
 
     const params: Record<string, string | number> = {
       query: titulo,
@@ -24,12 +44,8 @@ export class TMDB {
       region: "AR",
     };
 
-    // Si tenemos el año exacto, lo usamos como filtro directo en TMDB.
-    // primary_release_year es más preciso que filtrar por margen de fechas,
-	// luego se le aplicaran todos los filtros, pero lo mas probable es que haya devuelto solo 1 pelicula
-    // es la única opción cuando el scrapper solo provee el año (ej: Lugones).
-    if (anioLanzamiento) {
-      params.primary_release_year = anioLanzamiento;
+    if (anioLanz) {
+      params.primary_release_year = anioLanz;
     }
 
     const response = await axios.get(
@@ -45,26 +61,47 @@ export class TMDB {
     const resultados = response.data.results;
     tmdbLogger.resultadosBrutos(resultados.length);
 
-    if (resultados.length === 0) return null;
+    if (!resultados || resultados.length === 0) return null;
 
-    // 1. Normalizamos el título buscado para la comparación.( No es lo mismo que la limpieza que se hace en el adapter)
+    // 1. Normalizamos el título buscado para la comparación.
     const tituloBusquedaNorm = this.normalizarTitulo(titulo);
 
-    // 2. Calculamos el score de similitud para cada resultado (contra title y original_title).
-    const candidatosConScore: CandidatoConScore[] = resultados.map((p: any) => {
+    // 2. Calculamos el score de similitud para cada resultado (contra title, original_title, subcadenas y orden de relevancia de TMDB).
+    const candidatosConScore: CandidatoPelicula[] = resultados.map((p: any, idx: number) => {
       const scoreTitulo = stringSimilarity.compareTwoStrings(
         tituloBusquedaNorm,
         this.normalizarTitulo(p.title),
       );
 
-      //le asigno un score tambien al titulo en ingles
       const scoreOriginal = stringSimilarity.compareTwoStrings(
         tituloBusquedaNorm,
         this.normalizarTitulo(p.original_title),
       );
 
-      //me quedo con el score mas alto
-      const scoreElegido = Math.max(scoreTitulo, scoreOriginal);
+      let scoreElegido = Math.max(scoreTitulo, scoreOriginal);
+
+      // Verificamos coincidencia de subcadenas (ej. "Se7en: Los siete pecados capitales")
+      const normPTitle = this.normalizarTitulo(p.title);
+      const normPOriginal = this.normalizarTitulo(p.original_title);
+
+      if (
+        (normPTitle.length > 3 && (tituloBusquedaNorm.includes(normPTitle) || normPTitle.includes(tituloBusquedaNorm))) ||
+        (normPOriginal.length > 3 && (tituloBusquedaNorm.includes(normPOriginal) || normPOriginal.includes(tituloBusquedaNorm)))
+      ) {
+        scoreElegido = Math.max(scoreElegido, 0.7);
+      }
+
+      // Relevancia por ranking de búsqueda de TMDB:
+      // La API de TMDB /search/movie incluye alias/traducciones en su motor de búsqueda.
+      // Si TMDB ubica una película en las primeras posiciones para la query exacta, le asignamos un piso mínimo
+      // para evitar descartarla por score 0.0 cuando el título difiere por traducción (ej. "Se7en" vs "Los siete pecados capitales").
+      if (idx === 0) {
+        scoreElegido = Math.max(scoreElegido, 0.35);
+      } else if (idx < 3) {
+        scoreElegido = Math.max(scoreElegido, 0.25);
+      } else if (idx < 5) {
+        scoreElegido = Math.max(scoreElegido, 0.15);
+      }
 
       tmdbLogger.scoreComparacion(
         titulo,
@@ -75,90 +112,26 @@ export class TMDB {
         scoreElegido,
       );
 
-      return { ...p, score: scoreElegido };
+      return {
+        id: p.id,
+        title: p.title,
+        original_title: p.original_title,
+        release_date: p.release_date,
+        popularity: p.popularity,
+        overview: p.overview,
+        score: scoreElegido,
+      };
     });
 
-    tmdbLogger.candidatosConScore(candidatosConScore);
+    tmdbLogger.candidatosConScore(candidatosConScore as any);
 
-    // 3. Filtramos por un umbral mínimo de similitud para evitar falsos positivos
-    // (ej: si buscas "The Batman" y te devuelve "Batman" con score bajo).
-    const candidatosValidos = candidatosConScore.filter(
-      (p: CandidatoConScore) => p.score >= MIN_SIMILARITY_SCORE,
+    // 3. Delegamos el desempate al strategy de desambiguación inyectado
+    const ganador = await this.desambiguador.desempatar(
+      peliculaInput,
+      candidatosConScore,
     );
 
-    tmdbLogger.candidatosValidos(
-      candidatosValidos.length,
-      candidatosConScore.length,
-      MIN_SIMILARITY_SCORE,
-    );
-
-    if (candidatosValidos.length === 0) {
-      tmdbLogger.sinCandidatosValidos(titulo);
-      console.warn(
-        `⚠️ No se encontró una coincidencia con similitud suficiente para: "${titulo}"`,
-      );
-      return null;
-    }
-
-    // 4. De los válidos, filtramos por fecha si existe (teniendo en cuenta el margen definido).
-    const candidatosPorFecha = fechaLanzamiento
-      ? this.filtrarPorFecha(candidatosValidos, fechaLanzamiento)
-      : candidatosValidos;
-
-    if (fechaLanzamiento) {
-      tmdbLogger.filtroPorFecha(
-        candidatosPorFecha.length,
-        candidatosValidos.length,
-        CUATRO_MESES_DIAS,
-      );
-    }
-
-    // 5. Si el filtro de fecha dejó candidatos, vamos con esos, si no, con los validos.
-    // Dentro de ese grupo, elegimos el de mayor score de similitud.
-    // Si hay empate en similitud (max 0.15 de diferencia), caemos en popularidad.
-    const pool =
-      candidatosPorFecha.length > 0 ? candidatosPorFecha : candidatosValidos;
-
-    // Ordenamos primero por score (descendente)
-    const ahora = Date.now();
-    const ganador = pool.sort((a: CandidatoConScore, b: CandidatoConScore) => {
-      if (Math.abs(b.score - a.score) > 0.15) {
-        tmdbLogger.comparacion(
-          a,
-          b,
-          "score",
-          b.score > a.score ? b.title : a.title,
-        );
-        return b.score - a.score; //si hay una diferencia grande de score, directamente devolvemos el de mayor score
-      }
-      // si el score es cercano, priorizamos la peli con fecha dentro del margen
-      //importante para remakes que se estrenan en cines de los que no me traigo la fecha
-      const cercanoA = a.release_date
-        ? Math.abs(new Date(a.release_date).getTime() - ahora) <= MARGEN_FECHA
-        : false;
-      const cercanoB = b.release_date
-        ? Math.abs(new Date(b.release_date).getTime() - ahora) <= MARGEN_FECHA
-        : false;
-
-      if (cercanoA !== cercanoB) {
-        const ganadorFecha = cercanoA ? a.title : b.title;
-        tmdbLogger.comparacion(a, b, "fecha", ganadorFecha);
-        return cercanoA ? -1 : 1; //-1=> a es mayor, 1=> b es mayor
-      }
-
-      // si ambos estan dentro o fuera del margen, desempato por popularidad
-      tmdbLogger.comparacion(
-        a,
-        b,
-        "popularidad",
-        b.popularity > a.popularity ? b.title : a.title,
-      );
-      return b.popularity - a.popularity;
-    })[0];
-
-    tmdbLogger.ganador(ganador);
-
-    return ganador.id;
+    return ganador ? ganador.id : null;
   }
 
   private normalizarTitulo(titulo: string): string {
@@ -168,16 +141,6 @@ export class TMDB {
       .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
       .replace(/[^a-z0-9\s]/g, "") // Solo letras, números y espacios
       .trim();
-  }
-
-  private filtrarPorFecha(resultados: any[], fechaLanzamiento: Date): any[] {
-    return resultados.filter((p) => {
-      if (!p.release_date) return false;
-      const diff = Math.abs(
-        new Date(p.release_date).getTime() - fechaLanzamiento.getTime(),
-      );
-      return diff <= MARGEN_FECHA; //solo me quedo con los que difieran menos del margen
-    });
   }
 
   async buscarDetallesDePelicula(id: number): Promise<TMDBPeliculaDetalleDTO> {

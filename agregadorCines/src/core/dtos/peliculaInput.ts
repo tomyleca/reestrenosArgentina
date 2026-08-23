@@ -7,4 +7,8 @@ export interface PeliculaInput {
   fechaLanzamiento?: Date;
   anioLanzamiento?: number;
   fecha?: string | Date | null | undefined;
+  ciclo?: string;
+  director?: string;
+  textoRaw?: string;
 }
+

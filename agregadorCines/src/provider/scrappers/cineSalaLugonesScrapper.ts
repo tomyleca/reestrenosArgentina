@@ -12,9 +12,7 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
   }
 
   protected override async prepararPagina(page: Page): Promise<void> {
-    // Espera breve para carga de contenido
     await page.waitForTimeout(2000);
-    // Scroll para asegurar que todo el contenido dinámico (si lo hay) se cargue
     await page.evaluate(() => window.scrollBy(0, 1000));
     await page.waitForTimeout(1000);
   }
@@ -26,9 +24,6 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
       throw new Error(`No hay selectores para ${this.cine.nombre}`);
     }
 
-    // Sala Lugones tiene una estructura "flat" secuencial dentro de .details.
-    // Los títulos tienen un estilo de color específico (#800080).
-    // Las fechas y horarios son textos en negrita (strong).
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
       (containers, { cine }) => {
@@ -39,21 +34,17 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
         const container = containers[0];
         if (!container) return [];
 
+        const cicloHeader = document.querySelector("h1, h2, .sub-title, .title, .ciclo-title")?.textContent?.trim();
         const paragraphs = Array.from(container.querySelectorAll("p"));
 
-        // Sala Lugones tiene dos formatos de ficha técnica:
-        //   - Con coma:       (Italia, 1951)
-        //   - Con punto coma: (Rocco e i suoi fratelli; Italia/Francia, 1960)
-        //   - Solo año:       (1951)
-        // Excluimos fichas de duración como (108'; DCP). que terminan en punto.
-        const regexFichaConComa = /^\([^,]+,\s*\d{4}\)$/i;              // (texto, año)
-        const regexFichaCompleta = /^\([^;]+;\s*[^;]+[;,]\s*\d{4}\)$/i; // (texto; texto; año) o (texto; texto, año)
-        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i;                // (texto; año)
-        const regexFichaAnio = /^\(\d{4}\)$/i;                          // (año)
+        const regexFichaConComa = /^\([^,]+,\s*\d{4}\)$/i;
+        const regexFichaCompleta = /^\([^;]+;\s*[^;]+[;,]\s*\d{4}\)$/i;
+        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i;
+        const regexFichaAnio = /^\(\d{4}\)$/i;
 
         const regexDiaSemana = /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+\d+/i;
 
-        paragraphs.forEach((p) => {
+        paragraphs.forEach((p, idx) => {
           const text = p.textContent?.trim() || "";
           if (!text) return;
 
@@ -72,19 +63,38 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
             regexFichaAnio.test(text);
 
           if (esFichaTecnica && ultimoTexto) {
-            // Extraemos el año del final de la ficha técnica: ej "(Italia, 1951)" → 1951
             const matchAnio = text.match(/(\d{4})\s*\)$/);
             const anioLanzamiento = matchAnio?.[1] ? parseInt(matchAnio[1], 10) : undefined;
+
+            // Sala Lugones ubica "Dirección: [Nombre]." en el párrafo inmediatamente posterior a la ficha técnica
+            const pDireccion = paragraphs[idx + 1]?.textContent?.trim() || "";
+            const pElenco = paragraphs[idx + 2]?.textContent?.trim() || "";
+            const pSinopsis = paragraphs[idx + 3]?.textContent?.trim() || "";
+
+            const matchDirector = pDireccion.match(/Dirección:\s*([^.\n]+)/i) || text.match(/Dir(?:\.|ector)?:?\s*([^,;.\n]+)/i);
+            const director = matchDirector?.[1] ? matchDirector[1].trim() : undefined;
+
+            const bloqueCompleto = [
+              ultimoTexto,
+              text,
+              pDireccion,
+              pElenco,
+              pSinopsis,
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             results.push({
               titulo: ultimoTexto,
               cine: cine,
               fecha: fechaActual,
               anioLanzamiento,
+              ciclo: cicloHeader || undefined,
+              director,
+              textoRaw: bloqueCompleto,
             });
           }
 
-          // Guardamos el texto actual para la siguiente iteración
           ultimoTexto = text;
         });
 
@@ -94,5 +104,3 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
     );
   }
 }
-
-

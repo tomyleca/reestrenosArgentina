@@ -9,6 +9,7 @@
     "build:scraper": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
+    "refresh": "tsc && node dist/actualizarCartelera.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:integration": "vitest run --config vitest.integration.config.ts"

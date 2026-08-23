@@ -11,6 +11,8 @@ import { Categoria } from "../core/domain/categoria.js";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
 import { randomUUID } from "node:crypto";
 
+import { tmdbLogger } from "./tmdbLogger.js";
+
 export interface ITMDBAdapter extends IDatosPeliculaGetter {
   tmdb: TMDB;
   carteleraRepository: ICarteleraRepository;
@@ -33,11 +35,11 @@ export class TMDBAdapter implements ITMDBAdapter {
   async getPeliculasFromScrapeado(
     peliculasInput: PeliculaInput[],
   ): Promise<Pelicula[]> {
-    // Procesamiento secuencial para no saturar el connection pool de Neon (límite: 3 conexiones).
-    // Promise.allSettled lanzaría todas las queries en paralelo y agotaría el pool.
+    tmdbLogger.resetContadores();
     const peliculas: Pelicula[] = [];
 
     for (const peliculaInput of peliculasInput) {
+      tmdbLogger.incrementarProcesadas();
       try {
         const pelicula = await this.getPeliculaFromScrapeado(peliculaInput);
         peliculas.push(pelicula);
@@ -50,17 +52,14 @@ export class TMDBAdapter implements ITMDBAdapter {
       }
     }
 
+    tmdbLogger.resumenIA();
     return peliculas;
   }
 
   async getPeliculaFromScrapeado(
     peliculaInput: PeliculaInput,
   ): Promise<Pelicula> {
-    const idTMDBPelicula = await this.tmdb.buscarPeliculaId(
-      peliculaInput.titulo,
-      peliculaInput.fechaLanzamiento,
-      peliculaInput.anioLanzamiento,
-    );
+    const idTMDBPelicula = await this.tmdb.buscarPeliculaId(peliculaInput);
     if (!idTMDBPelicula) {
       throw new Error("No se encontro la pelicula en TMDB");
     }
