@@ -1,3 +1,5 @@
+import type { Localidad } from "../core/domain/localidad.js";
+
 export type FiltroPeriodo = "hoy" | "semana" | "mes" | null;
 
 export interface QueryReestrenos {
@@ -13,6 +15,7 @@ export interface QueryOpciones extends PaginacionOpciones {
   filtroPeriodo?: FiltroPeriodo;
   soloActivas?: boolean;
   cineId?: number;
+  localidad?: Localidad;
 }
 
 export interface PaginatedResult<T> {

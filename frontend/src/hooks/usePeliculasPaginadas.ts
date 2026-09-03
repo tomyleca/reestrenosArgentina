@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import type { Pelicula } from "@/types/pelicula";
+import type { Pelicula, Localidad } from "@/types/pelicula";
 import { Categoria, PaginatedResult, FiltroPeriodo } from "@/types/api";
 import { peliculaService } from "@/services/peliculaService";
 
@@ -19,6 +19,7 @@ export function usePeliculasPaginadas(
   initialData?: PaginatedResult<Pelicula>,
   periodo?: FiltroPeriodo,
   cineId?: number,
+  localidad?: Localidad,
 ): UsePeliculasPaginadasResult {
   const [peliculas, setPeliculas] = useState<Pelicula[]>(initialData?.data || []);
   const [page, setPage] = useState(initialData ? 2 : 1); //arranca en 2 pq la 1 se carga como SSR
@@ -28,6 +29,7 @@ export function usePeliculasPaginadas(
 
   const prevPeriodoRef = useRef<FiltroPeriodo | undefined>(periodo);
   const prevCineIdRef = useRef<number | undefined>(cineId);
+  const prevLocalidadRef = useRef<Localidad | undefined>(localidad);
 
   // Evita doble fetch si el componente renderiza dos veces (StrictMode)
   const cargandoRef = useRef(false);
@@ -49,7 +51,13 @@ export function usePeliculasPaginadas(
             ? peliculaService.getEstrenosPaginados
             : peliculaService.getReestrenosPaginados;
 
-        const resultado = await fetcher({ page: paginaACargar, limit: LIMIT, periodo, cineId });
+        const resultado = await fetcher({
+          page: paginaACargar,
+          limit: LIMIT,
+          periodo,
+          cineId,
+          localidad,
+        });
 
         if (forceLimpiar) {
           paginasCargadasRef.current = new Set([paginaACargar]);
@@ -70,7 +78,7 @@ export function usePeliculasPaginadas(
         setCargando(false);
       }
     },
-    [categoria, periodo, cineId],
+    [categoria, periodo, cineId, localidad],
   );
 
   // Carga la primera página al montar — solo una vez si no vino en initialData
@@ -83,10 +91,15 @@ export function usePeliculasPaginadas(
     }
   }
 
-  // Detectar cambio de filtros (periodo o cineId)
-  if (prevPeriodoRef.current !== periodo || prevCineIdRef.current !== cineId) {
+  // Detectar cambio de filtros (periodo, cineId o localidad)
+  if (
+    prevPeriodoRef.current !== periodo ||
+    prevCineIdRef.current !== cineId ||
+    prevLocalidadRef.current !== localidad
+  ) {
     prevPeriodoRef.current = periodo;
     prevCineIdRef.current = cineId;
+    prevLocalidadRef.current = localidad;
     // Disparamos la carga de la página 1 limpiando lo anterior
     setTimeout(() => fetchPagina(1, true), 0);
   }

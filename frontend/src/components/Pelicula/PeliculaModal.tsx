@@ -11,6 +11,24 @@ interface PeliculaModalProps {
 
 const TMDB_IMAGE_BASE_ORIGINAL = "https://image.tmdb.org/t/p/w780";
 
+function getLocalidadLabel(localidad?: string): string | null {
+  switch (localidad) {
+    case "GBA_ZONA_NORTE":
+      return "Zona Norte";
+    case "GBA_ZONA_SUR":
+    case "ZONA_SUR":
+      return "Zona Sur";
+    case "GBA_ZONA_OESTE":
+      return "Zona Oeste";
+    case "GBA_ZONA_ESTE":
+      return "Zona Este";
+    case "CABA":
+      return "CABA";
+    default:
+      return null;
+  }
+}
+
 export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -119,18 +137,26 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
           <div className="w-full text-left lg:text-center">
             <p className="text-xxs uppercase tracking-[0.3em] font-black text-white/30 mb-6 text-center">Disponible en</p>
             <div className="flex flex-wrap justify-center gap-4">
-              {pelicula.cines.map((cine) => (
-                <button
-                  key={cine.id}
-                  onClick={() => handleCineClick(cine.nombre, cine.url)}
-                  aria-label={`Ver funciones en ${cine.nombre}`}
-                  className="group relative px-6 py-3 rounded-full bg-white/5 hover:bg-accent border border-white/10 hover:border-accent transition-all duration-300 hover:scale-110 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  <span className="relative z-10 text-white font-bold group-hover:text-black flex items-center gap-2">
-                    <span className="text-lg">📍</span> {cine.nombre}
-                  </span>
-                </button>
-              ))}
+              {pelicula.cines.map((cine) => {
+                const locLabel = getLocalidadLabel(cine.localidad);
+                return (
+                  <button
+                    key={cine.id}
+                    onClick={() => handleCineClick(cine.nombre, cine.url)}
+                    aria-label={`Ver funciones en ${cine.nombre}`}
+                    className="group relative px-6 py-3 rounded-full bg-white/5 hover:bg-accent border border-white/10 hover:border-accent transition-all duration-300 hover:scale-110 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    <span className="relative z-10 text-white font-bold group-hover:text-black flex items-center gap-2">
+                      <span className="text-lg">📍</span> {cine.nombre}
+                      {locLabel && (
+                        <span className="text-xxs px-2 py-0.5 rounded-full bg-white/10 group-hover:bg-black/10 font-normal">
+                          {locLabel}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

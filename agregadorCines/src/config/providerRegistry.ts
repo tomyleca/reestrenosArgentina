@@ -14,7 +14,21 @@ import { CineMalbaScrapper } from "../provider/scrappers/cineMalbaScrapper.js";
 import { CineSalaLugonesScrapper } from "../provider/scrappers/cineSalaLugonesScrapper.js";
 import { CineCasaPBAScrapper } from "../provider/scrappers/cineCasaPBAScrapper.js";
 import { CineCasaPBAApiRequester } from "../provider/apiRequesters/cineCasaPBAApiRequester.js";
-import { cinemarkHoyts, cinepolis, cinePixel, cineMalba, cineSalaLugones, cineCasaPBA } from "./cinesConfig.js";
+import { CentroCulturalMunroScrapper } from "../provider/scrappers/centroCulturalMunroScrapper.js";
+import { CineYorkScrapper } from "../provider/scrappers/cineYorkScrapper.js";
+import { CeaScrapper } from "../provider/scrappers/ceaScrapper.js";
+import { CeaApiRequester } from "../provider/apiRequesters/ceaApiRequester.js";
+import {
+  cinemarkHoyts,
+  cinepolis,
+  cinePixel,
+  cineMalba,
+  cineSalaLugones,
+  cineCasaPBA,
+  centroCulturalMunro,
+  cineYork,
+  cineCEA,
+} from "./cinesConfig.js";
 
 type ProviderFactory = (
   cine: Cine,
@@ -61,5 +75,33 @@ export const providerRegistry = new Map<string, ProviderFactory>([
     cineCasaPBA.nombre,
     (cine, pageFactory) =>
       new ScraperOnlyProvider(cine, new CineCasaPBAScrapper(cine), pageFactory),
+  ],
+  [
+    centroCulturalMunro.nombre,
+    (cine, pageFactory) =>
+      new ScraperOnlyProvider(
+        cine,
+        new CentroCulturalMunroScrapper(cine),
+        pageFactory,
+      ),
+  ],
+  [
+    cineYork.nombre,
+    (cine, pageFactory) =>
+      new ScraperOnlyProvider(
+        cine,
+        new CineYorkScrapper(cine),
+        pageFactory,
+      ),
+  ],
+  [
+    cineCEA.nombre,
+    (cine, pageFactory) =>
+      new ApiWithFallbackProvider(
+        cine,
+        new CeaApiRequester(cine),
+        new CeaScrapper(cine),
+        pageFactory,
+      ),
   ],
 ]);

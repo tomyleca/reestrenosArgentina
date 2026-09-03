@@ -126,7 +126,9 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
 
     const cineFiltro = opciones?.cineId
       ? { some: { id: opciones.cineId } }
-      : undefined;
+      : opciones?.localidad
+        ? { some: { localidad: opciones.localidad } }
+        : undefined;
 
     const where = {
       categoria,

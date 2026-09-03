@@ -39,5 +39,21 @@
     "containerPelicula": ".field-name-body",
     "titulo": "p",
     "fecha": "h2, h3, p strong"
+  },
+  "centroCulturalMunro": {
+    "containerPelicula": "article[data-locations*='centro-cultural-munro']",
+    "titulo": "h3",
+    "fecha": ".g-event-fecha"
+  },
+  "cineYork": {
+    "containerPelicula": "article[data-locations*='cine-york']",
+    "titulo": "h3",
+    "fecha": ".g-event-fecha"
+  },
+  "cea": {
+    "containerPelicula": ".film-col",
+    "titulo": "[data-field='titulo']",
+    "fecha": "[data-field='diaSemanaMes']",
+    "ciclo": ".fc-cycle"
   }
 }

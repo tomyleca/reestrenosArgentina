@@ -84,6 +84,7 @@ export const PELICULAS_MOCK: Pelicula[] = [
     cines: [
       { id: 1, nombre: "Cinemark Palermo", url: "https://www.cinemarkhoyts.com.ar/" },
       { id: 4, nombre: "Hoyts Abasto", url: "https://www.cinemarkhoyts.com.ar/" },
+      { id: 9, nombre: "CEA", url: "https://cea.mda.gob.ar/", localidad: "GBA_ZONA_SUR" },
     ],
     poster_path: "/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg",
     popularidad: 198.3,

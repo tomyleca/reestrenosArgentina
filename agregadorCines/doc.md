@@ -13,8 +13,8 @@ El proyecto está dividido en dos partes principales:
 
 El scrapper obtiene las películas en cartelera para cada cine configurado. Cada cine puede tener dos estrategias de obtención:
 
-- **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, se activa el scraping con Playwright como respaldo (ej: Cinemark, Cinépolis).
-- **Solo scraper**: Para cines que no exponen una API pública (ej: Malba, Sala Lugones, Casa PBA, Pixel).
+- **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, se activa el scraping con Playwright como respaldo (ej: Cinemark, Cine Pixel, CEA).
+- **Solo scraper**: Para cines que no exponen una API pública de cartelera activa (ej: Cinepolis, Malba, Sala Lugones, Casa PBA, Centro Cultural Munro, Cine York).
 
 ### Directorios
 

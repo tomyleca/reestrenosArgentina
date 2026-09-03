@@ -32,7 +32,7 @@ export const cinepolis: CineConfig = {
 
 export const cinePixel: CineConfig = {
   nombre: "Cine Pixel",
-  localidad: "ZONA_SUR",
+  localidad: "GBA_ZONA_SUR",
   url: "https://www.cinespixel.com.ar/",
   api_url: "https://apiv2.gaf.adro.studio/nowPlaying/103",
   selectors: {
@@ -75,6 +75,42 @@ export const cineCasaPBA: CineConfig = {
   },
 };
 
+export const centroCulturalMunro: CineConfig = {
+  nombre: "Centro Cultural Munro",
+  localidad: "GBA_ZONA_NORTE",
+  url: "https://lumiton.ar/agenda-presencial/?lugar=centro-cultural-munro",
+  selectors: {
+    containerPelicula: selectorsData.centroCulturalMunro.containerPelicula,
+    titulo: selectorsData.centroCulturalMunro.titulo,
+    fecha: selectorsData.centroCulturalMunro.fecha,
+  },
+};
+
+export const cineYork: CineConfig = {
+  nombre: "Cine York",
+  localidad: "GBA_ZONA_NORTE",
+  url: "https://lumiton.ar/agenda-presencial/?lugar=cine-york",
+  selectors: {
+    containerPelicula: selectorsData.cineYork.containerPelicula,
+    titulo: selectorsData.cineYork.titulo,
+    fecha: selectorsData.cineYork.fecha,
+  },
+};
+
+export const cineCEA: CineConfig = {
+  nombre: "CEA",
+  localidad: "GBA_ZONA_SUR",
+  url: "https://cea.mda.gob.ar/",
+  api_url:
+    "https://script.google.com/macros/s/AKfycbxb6EWS0lrlgo0UBNZvWHC29Zy5Yxae9TUgVu02X_mcWKd54C9rpIrdNgCxs71y4QRH/exec",
+  selectors: {
+    containerPelicula: selectorsData.cea.containerPelicula,
+    titulo: selectorsData.cea.titulo,
+    fecha: selectorsData.cea.fecha,
+    ciclo: selectorsData.cea.ciclo,
+  },
+};
+
 export const cinesConfig: CineConfig[] = [
   cinemarkHoyts,
   cinepolis,
@@ -82,4 +118,7 @@ export const cinesConfig: CineConfig[] = [
   cineMalba,
   cineSalaLugones,
   cineCasaPBA,
+  centroCulturalMunro,
+  cineYork,
+  cineCEA,
 ];

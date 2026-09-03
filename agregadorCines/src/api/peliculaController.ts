@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { ICarteleraRepository } from "../repositories/ICarteleraRepository.js";
 import { Categoria } from "../core/domain/categoria.js";
 
+import { Localidad } from "../core/domain/localidad.js";
+
 // SCHEMAS DE VALIDACIÓN
 const PaginacionSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -16,6 +18,7 @@ const QueryEstrenosSchema = PaginacionSchema.extend({
 const QueryReestrenosSchema = QueryEstrenosSchema.extend({
   periodo: z.enum(["hoy", "semana", "mes"]).nullable().catch(null),
   cineId: z.coerce.number().int().positive().optional(),
+  localidad: z.nativeEnum(Localidad).optional(),
 });
 
 const ParamsIdSchema = z.object({
@@ -48,11 +51,18 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, activas: soloActivas, periodo: filtroPeriodo, cineId } = parse.data;
+    const { page, limit, activas: soloActivas, periodo: filtroPeriodo, cineId, localidad } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
-      { filtroPeriodo, soloActivas, page, limit, ...(cineId !== undefined && { cineId }) },
+      {
+        filtroPeriodo,
+        soloActivas,
+        page,
+        limit,
+        ...(cineId !== undefined && { cineId }),
+        ...(localidad !== undefined && { localidad }),
+      },
     );
     res.json(resultado);
   };

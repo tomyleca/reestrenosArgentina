@@ -5,10 +5,10 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 ## Características
 
 - **Visualización de Reestrenos**: Grilla infinita con scroll infinito (IntersectionObserver).
-- **Filtros interactivos**: Por período (Hoy / Esta semana / Este mes) y por cine, con confirmación mediante el botón **Aplicar**.
+- **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este), por cine y por período (Hoy / Esta semana / Este mes), con confirmación mediante el botón **Aplicar**.
 - **Server-Side Rendering (SSR)**: La carga inicial se realiza en el servidor para mejorar el SEO y la velocidad.
 - **Integración con Cloudinary**: Imágenes dinámicas para el Hero Carousel.
-- **Diseño Moderno**: Uso de CSS Modules para un estilo limpio y mantenible.
+- **Diseño Moderno**: Uso de CSS Modules y TailwindCSS para un estilo limpio y mantenible.
 
 ## Stack Tecnológico
 
@@ -31,7 +31,7 @@ src/
 │   ├── CarruselPeliculas/ # Componente legacy (PeliculaCard, PeliculaModal)
 │   └── HeroCarousel/
 ├── hooks/              # Custom hooks de React
-│   └── usePeliculasPaginadas.ts  # Paginación con soporte de período y cineId
+│   └── usePeliculasPaginadas.ts  # Paginación con soporte de período, cineId y localidad
 ├── services/           # Llamadas a APIs externas
 │   ├── peliculaService.ts   # Conexión con el Backend (incluye getCines)
 │   └── cloudinaryService.ts # Conexión con Cloudinary

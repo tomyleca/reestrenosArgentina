@@ -1,3 +1,5 @@
+import type { Localidad } from "./pelicula";
+
 export type FiltroPeriodo = "hoy" | "semana" | "mes";
 
 export enum Categoria {
@@ -13,6 +15,7 @@ export interface GetPeliculasParams {
   page?: number;
   limit?: number;
   cineId?: number;
+  localidad?: Localidad;
 }
 
 export interface PaginatedResult<T> {

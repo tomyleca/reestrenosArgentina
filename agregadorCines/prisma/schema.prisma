@@ -57,6 +57,10 @@ enum Localidad {
   CABA
   GBA
   ZONA_SUR
+  GBA_ZONA_NORTE
+  GBA_ZONA_SUR
+  GBA_ZONA_ESTE
+  GBA_ZONA_OESTE
 }
 
 enum Categoria {
