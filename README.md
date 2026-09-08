@@ -13,7 +13,7 @@
 ## Key Features:
 - Lógica de web scrapping encapsulada en una clase, la cual permite agregar cines facilmente, solo teniendo que definir los selectores + algún comportamiento especial(como cerrar un popup).
 - Integración con la API de TMDB para obtener imagenes, descripciones, géneros entre otros datos.
-- Algoritmo que permite diferencia películas con el mismo nombre, comparando fecha de estreno y popularidad.
+- Modelo de IA integrado que identifica la película en caso de que TMDB devuelva más de una.
 - UI optimizada para dispositivos móviles y de escritorio con tecnologías actuales.
  
 ## Cines Soportados:
@@ -23,3 +23,6 @@
 - Cinépolis
 - Pixel
 - Casa PBA
+- CEA Avellaneda
+- Cine York
+- Centro Cultural Munro
