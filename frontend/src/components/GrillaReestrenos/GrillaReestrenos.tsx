@@ -11,6 +11,7 @@ import PeliculaModal from "@/components/Pelicula/PeliculaModal";
 
 interface GrillaReestrenosProps {
   initialData?: PaginatedResult<Pelicula>;
+  initialCines?: Cine[];
 }
 
 const LOCALIDADES: { valor: Localidad; label: string }[] = [
@@ -27,15 +28,25 @@ const PERIODOS: { valor: FiltroPeriodo; label: string }[] = [
   { valor: "mes", label: "Este mes" },
 ];
 
-export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps) {
+export default function GrillaReestrenos({
+  initialData,
+  initialCines = [],
+}: GrillaReestrenosProps) {
   const [localidad, setLocalidad] = useState<Localidad | undefined>(undefined);
   const [tempLocalidad, setTempLocalidad] = useState<Localidad | undefined>(undefined);
   const [periodo, setPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
   const [cineId, setCineId] = useState<number | undefined>(undefined);
   const [tempPeriodo, setTempPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
   const [tempCineId, setTempCineId] = useState<number | undefined>(undefined);
-  const [cines, setCines] = useState<Cine[]>([]);
+  const [cines, setCines] = useState<Cine[]>(initialCines);
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
+
+  // Zonas con cines disponibles (usa la lista de cines si cargó, o fallback a las zonas activas conocidas)
+  const zonasConCines = new Set<Localidad>(
+    cines.length > 0
+      ? (cines.map((c) => c.localidad).filter(Boolean) as Localidad[])
+      : (["CABA", "GBA_ZONA_NORTE", "GBA_ZONA_SUR"] as Localidad[]),
+  );
 
   // Sentinel para el IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -48,16 +59,18 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
     localidad,
   );
 
-  // Carga la lista de cines una sola vez al montar
+  // Carga la lista de cines si no vinieron por SSR
   useEffect(() => {
-    peliculaService
-      .getCines()
-      .then(setCines)
-      .catch(() => {
-        // Si falla, simplemente no mostramos el filtro de cines
-        setCines([]);
-      });
-  }, []);
+    if (initialCines.length === 0) {
+      peliculaService
+        .getCines()
+        .then(setCines)
+        .catch(() => {
+          // Si falla, simplemente no mostramos el filtro de cines
+          setCines([]);
+        });
+    }
+  }, [initialCines.length]);
 
   // IntersectionObserver: cuando el sentinel es visible, carga más películas
   useEffect(() => {
@@ -78,6 +91,7 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
   }, [hasMore, cargando, cargarMas]);
 
   const handleLocalidad = useCallback((valor: Localidad) => {
+    if (!zonasConCines.has(valor)) return;
     setTempLocalidad((prev) => {
       const nueva = prev === valor ? undefined : valor;
       // Si el cine seleccionado previamente no pertenece a la nueva localidad, lo deseleccionamos
@@ -89,7 +103,7 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
       }
       return nueva;
     });
-  }, [cines, tempCineId]);
+  }, [cines, tempCineId, zonasConCines]);
 
   const handlePeriodo = useCallback((valor: FiltroPeriodo) => {
     setTempPeriodo((prev) => (prev === valor ? undefined : valor));
@@ -139,22 +153,34 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
           <div>
             <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Zona</p>
             <div className="flex flex-wrap gap-2">
-              {LOCALIDADES.map(({ valor, label }) => (
-                <button
-                  key={valor}
-                  onClick={() => handleLocalidad(valor)}
-                  aria-pressed={tempLocalidad === valor}
-                  className={[
-                    "px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer",
-                    "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-                    tempLocalidad === valor
-                      ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
-                      : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm",
-                  ].join(" ")}
-                >
-                  {label}
-                </button>
-              ))}
+              {LOCALIDADES.map(({ valor, label }) => {
+                const sinCines = !zonasConCines.has(valor);
+                return (
+                  <button
+                    key={valor}
+                    disabled={sinCines}
+                    onClick={() => handleLocalidad(valor)}
+                    aria-pressed={tempLocalidad === valor}
+                    title={sinCines ? "Próximamente disponible" : undefined}
+                    className={[
+                      "inline-flex items-center gap-2 px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200",
+                      "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
+                      sinCines
+                        ? "bg-white/5 border-white/10 text-white/35 cursor-not-allowed"
+                        : tempLocalidad === valor
+                          ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)] cursor-pointer"
+                          : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm cursor-pointer",
+                    ].join(" ")}
+                  >
+                    <span>{label}</span>
+                    {sinCines && (
+                      <span className="text-xxs uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white/50 border border-white/10">
+                        Próximamente
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -241,7 +267,9 @@ export default function GrillaReestrenos({ initialData }: GrillaReestrenosProps)
       {/* ─── Grilla ─────────────────────────────────────────── */}
       {peliculas.length === 0 && !cargando ? (
         <div className="px-[5%] text-white/40 text-base py-16 text-center">
-          No hay películas disponibles con los filtros seleccionados.
+          {localidad && !zonasConCines.has(localidad)
+            ? "Próximamente sumaremos cines y funciones para esta zona."
+            : "No hay películas disponibles con los filtros seleccionados."}
         </div>
       ) : (
         <div className="px-[5%] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">

@@ -5,7 +5,7 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 ## Características
 
 - **Visualización de Reestrenos**: Grilla infinita con scroll infinito (IntersectionObserver).
-- **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este), por cine y por período (Hoy / Esta semana / Este mes), con confirmación mediante el botón **Aplicar**.
+- **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este con indicador de próximamente para zonas sin cines), por cine y por período (Hoy / Esta semana / Este mes), con confirmación mediante el botón **Aplicar**.
 - **Server-Side Rendering (SSR)**: La carga inicial se realiza en el servidor para mejorar el SEO y la velocidad.
 - **Integración con Cloudinary**: Imágenes dinámicas para el Hero Carousel.
 - **Diseño Moderno**: Uso de CSS Modules y TailwindCSS para un estilo limpio y mantenible.

@@ -7,9 +7,10 @@ import styles from "./page.module.css";
 export default async function Home() {
   // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
   // Esto hace que el primer renderizado ya tenga las películas (mejor carga inicial y SEO)
-  const [initialReestrenos, cloudinaryImages] = await Promise.all([
-    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }),
+  const [initialReestrenos, cloudinaryImages, initialCines] = await Promise.all([
+    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }).catch(() => undefined),
     getCloudinaryFolderImages("agregadorCines"),
+    peliculaService.getCines().catch(() => []),
   ]);
 
   // Si Cloudinary no devuelve nada (ej: todavia no configuraste las keys), usamos estas de backup
@@ -24,7 +25,7 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <HeroCarousel images={heroImages} />
-      <GrillaReestrenos initialData={initialReestrenos} />
+      <GrillaReestrenos initialData={initialReestrenos} initialCines={initialCines} />
     </main>
   );
 }
