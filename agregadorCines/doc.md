@@ -1,6 +1,6 @@
 # Cartelera Cine Argentino — Backend & Scraper
 
-Sistema compuesto por una API serverless (Vercel) para visualizar la cartelera y un scraper automatizado (GitHub Actions) que obtiene, enriquece con TMDB y persiste datos en PostgreSQL (Supabase).
+Sistema compuesto por una API serverless (Vercel) para visualizar la cartelera y un scraper automatizado (GitHub Actions) que obtiene, enriquece con TMDB y persiste datos en PostgreSQL (Neon).
 
 ## Descripción
 
@@ -109,6 +109,6 @@ npx vitest run --config vitest.integration.config.ts tests/cinepolis/cinepolisSc
 
 - **API Runtime**: Node.js + Express (Serverless for Vercel)
 - **Scraping**: Playwright Chromium (sobre GitHub Actions)
-- **DB ORM**: Prisma + PostgreSQL (vía Supabase)
+- **DB ORM**: Prisma + PostgreSQL (vía Neon)
 - **Datos de películas**: TMDB API
 - **Tests**: Vitest
