@@ -5,8 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "build:scraper": "tsc",
+    "postinstall": "prisma generate",
     "start": "node dist/index.js",
     "dev": "nodemon",
     "refresh": "tsc && node dist/actualizarCartelera.js",
@@ -18,7 +19,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@prisma/client": "^6.19.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.2",
@@ -34,6 +34,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.2",
     "axios": "^1.13.6",
     "cors": "^2.8.6",
     "express": "^5.2.1",
