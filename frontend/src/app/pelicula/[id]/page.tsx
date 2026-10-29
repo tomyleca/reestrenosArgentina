@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata, ResolvingMetadata } from "next";
 import { peliculaService } from "@/services/peliculaService";
 import JsonLd from "@/components/JsonLd";
+import DisponibilidadCines from "@/components/Pelicula/DisponibilidadCines";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -58,21 +59,27 @@ export default async function PeliculaPage({ params }: Props) {
     "genre": pelicula.generos.map(g => g.nombre),
   };
 
-  // Según Schema.org, ScreeningEvent indica funciones en cines. 
+  // Según Schema.org, ScreeningEvent indica funciones en cines.
   // Las 'keys' deben estar en inglés para que los buscadores las reconozcan.
-  const screeningEvents = pelicula.cines.map(cine => ({
-    "@context": "https://schema.org",
-    "@type": "ScreeningEvent",
-    "workPresented": {
-      "@type": "Movie",
-      "name": pelicula.titulo
-    },
-    "location": {
-      "@type": "MovieTheater",
-      "name": cine.nombre,
-      "url": cine.url
-    }
-  }));
+  // Google exige startDate, así que solo se publican las funciones con fecha.
+  const screeningEvents = pelicula.funciones.flatMap((funcion) => {
+    const cine = pelicula.cines.find((c) => c.id === funcion.cineId);
+    if (!cine) return [];
+    return [{
+      "@context": "https://schema.org",
+      "@type": "ScreeningEvent",
+      "startDate": funcion.fecha,
+      "workPresented": {
+        "@type": "Movie",
+        "name": pelicula.titulo
+      },
+      "location": {
+        "@type": "MovieTheater",
+        "name": cine.nombre,
+        "url": cine.url
+      }
+    }];
+  });
 
   return (
     <main className="min-h-screen bg-black text-white p-4 lg:p-12 relative overflow-hidden">
@@ -146,22 +153,8 @@ export default async function PeliculaPage({ params }: Props) {
             <div className="w-full h-px bg-linear-to-r from-white/10 via-white/5 to-transparent mb-8" />
 
             <section>
-              <h2 className="text-xs uppercase tracking-[0.4em] font-black text-white/30 mb-8">Disponible en</h2>
-              <div className="flex flex-wrap gap-4">
-                {pelicula.cines.map((cine) => (
-                  <a
-                    key={cine.id}
-                    href={cine.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative px-8 py-4 rounded-2xl bg-white/5 hover:bg-accent border border-white/10 hover:border-accent transition-all duration-500 hover:-translate-y-1 outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    <span className="relative z-10 text-white font-bold group-hover:text-black flex items-center gap-3 text-lg">
-                      <span>📍</span> {cine.nombre}
-                    </span>
-                  </a>
-                ))}
-              </div>
+              <h2 className="text-xs uppercase tracking-[0.4em] font-black text-white/50 mb-6">Dónde y cuándo</h2>
+              <DisponibilidadCines cines={pelicula.cines} funciones={pelicula.funciones} />
             </section>
           </div>
         </div>

@@ -6,6 +6,8 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 
 - **Visualización de Reestrenos**: Grilla infinita con scroll infinito (IntersectionObserver).
 - **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este con indicador de próximamente para zonas sin cines), por cine y por período (Hoy / Esta semana / Este mes), con confirmación mediante el botón **Aplicar**.
+- **Funciones**: cada tarjeta muestra la próxima función ("Próxima: jue 30/10 · Malba"). El modal y la página de detalle muestran, por cine, todas sus funciones de hoy en adelante; para los cines sin funciones (Cinemark, Cinépolis, Pixel) se enlaza al sitio del cine. Las fechas se muestran siempre en hora de Argentina (`utils/fechas.ts`); si una función no tiene horario (00:00) se muestra solo el día.
+- **Última actualización por cine**: cada cine muestra hace cuánto se actualizó su cartelera ("Actualizado hace 3 días"). Pasados 8 días se marca como posiblemente desactualizado (el refresco es semanal y un cine cuyo scraper falla conserva su cartelera anterior).
 - **Server-Side Rendering (SSR)**: La carga inicial se realiza en el servidor para mejorar el SEO y la velocidad.
 - **Integración con Cloudinary**: Imágenes dinámicas para el Hero Carousel.
 - **Diseño Moderno**: Uso de CSS Modules y TailwindCSS para un estilo limpio y mantenible.
@@ -28,7 +30,7 @@ src/
 │   └── page.module.css # Estilos de la home
 ├── components/         # Componentes de UI reutilizables
 │   ├── GrillaReestrenos/  # Grilla con scroll infinito + filtros (componente principal)
-│   ├── CarruselPeliculas/ # Componente legacy (PeliculaCard, PeliculaModal)
+│   ├── Pelicula/          # PeliculaCard, PeliculaModal y DisponibilidadCines (cines + funciones)
 │   └── HeroCarousel/
 ├── hooks/              # Custom hooks de React
 │   └── usePeliculasPaginadas.ts  # Paginación con soporte de período, cineId y localidad
@@ -36,7 +38,8 @@ src/
 │   ├── peliculaService.ts   # Conexión con el Backend (incluye getCines)
 │   └── cloudinaryService.ts # Conexión con Cloudinary
 ├── types/              # Definiciones de TypeScript (Interfaces y Enums)
-└── mocks/              # Datos de prueba para desarrollo
+└── utils/
+    └── fechas.ts       # Formato de funciones y "última actualización" en hora de Argentina
 ```
 
 ## Requisitos Previos
