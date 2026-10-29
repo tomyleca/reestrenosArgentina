@@ -7,7 +7,7 @@ on:
 
 jobs:
   refrescarPeliculas:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # Fijado: ubuntu-latest pasó a 26.04 y Playwright 1.58 no lo soporta
     defaults:
       run:
         working-directory: agregadorCines
