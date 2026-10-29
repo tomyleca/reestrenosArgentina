@@ -20,15 +20,13 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   }
 
   async upsertPelicula(pelicula: Pelicula): Promise<void> {
-    const relaciones = {
-      generos: {
-        connectOrCreate: pelicula.generos.map((g) => ({
-          where: { tmdbId: g.tmdbId },
-          create: { tmdbId: g.tmdbId, nombre: g.nombre },
-        })),
-      },
-      cines: { connect: pelicula.cines.map((c) => ({ id: c.id })) },
+    const generos = {
+      connectOrCreate: pelicula.generos.map((g) => ({
+        where: { tmdbId: g.tmdbId },
+        create: { tmdbId: g.tmdbId, nombre: g.nombre },
+      })),
     };
+    const cinesIds = pelicula.cines.map((c) => ({ id: c.id }));
 
     const camposComunes = {
       descripcion: pelicula.descripcion,
@@ -64,7 +62,10 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
           titulo: pelicula.titulo,
           ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
           ...camposComunes,
-          ...relaciones,
+          generos,
+          // `set` reemplaza los cines: la película queda vinculada solo a los
+          // cines donde se encontró en esta corrida, no a los de corridas viejas.
+          cines: { set: cinesIds },
         },
         select: { id: true },
       });
@@ -74,7 +75,8 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
           titulo: pelicula.titulo,
           ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
           ...camposComunes,
-          ...relaciones,
+          generos,
+          cines: { connect: cinesIds },
         },
         select: { id: true },
       });

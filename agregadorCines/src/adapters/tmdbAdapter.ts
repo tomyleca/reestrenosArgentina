@@ -3,7 +3,6 @@ import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { IDatosPeliculaGetter } from "../core/interfaces/IDatosPeliculaGetter.js";
 import { TMDB } from "./tmdb.js";
 import {
-  agregarCine,
   calcularCategoria,
   agregarFechaFuncion,
 } from "../core/domain/pelicula.js";
@@ -67,8 +66,11 @@ export class TMDBAdapter implements ITMDBAdapter {
     const peliculaExistente =
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
+      // Arranca solo con los datos de esta corrida: el repositorio reemplaza
+      // los cines con `set`, así que no hay que arrastrar los de la DB.
       peliculaExistente.activa = true;
-      agregarCine(peliculaExistente, peliculaInput.cine);
+      peliculaExistente.cines = [peliculaInput.cine];
+      peliculaExistente.funciones = [];
       agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
       return peliculaExistente;
     }

@@ -67,6 +67,10 @@ Abstracción que desacopla `PeliculaService` del mecanismo concreto de obtenció
 
 El `BrowserContext` de Playwright se crea **solo si algún provider necesita el fallback**. Si todas las APIs responden correctamente, el browser nunca se abre. Cada llamada a `pageFactory()` devuelve una nueva `Page` dentro del mismo contexto compartido.
 
+### Fusión de películas y reemplazo de cines
+
+Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Así el repositorio puede usar `cines: { set }` en el update: la película queda vinculada solo a los cines donde se encontró en la corrida actual, no a los de corridas anteriores.
+
 ### Arquitectura Serverless (Vercel + GitHub Actions)
 
 - **API Liviana**: Al remover el cron y Playwright del servidor de Express, la API se convierte en un proceso muy liviano que puede arrancar rápidamente (cold starts de ~200ms) en Vercel, evitando costos de hosting continuo.

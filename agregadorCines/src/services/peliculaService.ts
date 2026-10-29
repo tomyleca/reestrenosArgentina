@@ -1,4 +1,4 @@
-import type { Pelicula } from "../core/domain/pelicula.js";
+import { fusionarPeliculas, type Pelicula } from "../core/domain/pelicula.js";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { ICineProvider } from "../provider/ICineProvider.js";
 import type { INormalizadorPeliculas } from "../utils/normalizadorPeliculas.js";
@@ -28,7 +28,9 @@ export class PeliculaService implements IPeliculaService {
   async refrescarPeliculas(providers: ICineProvider[]): Promise<Pelicula[]> {
     await this.carteleraRepository.limpiarCartelera();
     const peliculasInput = await this.obtenerPeliculas(providers);
-    const peliculas = await this.normalizarPeliculas(peliculasInput);
+    const peliculas = fusionarPeliculas(
+      await this.normalizarPeliculas(peliculasInput),
+    );
     await this.carteleraRepository.upsertPeliculas(peliculas);
     return peliculas;
   }
