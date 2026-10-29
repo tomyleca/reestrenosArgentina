@@ -71,6 +71,12 @@ El `BrowserContext` de Playwright se crea **solo si algún provider necesita el 
 
 Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Así el repositorio puede usar `cines: { set }` en el update: la película queda vinculada solo a los cines donde se encontró en la corrida actual, no a los de corridas anteriores.
 
+### Cachés de TMDB por corrida
+
+`TMDBAdapter` cachea en memoria durante cada refresco:
+- **Búsqueda**: clave `cineId|título` → `tmdbId` (también cachea `null`), para no repetir la búsqueda ni la llamada a Gemini por cada función de la misma película.
+- **Detalle**: `tmdbId` → detalle de TMDB, para películas nuevas que aparecen en varios cines o funciones.
+
 ### Arquitectura Serverless (Vercel + GitHub Actions)
 
 - **API Liviana**: Al remover el cron y Playwright del servidor de Express, la API se convierte en un proceso muy liviano que puede arrancar rápidamente (cold starts de ~200ms) en Vercel, evitando costos de hosting continuo.
