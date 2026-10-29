@@ -50,10 +50,7 @@ export function ceaApiMapper(
     const rawTitle = peli.tituloPlano || peli.titulo || "";
     const titulo = cleanHtml(rawTitle);
 
-    if (!titulo || seenTitles.has(titulo.toLowerCase())) {
-      continue;
-    }
-    seenTitles.add(titulo.toLowerCase());
+    if (!titulo) continue;
 
     const anioNumero =
       typeof peli.anio === "number"
@@ -66,6 +63,11 @@ export function ceaApiMapper(
     if (peli.dia && peli.mes) {
       fecha = `${peli.dia} de ${peli.mes}`;
     }
+
+    // Se deduplica por título + fecha: cada función de la película cuenta
+    const clave = `${titulo.toLowerCase()}|${fecha ?? ""}`;
+    if (seenTitles.has(clave)) continue;
+    seenTitles.add(clave);
 
     const pelicula: PeliculaInput = {
       titulo,
