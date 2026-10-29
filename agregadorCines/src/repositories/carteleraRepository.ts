@@ -44,43 +44,33 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       }),
     };
 
-    // Buscamos si ya existe por tmdbId o por titulo para evitar violaciones de unicidad cruzadas (P2002)
-    const peliculaExistente = await prisma.pelicula.findFirst({
-      where: {
-        OR: [
-          ...(pelicula.tmdbId != null ? [{ tmdbId: pelicula.tmdbId }] : []),
-          { titulo: pelicula.titulo },
-        ],
-      },
-    });
-
-    let result;
-    if (peliculaExistente) {
-      result = await prisma.pelicula.update({
-        where: { id: peliculaExistente.id },
-        data: {
-          titulo: pelicula.titulo,
-          ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
-          ...camposComunes,
-          generos,
-          // `set` reemplaza los cines: la película queda vinculada solo a los
-          // cines donde se encontró en esta corrida, no a los de corridas viejas.
-          cines: { set: cinesIds },
-        },
-        select: { id: true },
-      });
-    } else {
-      result = await prisma.pelicula.create({
-        data: {
-          titulo: pelicula.titulo,
-          ...(pelicula.tmdbId != null && { tmdbId: pelicula.tmdbId }),
-          ...camposComunes,
-          generos,
-          cines: { connect: cinesIds },
-        },
-        select: { id: true },
-      });
+    // La identidad de una película es su tmdbId: el título no sirve porque
+    // remakes y homónimas lo comparten (ej. Nosferatu 1922 y 2024).
+    if (pelicula.tmdbId == null) {
+      throw new Error(
+        `No se puede guardar "${pelicula.titulo}" sin tmdbId.`,
+      );
     }
+
+    const result = await prisma.pelicula.upsert({
+      where: { tmdbId: pelicula.tmdbId },
+      update: {
+        titulo: pelicula.titulo,
+        ...camposComunes,
+        generos,
+        // `set` reemplaza los cines: la película queda vinculada solo a los
+        // cines donde se encontró en esta corrida, no a los de corridas viejas.
+        cines: { set: cinesIds },
+      },
+      create: {
+        titulo: pelicula.titulo,
+        tmdbId: pelicula.tmdbId,
+        ...camposComunes,
+        generos,
+        cines: { connect: cinesIds },
+      },
+      select: { id: true },
+    });
 
     // Agrega las funciones con skipDuplicates para evitar duplicados
     // (garantizado por el unique constraint [peliculaId, fecha] en el schema)

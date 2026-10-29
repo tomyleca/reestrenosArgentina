@@ -71,6 +71,10 @@ El `BrowserContext` de Playwright se crea **solo si algún provider necesita el 
 
 Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Así el repositorio puede usar `cines: { set }` en el update: la película queda vinculada solo a los cines donde se encontró en la corrida actual, no a los de corridas anteriores.
 
+### Identidad de una película: tmdbId
+
+La película se identifica solo por su `tmdbId` (`upsert` por `tmdbId` en el repositorio). El `titulo` no es único: remakes y homónimas comparten título (ej. *Nosferatu* 1922 y 2024), y buscarlas por título hacía que una pisara a la otra.
+
 ### Recálculo de categoría
 
 La categoría (`ESTRENOS` / `REESTRENOS`) depende de la fecha actual: es reestreno si pasó más de un año desde el lanzamiento. Por eso `TMDBAdapter` la recalcula en cada corrida para las películas que ya existen en la DB, en lugar de conservar la que se guardó al crearlas. Las películas sin `fechaLanzamiento` conservan la categoría guardada.
