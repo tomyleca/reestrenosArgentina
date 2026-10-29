@@ -84,7 +84,11 @@ export class TMDBAdapter implements ITMDBAdapter {
           peliculaExistente.fechaLanzamiento,
         );
       }
-      agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
+      agregarFechaFuncion(
+        peliculaExistente,
+        peliculaInput.fecha,
+        peliculaInput.cine.id,
+      );
       return peliculaExistente;
     }
 
@@ -116,7 +120,7 @@ export class TMDBAdapter implements ITMDBAdapter {
     };
 
     if (peliculaInput.fecha) {
-      agregarFechaFuncion(pelicula, peliculaInput.fecha);
+      agregarFechaFuncion(pelicula, peliculaInput.fecha, peliculaInput.cine.id);
     }
 
     return Promise.resolve(pelicula);

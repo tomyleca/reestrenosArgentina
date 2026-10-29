@@ -28,8 +28,10 @@ model Funcion {
   fecha      DateTime
   peliculaId Int
   pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
+  cineId     Int
+  cine       Cine     @relation(fields: [cineId], references: [id])
 
-  @@unique([peliculaId, fecha])
+  @@unique([peliculaId, cineId, fecha])
 }
 
 model Cine {
@@ -39,6 +41,7 @@ model Cine {
   url       String
   api_url   String?
   peliculas Pelicula[] @relation("CineToPelicula")
+  funciones Funcion[]
 }
 
 model Genero {

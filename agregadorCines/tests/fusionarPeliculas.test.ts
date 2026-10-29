@@ -20,7 +20,7 @@ function crearPelicula(
     cines,
     activa: true,
     tmdbId,
-    funciones: fechas.map((fecha) => ({ fecha })),
+    funciones: fechas.map((fecha) => ({ fecha, cineId: cines[0]!.id })),
   };
 }
 
@@ -50,6 +50,15 @@ describe("fusionarPeliculas", () => {
 
     expect(resultado[0]?.cines).toHaveLength(1);
     expect(resultado[0]?.funciones).toHaveLength(1);
+  });
+
+  it("debería conservar la función de cada cine aunque coincida la fecha", () => {
+    const resultado = fusionarPeliculas([
+      crearPelicula(807, [malba], [jueves]),
+      crearPelicula(807, [casaPBA], [new Date(jueves)]),
+    ]);
+
+    expect(resultado[0]?.funciones?.map((f) => f.cineId)).toEqual([1, 2]);
   });
 
   it("debería mantener separadas películas distintas", () => {

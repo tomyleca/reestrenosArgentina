@@ -37,7 +37,8 @@ export function agregarCine(pelicula: Pelicula, cine: Cine): void {
 
 export function agregarFechaFuncion(
   pelicula: Pelicula,
-  fecha?: string | Date | null,
+  fecha: string | Date | null | undefined,
+  cineId: number,
 ): void {
   if (!fecha) return;
 
@@ -48,8 +49,13 @@ export function agregarFechaFuncion(
     pelicula.funciones = [];
   }
 
-  if (!pelicula.funciones.some((f) => f.fecha.getTime() === date.getTime())) {
-    pelicula.funciones.push({ fecha: date });
+  // Dos cines pueden pasar la misma película el mismo día: la función se
+  // identifica por cine + fecha.
+  const yaExiste = pelicula.funciones.some(
+    (f) => f.cineId === cineId && f.fecha.getTime() === date.getTime(),
+  );
+  if (!yaExiste) {
+    pelicula.funciones.push({ fecha: date, cineId });
   }
 }
 
@@ -75,7 +81,9 @@ export function fusionarPeliculas(peliculas: Pelicula[]): Pelicula[] {
     }
 
     pelicula.cines.forEach((cine) => agregarCine(existente, cine));
-    pelicula.funciones?.forEach((f) => agregarFechaFuncion(existente, f.fecha));
+    pelicula.funciones?.forEach((f) =>
+      agregarFechaFuncion(existente, f.fecha, f.cineId),
+    );
   }
 
   return [...porClave.values()];

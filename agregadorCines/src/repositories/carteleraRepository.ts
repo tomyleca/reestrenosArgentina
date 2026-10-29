@@ -74,12 +74,13 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     });
 
     // Agrega las funciones con skipDuplicates para evitar duplicados
-    // (garantizado por el unique constraint [peliculaId, fecha] en el schema)
+    // (garantizado por el unique constraint [peliculaId, cineId, fecha] en el schema)
     if (pelicula.funciones && pelicula.funciones.length > 0) {
       await prisma.funcion.createMany({
         data: pelicula.funciones.map((f) => ({
           fecha: f.fecha,
           peliculaId: result.id,
+          cineId: f.cineId,
         })),
         skipDuplicates: true,
       });
