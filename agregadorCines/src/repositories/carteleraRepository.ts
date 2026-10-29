@@ -1,11 +1,19 @@
+import type { Prisma } from "@prisma/client";
 import type { Pelicula } from "../core/domain/pelicula.js";
 import type { Cine } from "../core/domain/cine.js";
 import type { Alerta } from "../core/domain/alerta.js";
-import type { ICarteleraRepository } from "./ICarteleraRepository.js";
+import type {
+  ICarteleraRepository,
+  PeliculaEnCine,
+} from "./ICarteleraRepository.js";
 import type { Categoria } from "../core/domain/categoria.js";
 import type { QueryOpciones, PaginatedResult } from "../api/types.js";
 import prisma from "../lib/db.js";
-import { calendarioArgentina, fechaArgentina } from "../utils/fechasArgentina.js";
+import {
+  calendarioArgentina,
+  fechaArgentina,
+  inicioDelDiaArgentina,
+} from "../utils/fechasArgentina.js";
 
 const DEFAULT_LIMIT = 25;
 
@@ -20,6 +28,8 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     });
   }
 
+  // Guarda solo los datos de la película (TMDB). Los cines y las funciones los
+  // escribe cada cine con reemplazarCarteleraDeCine.
   async upsertPelicula(pelicula: Pelicula): Promise<void> {
     const generos = {
       connectOrCreate: pelicula.generos.map((g) => ({
@@ -27,13 +37,11 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         create: { tmdbId: g.tmdbId, nombre: g.nombre },
       })),
     };
-    const cinesIds = pelicula.cines.map((c) => ({ id: c.id }));
 
     const camposComunes = {
       descripcion: pelicula.descripcion,
       duracionMinutos: pelicula.duracionMinutos,
       categoria: pelicula.categoria,
-      activa: pelicula.activa,
       ...(pelicula.poster_path != null && {
         poster_path: pelicula.poster_path,
       }),
@@ -53,38 +61,20 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
       );
     }
 
-    const result = await prisma.pelicula.upsert({
+    await prisma.pelicula.upsert({
       where: { tmdbId: pelicula.tmdbId },
       update: {
         titulo: pelicula.titulo,
         ...camposComunes,
         generos,
-        // `set` reemplaza los cines: la película queda vinculada solo a los
-        // cines donde se encontró en esta corrida, no a los de corridas viejas.
-        cines: { set: cinesIds },
       },
       create: {
         titulo: pelicula.titulo,
         tmdbId: pelicula.tmdbId,
         ...camposComunes,
         generos,
-        cines: { connect: cinesIds },
       },
-      select: { id: true },
     });
-
-    // Agrega las funciones con skipDuplicates para evitar duplicados
-    // (garantizado por el unique constraint [peliculaId, cineId, fecha] en el schema)
-    if (pelicula.funciones && pelicula.funciones.length > 0) {
-      await prisma.funcion.createMany({
-        data: pelicula.funciones.map((f) => ({
-          fecha: f.fecha,
-          peliculaId: result.id,
-          cineId: f.cineId,
-        })),
-        skipDuplicates: true,
-      });
-    }
   }
 
   async upsertPeliculas(listaPeliculas: Pelicula[]): Promise<void> {
@@ -96,46 +86,92 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     }
   }
 
-
-  async getPeliculaById(id: number): Promise<Pelicula | null> {
-    return await prisma.pelicula.findUnique({
-      where: { id },
-      include: { generos: true, cines: true, funciones: true },
+  // Cada cine es dueño de su cartelera: se reemplazan sus películas y sus
+  // funciones de una vez. Un cine cuyo scraping falló no llama a este método,
+  // así que conserva la cartelera de la corrida anterior.
+  async reemplazarCarteleraDeCine(
+    cineId: number,
+    peliculas: PeliculaEnCine[],
+  ): Promise<void> {
+    const guardadas = await prisma.pelicula.findMany({
+      where: { tmdbId: { in: peliculas.map((p) => p.tmdbId) } },
+      select: { id: true, tmdbId: true },
     });
+    const idPorTmdbId = new Map(guardadas.map((p) => [p.tmdbId, p.id]));
+
+    const funciones = peliculas.flatMap((p) => {
+      const peliculaId = idPorTmdbId.get(p.tmdbId);
+      if (peliculaId === undefined) return [];
+      return p.fechas.map((fecha) => ({ fecha, peliculaId, cineId }));
+    });
+
+    await prisma.$transaction([
+      prisma.funcion.deleteMany({ where: { cineId } }),
+      prisma.funcion.createMany({ data: funciones, skipDuplicates: true }),
+      prisma.cine.update({
+        where: { id: cineId },
+        data: {
+          peliculas: { set: guardadas.map((p) => ({ id: p.id })) },
+          ultimaActualizacion: new Date(),
+        },
+      }),
+    ]);
   }
 
+  async getPeliculaById(id: number): Promise<Pelicula | null> {
+    const pelicula = await prisma.pelicula.findUnique({
+      where: { id },
+      include: includeCartelera(inicioDelDiaArgentina()),
+    });
+    return pelicula && soloCinesDisponibles(pelicula);
+  }
 
   async getPeliculasByCategoriaPaginadas(
     categoria: Categoria,
     opciones?: QueryOpciones,
   ): Promise<PaginatedResult<Pelicula>> {
-    const soloActivas = opciones?.soloActivas ?? true;
     const limit = opciones?.limit ?? DEFAULT_LIMIT;
     const page = opciones?.page ?? 1;
     const skip = (page - 1) * limit;
+    const hoy = inicioDelDiaArgentina();
 
-    const funcionesFiltro = opciones?.filtroPeriodo
-      ? buildFuncionesFiltro(opciones.filtroPeriodo)
-      : undefined;
-
-    const cineFiltro = opciones?.cineId
-      ? { some: { id: opciones.cineId } }
+    const cine: Prisma.CineWhereInput = opciones?.cineId
+      ? { id: opciones.cineId }
       : opciones?.localidad
-        ? { some: { localidad: opciones.localidad } }
-        : undefined;
+        ? { localidad: opciones.localidad }
+        : {};
 
-    const where = {
-      categoria,
-      activa: soloActivas,
-      ...(funcionesFiltro && { funciones: funcionesFiltro }),
-      ...(cineFiltro && { cines: cineFiltro }),
-    };
+    // Una película está en cartelera en un cine si:
+    // - el cine tiene funciones y hay alguna de hoy en adelante, o
+    // - el cine no tiene funciones y apareció en su último scraping exitoso.
+    // El filtro de período solo aplica a cines con funciones.
+    const disponible: Prisma.PeliculaWhereInput = opciones?.filtroPeriodo
+      ? {
+          funciones: {
+            some: { ...buildFuncionesFiltro(opciones.filtroPeriodo).some, cine },
+          },
+        }
+      : {
+          OR: [
+            {
+              funciones: {
+                some: {
+                  fecha: { gte: hoy },
+                  cine: { ...cine, tieneFunciones: true },
+                },
+              },
+            },
+            { cines: { some: { ...cine, tieneFunciones: false } } },
+          ],
+        };
+
+    const where: Prisma.PeliculaWhereInput = { categoria, ...disponible };
 
     const [total, data] = await prisma.$transaction([
       prisma.pelicula.count({ where }),
       prisma.pelicula.findMany({
         where,
-        include: { generos: true, cines: true, funciones: true },
+        include: includeCartelera(hoy),
         orderBy: { popularidad: "desc" }, //siempre devuelve las peliculas ordenadas por popularidad
         skip,
         take: limit,
@@ -143,7 +179,7 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     ]);
 
     return {
-      data,
+      data: data.map(soloCinesDisponibles),
       total,
       page,
       limit,
@@ -184,23 +220,47 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
         localidad: cine.localidad,
         url: cine.url,
         api_url: cine.api_url ?? null,
+        tieneFunciones: cine.tieneFunciones,
       },
       create: {
         nombre: cine.nombre,
         localidad: cine.localidad,
         url: cine.url,
         api_url: cine.api_url ?? null,
+        tieneFunciones: cine.tieneFunciones,
       },
     });
-  }
-
-  async limpiarCartelera(): Promise<void> {
-    await prisma.pelicula.updateMany({ data: { activa: false } });
   }
 
   async disconnect(): Promise<void> {
     await prisma.$disconnect();
   }
+}
+
+// La API devuelve solo las funciones de hoy en adelante, ordenadas por fecha.
+function includeCartelera(desde: Date) {
+  return {
+    generos: true,
+    cines: true,
+    funciones: {
+      where: { fecha: { gte: desde } },
+      orderBy: { fecha: "asc" },
+    },
+  } satisfies Prisma.PeliculaInclude;
+}
+
+// Un cine con funciones solo cuenta si a la película le quedan funciones ahí;
+// un cine sin funciones cuenta si la vio en su último scraping exitoso.
+function soloCinesDisponibles<
+  T extends { cines: Cine[]; funciones: { cineId: number }[] },
+>(pelicula: T): T {
+  return {
+    ...pelicula,
+    cines: pelicula.cines.filter(
+      (c) =>
+        !c.tieneFunciones || pelicula.funciones.some((f) => f.cineId === c.id),
+    ),
+  };
 }
 
 // "Hoy" es el día de Argentina, no el del servidor (Vercel corre en UTC).

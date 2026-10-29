@@ -67,9 +67,24 @@ Abstracción que desacopla `PeliculaService` del mecanismo concreto de obtenció
 
 El `BrowserContext` de Playwright se crea **solo si algún provider necesita el fallback**. Si todas las APIs responden correctamente, el browser nunca se abre. Cada llamada a `pageFactory()` devuelve una nueva `Page` dentro del mismo contexto compartido.
 
-### Fusión de películas y reemplazo de cines
+### Fusión de películas
 
-Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Así el repositorio puede usar `cines: { set }` en el update: la película queda vinculada solo a los cines donde se encontró en la corrida actual, no a los de corridas anteriores.
+Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Cada `Funcion` pertenece a un cine (`cineId`) y es única por película + cine + fecha: dos cines pueden pasar la misma película el mismo día.
+
+### Cartelera por cine (dos reglas)
+
+Cada cine en `cinesConfig` declara `tieneFunciones`:
+- **`true`** (Malba, Sala Lugones, Casa PBA, CEA, Munro, York): la película está en cartelera en ese cine si tiene alguna función **de hoy en adelante** ahí.
+- **`false`** (Cinemark, Cinépolis, Pixel): la película está en cartelera si apareció en el **último scraping exitoso** del cine (relación `Cine.peliculas`).
+
+No hay columna `activa`: la disponibilidad se calcula al consultar. La API devuelve solo las funciones de hoy en adelante y, en `cines`, solo los cines donde la película está disponible.
+
+**Escritura:** cada cine es dueño de su cartelera. Si su scraping salió bien, `reemplazarCarteleraDeCine` reemplaza en una transacción sus películas y sus funciones y guarda `Cine.ultimaActualizacion`. Si falló, **no se toca**: sigue mostrando lo de la corrida anterior (un cine con funciones se va "apagando" a medida que pasan sus funciones) y `ultimaActualizacion` deja ver hace cuánto no se actualiza. Cuenta como falla:
+- que el provider tire error,
+- que no se obtenga ninguna película,
+- que un cine con `tieneFunciones: true` traiga películas pero ninguna fecha (selector de fecha roto).
+
+Cada falla se registra en la tabla `Alerta`.
 
 ### Identidad de una película: tmdbId
 
@@ -104,9 +119,9 @@ GitHub Actions y Vercel corren en UTC, así que ninguna fecha depende de la zona
 | Método | Endpoint | Descripción |
 | :--- | :--- | :--- |
 | `GET` | `/peliculas/estrenos` | Obtiene películas en cartelera de estrenos (paginado). |
-| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). Soporta `?periodo=hoy\|semana\|mes` y `?cineId=<id>`. |
-| `GET` | `/peliculas/:id` | Obtiene el detalle de una película por ID. |
-| `GET` | `/cines` | Devuelve la lista de todos los cines en la base de datos (ordenados por nombre). |
+| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). Soporta `?periodo=hoy\|semana\|mes`, `?cineId=<id>` y `?localidad=<Localidad>`. El período solo aplica a cines con funciones. |
+| `GET` | `/peliculas/:id` | Obtiene el detalle de una película por ID (con sus funciones de hoy en adelante). |
+| `GET` | `/cines` | Devuelve la lista de todos los cines (ordenados por nombre), con `tieneFunciones` y `ultimaActualizacion`. |
 
 ## Scheduler
 

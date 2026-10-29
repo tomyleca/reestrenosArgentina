@@ -24,7 +24,13 @@ export class TMDB {
     if (typeof peliculaInputOrTitulo === "string") {
       peliculaInput = {
         titulo: peliculaInputOrTitulo,
-        cine: { id: 0, nombre: "Desconocido", localidad: "CABA", url: "" },
+        cine: {
+          id: 0,
+          nombre: "Desconocido",
+          localidad: "CABA",
+          url: "",
+          tieneFunciones: false,
+        },
       };
       if (fechaLanzamiento) peliculaInput.fechaLanzamiento = fechaLanzamiento;
       if (anioLanzamiento) peliculaInput.anioLanzamiento = anioLanzamiento;

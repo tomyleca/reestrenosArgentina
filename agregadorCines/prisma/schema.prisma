@@ -13,7 +13,6 @@ model Pelicula {
   descripcion      String
   duracionMinutos  Int
   categoria        Categoria
-  activa           Boolean
   tmdbId           Int?      @unique
   popularidad      Float?
   poster_path      String?
@@ -35,13 +34,19 @@ model Funcion {
 }
 
 model Cine {
-  id        Int        @id @default(autoincrement())
-  nombre    String     @unique
-  localidad Localidad
-  url       String
-  api_url   String?
-  peliculas Pelicula[] @relation("CineToPelicula")
-  funciones Funcion[]
+  id                  Int        @id @default(autoincrement())
+  nombre              String     @unique
+  localidad           Localidad
+  url                 String
+  api_url             String?
+  // true: la cartelera sale de sus funciones de hoy en adelante.
+  // false: sale de las películas vistas en el último scraping exitoso.
+  tieneFunciones      Boolean    @default(false)
+  // Último scraping exitoso. Si el scraper falla, la cartelera del cine no se toca.
+  ultimaActualizacion DateTime?
+  // Películas vistas en el último scraping exitoso del cine
+  peliculas           Pelicula[] @relation("CineToPelicula")
+  funciones           Funcion[]
 }
 
 model Genero {

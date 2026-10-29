@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { fusionarPeliculas, type Pelicula } from "../src/core/domain/pelicula.js";
 import type { Cine } from "../src/core/domain/cine.js";
 
-const malba: Cine = { id: 1, nombre: "Cine Malba", localidad: "CABA", url: "" };
-const casaPBA: Cine = { id: 2, nombre: "Casa PBA", localidad: "CABA", url: "" };
+const malba: Cine = { id: 1, nombre: "Cine Malba", localidad: "CABA", url: "", tieneFunciones: true };
+const casaPBA: Cine = { id: 2, nombre: "Casa PBA", localidad: "CABA", url: "", tieneFunciones: true };
 
 function crearPelicula(
   tmdbId: number,
@@ -18,7 +18,6 @@ function crearPelicula(
     duracionMinutos: 100,
     categoria: "REESTRENOS",
     cines,
-    activa: true,
     tmdbId,
     funciones: fechas.map((fecha) => ({ fecha, cineId: cines[0]!.id })),
   };

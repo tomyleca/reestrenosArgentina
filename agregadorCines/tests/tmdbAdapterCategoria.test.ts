@@ -5,7 +5,7 @@ import type { ICarteleraRepository } from "../src/repositories/ICarteleraReposit
 import type { Pelicula } from "../src/core/domain/pelicula.js";
 import type { Cine } from "../src/core/domain/cine.js";
 
-const malba: Cine = { id: 1, nombre: "Cine Malba", localidad: "CABA", url: "" };
+const malba: Cine = { id: 1, nombre: "Cine Malba", localidad: "CABA", url: "", tieneFunciones: true };
 
 // Dobles simples: sin llamadas reales a TMDB
 function crearAdapter(peliculaGuardada: Pelicula): TMDBAdapter {
@@ -27,7 +27,6 @@ function crearPelicula(fechaLanzamiento: Date | null): Pelicula {
     duracionMinutos: 100,
     categoria: "ESTRENOS",
     cines: [],
-    activa: false,
     tmdbId: 500,
     fechaLanzamiento,
     funciones: [],

@@ -11,9 +11,7 @@ const PaginacionSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(25),
 });
 
-const QueryEstrenosSchema = PaginacionSchema.extend({
-  activas: z.preprocess((val) => val !== "false", z.boolean()).default(true),
-});
+const QueryEstrenosSchema = PaginacionSchema;
 
 const QueryReestrenosSchema = QueryEstrenosSchema.extend({
   periodo: z.enum(["hoy", "semana", "mes"]).nullable().catch(null),
@@ -35,11 +33,11 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, activas: soloActivas } = parse.data;
+    const { page, limit } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.ESTRENOS,
-      { soloActivas, page, limit },
+      { page, limit },
     );
     res.json(resultado);
   };
@@ -51,13 +49,12 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, activas: soloActivas, periodo: filtroPeriodo, cineId, localidad } = parse.data;
+    const { page, limit, periodo: filtroPeriodo, cineId, localidad } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
       {
         filtroPeriodo,
-        soloActivas,
         page,
         limit,
         ...(cineId !== undefined && { cineId }),

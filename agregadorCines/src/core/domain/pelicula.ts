@@ -11,7 +11,6 @@ export interface Pelicula {
   duracionMinutos: number;
   categoria: Categoria;
   cines: Cine[];
-  activa: boolean;
   tmdbId?: number | null;
   poster_path?: string | null;
   popularidad?: number | null;

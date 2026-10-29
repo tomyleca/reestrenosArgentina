@@ -72,9 +72,8 @@ export class TMDBAdapter implements ITMDBAdapter {
     const peliculaExistente =
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
-      // Arranca solo con los datos de esta corrida: el repositorio reemplaza
-      // los cines con `set`, así que no hay que arrastrar los de la DB.
-      peliculaExistente.activa = true;
+      // Arranca solo con los datos de esta corrida: cada cine reemplaza su
+      // cartelera, así que no hay que arrastrar los cines ni funciones de la DB.
       peliculaExistente.cines = [peliculaInput.cine];
       peliculaExistente.funciones = [];
       // La categoría depende de la fecha actual (más de un año desde el
@@ -113,7 +112,6 @@ export class TMDBAdapter implements ITMDBAdapter {
         };
       }),
       categoria: isValidDate ? calcularCategoria(releaseDateObj) : Categoria.ESTRENOS,
-      activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],
       funciones: [],
