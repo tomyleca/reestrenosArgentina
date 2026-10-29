@@ -67,6 +67,16 @@ Abstracción que desacopla `PeliculaService` del mecanismo concreto de obtenció
 
 El `BrowserContext` de Playwright se crea **solo si algún provider necesita el fallback**. Si todas las APIs responden correctamente, el browser nunca se abre. Cada llamada a `pageFactory()` devuelve una nueva `Page` dentro del mismo contexto compartido.
 
+### Fusión de películas y reemplazo de cines
+
+Los providers devuelven una entrada por función, por lo que la misma película llega repetida. Antes de guardar, `PeliculaService` las junta por `tmdbId` con `fusionarPeliculas` (dominio), uniendo cines y funciones. Así el repositorio puede usar `cines: { set }` en el update: la película queda vinculada solo a los cines donde se encontró en la corrida actual, no a los de corridas anteriores.
+
+### Cachés de TMDB por corrida
+
+`TMDBAdapter` cachea en memoria durante cada refresco:
+- **Búsqueda**: clave `cineId|título` → `tmdbId` (también cachea `null`), para no repetir la búsqueda ni la llamada a Gemini por cada función de la misma película.
+- **Detalle**: `tmdbId` → detalle de TMDB, para películas nuevas que aparecen en varios cines o funciones.
+
 ### Arquitectura Serverless (Vercel + GitHub Actions)
 
 - **API Liviana**: Al remover el cron y Playwright del servidor de Express, la API se convierte en un proceso muy liviano que puede arrancar rápidamente (cold starts de ~200ms) en Vercel, evitando costos de hosting continuo.
@@ -109,6 +119,6 @@ npx vitest run --config vitest.integration.config.ts tests/cinepolis/cinepolisSc
 
 - **API Runtime**: Node.js + Express (Serverless for Vercel)
 - **Scraping**: Playwright Chromium (sobre GitHub Actions)
-- **DB ORM**: Prisma + PostgreSQL (vía Neon)
+- **DB ORM**: Prisma + PostgreSQL (vía Neon). `prisma.config.ts` (usado por `prisma migrate`) toma `DIRECT_URL` si existe (conexión directa sin `-pooler`) o si no `DATABASE_URL`, y le agrega `connect_timeout=30` para tolerar que Neon tarde en despertar la base suspendida (evita el error P1001 en GitHub Actions).
 - **Datos de películas**: TMDB API
 - **Tests**: Vitest

@@ -2,8 +2,8 @@ import type { Pelicula } from "../core/domain/pelicula.js";
 import type { PeliculaInput } from "../core/dtos/peliculaInput.js";
 import type { IDatosPeliculaGetter } from "../core/interfaces/IDatosPeliculaGetter.js";
 import { TMDB } from "./tmdb.js";
+import type { TMDBPeliculaDetalleDTO } from "../core/dtos/tmdbPeliculaDetalleDTO.js";
 import {
-  agregarCine,
   calcularCategoria,
   agregarFechaFuncion,
 } from "../core/domain/pelicula.js";
@@ -26,6 +26,9 @@ export interface ITMDBAdapter extends IDatosPeliculaGetter {
 export class TMDBAdapter implements ITMDBAdapter {
   tmdb: TMDB;
   carteleraRepository: ICarteleraRepository;
+  // Cachés que viven durante una corrida de refresco
+  private cacheBusqueda = new Map<string, number | null>();
+  private cacheDetalle = new Map<number, TMDBPeliculaDetalleDTO>();
 
   constructor(tmdb: TMDB, carteleraRepository: ICarteleraRepository) {
     this.tmdb = tmdb;
@@ -36,6 +39,8 @@ export class TMDBAdapter implements ITMDBAdapter {
     peliculasInput: PeliculaInput[],
   ): Promise<Pelicula[]> {
     tmdbLogger.resetContadores();
+    this.cacheBusqueda.clear();
+    this.cacheDetalle.clear();
     const peliculas: Pelicula[] = [];
 
     for (const peliculaInput of peliculasInput) {
@@ -59,7 +64,7 @@ export class TMDBAdapter implements ITMDBAdapter {
   async getPeliculaFromScrapeado(
     peliculaInput: PeliculaInput,
   ): Promise<Pelicula> {
-    const idTMDBPelicula = await this.tmdb.buscarPeliculaId(peliculaInput);
+    const idTMDBPelicula = await this.buscarIdCacheado(peliculaInput);
     if (!idTMDBPelicula) {
       throw new Error("No se encontro la pelicula en TMDB");
     }
@@ -67,14 +72,16 @@ export class TMDBAdapter implements ITMDBAdapter {
     const peliculaExistente =
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
+      // Arranca solo con los datos de esta corrida: el repositorio reemplaza
+      // los cines con `set`, así que no hay que arrastrar los de la DB.
       peliculaExistente.activa = true;
-      agregarCine(peliculaExistente, peliculaInput.cine);
+      peliculaExistente.cines = [peliculaInput.cine];
+      peliculaExistente.funciones = [];
       agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
       return peliculaExistente;
     }
 
-    const detallePelicula =
-      await this.tmdb.buscarDetallesDePelicula(idTMDBPelicula);
+    const detallePelicula = await this.buscarDetalleCacheado(idTMDBPelicula);
 
 	//new Date devuelve NaN si la fecha es invalida
     const releaseDateObj = detallePelicula.release_date ? new Date(detallePelicula.release_date) : null;
@@ -106,5 +113,31 @@ export class TMDBAdapter implements ITMDBAdapter {
     }
 
     return Promise.resolve(pelicula);
+  }
+
+  // Los providers devuelven una entrada por función, así que la misma película
+  // del mismo cine se busca varias veces. Cacheamos también el null para no
+  // repetir la búsqueda (ni la posible llamada a Gemini) cuando no se encontró.
+  // La clave incluye el cine porque dos cines pueden pasar películas homónimas.
+  private async buscarIdCacheado(
+    peliculaInput: PeliculaInput,
+  ): Promise<number | null> {
+    const clave = `${peliculaInput.cine.id}|${peliculaInput.titulo.toLowerCase().trim()}`;
+    if (this.cacheBusqueda.has(clave)) {
+      return this.cacheBusqueda.get(clave) ?? null;
+    }
+    const id = await this.tmdb.buscarPeliculaId(peliculaInput);
+    this.cacheBusqueda.set(clave, id);
+    return id;
+  }
+
+  private async buscarDetalleCacheado(
+    tmdbId: number,
+  ): Promise<TMDBPeliculaDetalleDTO> {
+    const cacheado = this.cacheDetalle.get(tmdbId);
+    if (cacheado) return cacheado;
+    const detalle = await this.tmdb.buscarDetallesDePelicula(tmdbId);
+    this.cacheDetalle.set(tmdbId, detalle);
+    return detalle;
   }
 }
