@@ -77,6 +77,13 @@ export class TMDBAdapter implements ITMDBAdapter {
       peliculaExistente.activa = true;
       peliculaExistente.cines = [peliculaInput.cine];
       peliculaExistente.funciones = [];
+      // La categoría depende de la fecha actual (más de un año desde el
+      // lanzamiento = reestreno), así que se recalcula en cada corrida.
+      if (peliculaExistente.fechaLanzamiento) {
+        peliculaExistente.categoria = calcularCategoria(
+          peliculaExistente.fechaLanzamiento,
+        );
+      }
       agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
       return peliculaExistente;
     }
