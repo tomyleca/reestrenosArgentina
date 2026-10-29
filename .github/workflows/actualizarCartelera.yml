@@ -33,6 +33,7 @@ jobs:
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}  # Opcional: conexión directa de Neon (sin -pooler)
 
       - name: Correr proceso de actualización
         run: node dist/actualizarCartelera.js  #Compilo toda la app pero solo 

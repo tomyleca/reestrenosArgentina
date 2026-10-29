@@ -119,6 +119,6 @@ npx vitest run --config vitest.integration.config.ts tests/cinepolis/cinepolisSc
 
 - **API Runtime**: Node.js + Express (Serverless for Vercel)
 - **Scraping**: Playwright Chromium (sobre GitHub Actions)
-- **DB ORM**: Prisma + PostgreSQL (vía Neon)
+- **DB ORM**: Prisma + PostgreSQL (vía Neon). `prisma.config.ts` (usado por `prisma migrate`) toma `DIRECT_URL` si existe (conexión directa sin `-pooler`) o si no `DATABASE_URL`, y le agrega `connect_timeout=30` para tolerar que Neon tarde en despertar la base suspendida (evita el error P1001 en GitHub Actions).
 - **Datos de películas**: TMDB API
 - **Tests**: Vitest

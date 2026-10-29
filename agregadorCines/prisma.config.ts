@@ -3,12 +3,27 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+// Las migraciones conviene correrlas contra la conexión directa de Neon (sin "-pooler").
+// Si no hay DIRECT_URL se usa DATABASE_URL.
+const urlBase = process.env["DIRECT_URL"] || process.env["DATABASE_URL"];
+
+// Neon suspende la base cuando está inactiva y despertarla puede tardar más que el
+// connect_timeout por defecto de Prisma (5s), lo que produce el error P1001.
+function conTimeout(url: string | undefined): string | undefined {
+  if (!url) return url;
+  const parsed = new URL(url);
+  if (!parsed.searchParams.has("connect_timeout")) {
+    parsed.searchParams.set("connect_timeout", "30");
+  }
+  return parsed.toString();
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: conTimeout(urlBase),
   },
 });
