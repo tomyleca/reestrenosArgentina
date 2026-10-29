@@ -85,6 +85,14 @@ La categoría (`ESTRENOS` / `REESTRENOS`) depende de la fecha actual: es reestre
 - **Búsqueda**: clave `cineId|título` → `tmdbId` (también cachea `null`), para no repetir la búsqueda ni la llamada a Gemini por cada función de la misma película.
 - **Detalle**: `tmdbId` → detalle de TMDB, para películas nuevas que aparecen en varios cines o funciones.
 
+### Fechas en hora de Argentina
+
+GitHub Actions y Vercel corren en UTC, así que ninguna fecha depende de la zona horaria del servidor. `utils/fechasArgentina.ts` centraliza la conversión (Argentina es UTC-3 todo el año, sin horario de verano):
+- `fechaArgentina(anio, mes, dia, hora?, minuto?)`: instante de una fecha/hora de Argentina.
+- `calendarioArgentina(instante)`: día de calendario en Argentina de un instante.
+
+`Funcion.fecha` es un instante (`DateTime`). Mientras los scrapers no traigan el horario, se guarda a las 00:00 de Argentina del día de la función; cuando lo traigan, basta con pasar la hora a `fechaArgentina`. El filtro `?periodo=` del endpoint de reestrenos arma sus rangos con el día de Argentina (`[00:00 de hoy, 00:00 del día siguiente al último)`).
+
 ### Arquitectura Serverless (Vercel + GitHub Actions)
 
 - **API Liviana**: Al remover el cron y Playwright del servidor de Express, la API se convierte en un proceso muy liviano que puede arrancar rápidamente (cold starts de ~200ms) en Vercel, evitando costos de hosting continuo.

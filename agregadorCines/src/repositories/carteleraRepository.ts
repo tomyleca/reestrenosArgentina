@@ -5,6 +5,7 @@ import type { ICarteleraRepository } from "./ICarteleraRepository.js";
 import type { Categoria } from "../core/domain/categoria.js";
 import type { QueryOpciones, PaginatedResult } from "../api/types.js";
 import prisma from "../lib/db.js";
+import { calendarioArgentina, fechaArgentina } from "../utils/fechasArgentina.js";
 
 const DEFAULT_LIMIT = 25;
 
@@ -201,26 +202,22 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
   }
 }
 
-function buildFuncionesFiltro(periodo: "hoy" | "semana" | "mes") {
-  const ahora = new Date();
+// "Hoy" es el día de Argentina, no el del servidor (Vercel corre en UTC).
+const DIAS_POR_PERIODO = {
+  hoy: 1,
+  semana: 7, // desde hoy hasta 6 días después
+  mes: 30, // desde hoy hasta 29 días después
+} as const;
 
-  const desde = new Date(ahora);
-  desde.setHours(0, 0, 0, 0);
-
-  const hasta = new Date(ahora);
-
-  if (periodo === "hoy") {
-    hasta.setHours(23, 59, 59, 999);
-  } else if (periodo === "semana") {
-    // desde hoy hasta 6 días después (7 días en total)
-    hasta.setDate(hasta.getDate() + 6);
-    hasta.setHours(23, 59, 59, 999);
-  } else {
-    // "mes": desde hoy hasta 29 días después (30 días en total)
-    hasta.setDate(hasta.getDate() + 29);
-    hasta.setHours(23, 59, 59, 999);
-  }
+export function buildFuncionesFiltro(
+  periodo: "hoy" | "semana" | "mes",
+  ahora: Date = new Date(),
+) {
+  const { anio, mes, dia } = calendarioArgentina(ahora);
+  const desde = fechaArgentina(anio, mes, dia);
+  // Fin exclusivo: 00:00 del día siguiente al último del período
+  const hasta = fechaArgentina(anio, mes, dia + DIAS_POR_PERIODO[periodo]);
 
   // El filtro `some` genera un subquery SQL en lugar de filtrado en memoria
-  return { some: { fecha: { gte: desde, lte: hasta } } };
+  return { some: { fecha: { gte: desde, lt: hasta } } };
 }

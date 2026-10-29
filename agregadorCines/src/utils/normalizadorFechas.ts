@@ -1,3 +1,5 @@
+import { calendarioArgentina, fechaArgentina } from "./fechasArgentina.js";
+
 export class NormalizadorFechas {
 	private static readonly CANT_MESES_BUSCADOS = 3;
 
@@ -32,41 +34,36 @@ export class NormalizadorFechas {
   /**
    * Normaliza una fecha en formato texto (ej. "jueves 5", "Hoy", "5 de mayo") a un objeto Date.
    * Si no tiene año, asume el año actual o el siguiente si la fecha ya pasó por mucho.
+   * Las fechas se interpretan en hora de Argentina y se devuelven a las 00:00 de ese día
+   * (ver utils/fechasArgentina.ts), sin importar la zona horaria del servidor.
    */
   public static normalizar(
     texto: string,
-    fechaReferencia: Date = new Date(), //new Date te da el dia en el que estas
+    fechaReferencia: Date = new Date(), //new Date te da el instante actual
   ): Date | null {
     if (!texto) return null;
 
-    const limpio = texto.
-	
-	toLowerCase().trim();
+    const limpio = texto.toLowerCase().trim();
+    const { anio, mes, dia } = calendarioArgentina(fechaReferencia);
 
     // Casos especiales directos
-    if (limpio === "hoy") return new Date(fechaReferencia);
+    if (limpio === "hoy") return fechaArgentina(anio, mes, dia);
     if (limpio === "mañana" || limpio === "manana") {
-      const mañana = new Date(fechaReferencia);
-      mañana.setDate(mañana.getDate() + 1);
-      return mañana;
+      return fechaArgentina(anio, mes, dia + 1);
     }
 
     // Caso "jueves 5" o similar
     const diaNumMatch = limpio.match(/(\d+)/);
     if (diaNumMatch) {
       const diaNum = parseInt(diaNumMatch[1]!, 10);
-      let mes = fechaReferencia.getMonth();
-      let anio = fechaReferencia.getFullYear();
 
       const mesEncontrado = this.MESES.findIndex((m) => limpio.includes(m));
       if (mesEncontrado !== -1) {
-        const resultado = new Date(anio, mesEncontrado, diaNum);
         // Si estamos a fin de año, asumimos año siguiente
-        const esFinDeAnio = mes >= (12 - this.CANT_MESES_BUSCADOS); // Octubre = 9 en JS, DICIEMBRE =11	
-        if (esFinDeAnio && mesEncontrado < mes) {
-          resultado.setFullYear(anio + 1);
-        }
-        return resultado;
+        const esFinDeAnio = mes >= (12 - this.CANT_MESES_BUSCADOS); // Octubre = 9 en JS, DICIEMBRE =11
+        const anioResultado =
+          esFinDeAnio && mesEncontrado < mes ? anio + 1 : anio;
+        return fechaArgentina(anioResultado, mesEncontrado, diaNum);
       } else {
         const diaSemanaIdx = this.DIAS_SEMANA.findIndex((d) =>
           limpio.includes(d),
@@ -84,8 +81,14 @@ export class NormalizadorFechas {
 
         // Probamos mes actual, siguiente y el que le sigue (máximo 3 meses)
         for (let i = 0; i < this.CANT_MESES_BUSCADOS; i++) {
-          const testDate = new Date(anio, mes + i, diaNum);
-          if (testDate.getDay() === diaSemanaNormalizado) {
+          const testDate = fechaArgentina(anio, mes + i, diaNum);
+          const calendario = calendarioArgentina(testDate);
+          // Si el mes no tiene ese día (ej. 31 en un mes de 30), Date.UTC lo pasa
+          // al mes siguiente: lo descartamos para no devolver otro día.
+          if (
+            calendario.dia === diaNum &&
+            calendario.diaSemana === diaSemanaNormalizado
+          ) {
             return testDate;
           }
         }
