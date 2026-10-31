@@ -138,6 +138,10 @@ npm test
 # Ejecutar TODOS los tests de integración (*.integration.test.ts)
 npm run test:integration
 
+# Verificar que cada cine con tieneFunciones: true traiga funciones con fecha válida
+# (corre el provider real de cada uno, sin TMDB)
+npx vitest run --config vitest.integration.config.ts tests/funcionesPorCine.integration.test.ts
+
 # Ejecutar un test de integración específico
 npx vitest run --config vitest.integration.config.ts tests/cinepolis/cinepolisScrapper.integration.test.ts
 ```
