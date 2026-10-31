@@ -15,13 +15,17 @@ function toSearchParams<T extends object>(params: T): URLSearchParams {
   return query;
 }
 
-async function get<T>(path: string, params?: URLSearchParams): Promise<T> {
+async function get<T>(
+  path: string,
+  params?: URLSearchParams,
+  signal?: AbortSignal,
+): Promise<T> {
   const url = new URL(path, API_BASE_URL);
   if (params) {
     url.search = params.toString();
   }
 
-  const res = await fetch(url.toString(), { cache: "no-store" });
+  const res = await fetch(url.toString(), { cache: "no-store", signal });
 
   if (!res.ok) {
     throw new Error(
@@ -38,20 +42,24 @@ export const peliculaService = {
   /** GET /peliculas/estrenos */
   getEstrenosPaginados(
     params: GetPeliculasParams = {},
+    signal?: AbortSignal,
   ): Promise<PaginatedResult<Pelicula>> {
     return get<PaginatedResult<Pelicula>>(
       "/peliculas/estrenos",
       toSearchParams(params),
+      signal,
     );
   },
 
   /** GET /peliculas/reestrenos */
   getReestrenosPaginados(
     params: GetPeliculasParams = {},
+    signal?: AbortSignal,
   ): Promise<PaginatedResult<Pelicula>> {
     return get<PaginatedResult<Pelicula>>(
       "/peliculas/reestrenos",
       toSearchParams(params),
+      signal,
     );
   },
 
