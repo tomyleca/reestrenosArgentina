@@ -17,6 +17,13 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
     await page.waitForTimeout(1000);
   }
 
+  // Cada ciclo (/produccion/...) lista sus funciones como una secuencia de párrafos:
+  //   "Viernes 23"                       → día
+  //   "A las 15 horas" / "A las 15 y 21 horas" / "A las 14.30 horas" → horarios
+  //   "El ángel de la calle              → película: título en la primera línea,
+  //    (Street Angel; EE.UU; 1928)          ficha técnica en la segunda,
+  //    Dirección: Frank Borzage. ..."       director en una línea "Dirección:"
+  // Se genera una entrada por cada horario de cada película.
   protected override async scrapearPaginaCiclo(
     page: Page,
   ): Promise<PeliculaInput[]> {
@@ -28,74 +35,70 @@ export class CineSalaLugonesScrapper extends CicloScrapper {
       this.cine.selectors.containerPelicula,
       (containers, { cine }) => {
         const results: any[] = [];
-        let fechaActual: string | null = null;
-        let ultimoTexto: string | null = null;
-
         const container = containers[0];
         if (!container) return [];
 
-        const cicloHeader = document.querySelector("h1, h2, .sub-title, .title, .ciclo-title")?.textContent?.trim();
-        const paragraphs = Array.from(container.querySelectorAll("p"));
+        const ciclo = document.querySelector("h1")?.textContent?.trim();
 
-        const regexFichaConComa = /^\([^,]+,\s*\d{4}\)$/i;
-        const regexFichaCompleta = /^\([^;]+;\s*[^;]+[;,]\s*\d{4}\)$/i;
-        const regexFichaCorta = /^\([^;]+;\s*\d{4}\)$/i;
-        const regexFichaAnio = /^\(\d{4}\)$/i;
+        const regexDia =
+          /^(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s+\d+/i;
+        const regexHorarios = /^a las\s+(.+?)\s+horas?\.?$/i;
+        const regexFicha = /^\((.+)\)$/;
 
-        const regexDiaSemana = /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)\s+\d+/i;
+        let fechaActual: string | null = null;
+        let horarios: string[] = [];
 
-        paragraphs.forEach((p, idx) => {
-          const text = p.textContent?.trim() || "";
-          if (!text) return;
+        container.querySelectorAll("p").forEach((p) => {
+          const lineas = p.innerText
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean);
+          const primera = lineas[0];
+          if (!primera) return;
 
-          // 1. Detectar Fecha (ej: "Jueves 19", "Sábado 21")
-          if (regexDiaSemana.test(text)) {
-            fechaActual = text;
-            ultimoTexto = text;
+          // 1. Día: "Viernes 23", "Domingo 1° de noviembre"
+          if (regexDia.test(primera)) {
+            fechaActual = primera;
+            horarios = [];
             return;
           }
 
-          // 2. Comprobar si es la ficha técnica que sigue al título
-          const esFichaTecnica =
-            regexFichaConComa.test(text) ||
-            regexFichaCompleta.test(text) ||
-            regexFichaCorta.test(text) ||
-            regexFichaAnio.test(text);
-
-          if (esFichaTecnica && ultimoTexto) {
-            const matchAnio = text.match(/(\d{4})\s*\)$/);
-            const anioLanzamiento = matchAnio?.[1] ? parseInt(matchAnio[1], 10) : undefined;
-
-            // Sala Lugones ubica "Dirección: [Nombre]." en el párrafo inmediatamente posterior a la ficha técnica
-            const pDireccion = paragraphs[idx + 1]?.textContent?.trim() || "";
-            const pElenco = paragraphs[idx + 2]?.textContent?.trim() || "";
-            const pSinopsis = paragraphs[idx + 3]?.textContent?.trim() || "";
-
-            const matchDirector = pDireccion.match(/Dirección:\s*([^.\n]+)/i) || text.match(/Dir(?:\.|ector)?:?\s*([^,;.\n]+)/i);
-            const director = matchDirector?.[1] ? matchDirector[1].trim() : undefined;
-
-            const bloqueCompleto = [
-              ultimoTexto,
-              text,
-              pDireccion,
-              pElenco,
-              pSinopsis,
-            ]
-              .filter(Boolean)
-              .join(" ");
-
-            results.push({
-              titulo: ultimoTexto,
-              cine: cine,
-              fecha: fechaActual,
-              anioLanzamiento,
-              ciclo: cicloHeader || undefined,
-              director,
-              textoRaw: bloqueCompleto,
-            });
+          // 2. Horarios: "A las 15 y 21 horas" → ["15:00", "21:00"]
+          const matchHorarios = primera.match(regexHorarios);
+          if (matchHorarios?.[1]) {
+            horarios = [...matchHorarios[1].matchAll(/(\d{1,2})(?:[.:](\d{2}))?/g)].map(
+              (m) => `${m[1]}:${m[2] ?? "00"}`,
+            );
+            return;
           }
 
-          ultimoTexto = text;
+          // 3. Película: la segunda línea es la ficha "(Título original; País; Año)"
+          const ficha = lineas[1]?.match(regexFicha);
+          if (!ficha?.[1] || !fechaActual) return;
+
+          const anio = ficha[1].match(/(\d{4})\s*$/)?.[1];
+          const director = lineas
+            .find((l) => /^dirección:/i.test(l))
+            ?.replace(/^dirección:\s*/i, "")
+            .replace(/\.$/, "")
+            .trim();
+
+          const base = {
+            titulo: primera,
+            cine,
+            ...(ciclo ? { ciclo } : {}),
+            ...(director ? { director } : {}),
+            ...(anio ? { anioLanzamiento: parseInt(anio, 10) } : {}),
+            textoRaw: lineas.join(" "),
+          };
+
+          const horariosFuncion = horarios.length > 0 ? horarios : [null];
+          for (const horario of horariosFuncion) {
+            results.push({
+              ...base,
+              fecha: horario ? `${fechaActual} ${horario}` : fechaActual,
+            });
+          }
         });
 
         return results;

@@ -108,6 +108,16 @@ describe("NormalizadorFechas", () => {
     expect(resultado?.getTime()).toBe(fechaArgentina(2026, 9, 31).getTime());
   });
 
+  it("debería tomar la hora de un texto con día de la semana", () => {
+    const resultado = NormalizadorFechas.normalizar("Sábado 7 21:30", fechaHoy);
+    expect(resultado?.getTime()).toBe(fechaArgentina(2026, 2, 7, 21, 30).getTime());
+  });
+
+  it("debería tomar la hora de un texto con mes sin confundirla con el día", () => {
+    const resultado = NormalizadorFechas.normalizar("Domingo 1° de noviembre 15:00", fechaHoy);
+    expect(resultado?.getTime()).toBe(fechaArgentina(2026, 10, 1, 15, 0).getTime());
+  });
+
   it("debería normalizar una fecha ISO con hora en hora de Argentina", () => {
     const resultado = NormalizadorFechas.normalizar("2026-10-31 17:30", fechaHoy);
     expect(resultado?.getTime()).toBe(fechaArgentina(2026, 9, 31, 17, 30).getTime());

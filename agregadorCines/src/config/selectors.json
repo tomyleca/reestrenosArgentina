@@ -30,7 +30,7 @@
   },
 
   "salaLugones": {
-    "ciclo": ".list-item a[href*='/ver/']",
+    "ciclo": "a[href*='/produccion/']",
     "containerPelicula": ".details",
     "titulo": "p span[style*='color: #800080'] strong, p strong span[style*='color: #800080']",
     "fecha": "p strong"

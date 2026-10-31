@@ -59,7 +59,7 @@ export const cineMalba: CineConfig = {
 export const cineSalaLugones: CineConfig = {
   nombre: "Sala Lugones",
   localidad: "CABA",
-  url: "https://complejoteatral.gob.ar/cine",
+  url: "https://complejoteatral.gob.ar/genero/cine/",
   tieneFunciones: true,
   selectors: {
     containerPelicula: selectorsData.salaLugones.containerPelicula,
