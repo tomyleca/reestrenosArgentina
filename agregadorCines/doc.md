@@ -106,7 +106,7 @@ GitHub Actions y Vercel corren en UTC, así que ninguna fecha depende de la zona
 - `fechaArgentina(anio, mes, dia, hora?, minuto?)`: instante de una fecha/hora de Argentina.
 - `calendarioArgentina(instante)`: día de calendario en Argentina de un instante.
 
-`Funcion.fecha` es un instante (`DateTime`). Si el scraper no trae el horario, se guarda a las 00:00 de Argentina del día de la función. `NormalizadorFechas` también acepta fechas ISO (`"2026-10-31 17:30"`) y una hora `HH:MM` en cualquier texto (`"Viernes 23 15:00"`). Cine York y Centro Cultural Munro combinan el `data-date` de Lumiton con la hora del texto, y Sala Lugones arma `"<día> <hora>"` a partir de los párrafos "A las 15 y 21 horas" de cada ciclo, así que sus funciones tienen horario real. El filtro `?periodo=` del endpoint de reestrenos arma sus rangos con el día de Argentina (`[00:00 de hoy, 00:00 del día siguiente al último)`).
+`Funcion.fecha` es un instante (`DateTime`). Si el scraper no trae el horario, se guarda a las 00:00 de Argentina del día de la función. `NormalizadorFechas` también acepta fechas ISO (`"2026-10-31 17:30"`) y una hora `HH:MM` en cualquier texto (`"Viernes 23 15:00"`). Cine York y Centro Cultural Munro combinan el `data-date` de Lumiton con la hora del texto, y Sala Lugones arma `"<día> <hora>"` a partir de los horarios de cada página (`provider/scrappers/parsers/lugonesParser.ts`: ciclos con varias películas y páginas de película única), así que sus funciones tienen horario real. El filtro `?periodo=` del endpoint de reestrenos arma sus rangos con el día de Argentina (`[00:00 de hoy, 00:00 del día siguiente al último)`).
 
 ### Arquitectura Serverless (Vercel + GitHub Actions)
 
