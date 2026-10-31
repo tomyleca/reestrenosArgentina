@@ -33,7 +33,7 @@ src/
 │   ├── Pelicula/          # PeliculaCard, PeliculaModal y DisponibilidadCines (cines + funciones)
 │   └── HeroCarousel/
 ├── hooks/              # Custom hooks de React
-│   └── usePeliculasPaginadas.ts  # Paginación con soporte de período, cineId y localidad
+│   └── usePeliculasPaginadas.ts  # Paginación con soporte de período, cineId y localidad; cada carga cancela la anterior (AbortController)
 ├── services/           # Llamadas a APIs externas
 │   ├── peliculaService.ts   # Conexión con el Backend (incluye getCines)
 │   └── cloudinaryService.ts # Conexión con Cloudinary
