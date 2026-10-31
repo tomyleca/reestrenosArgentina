@@ -32,7 +32,7 @@ export class NormalizadorFechas {
   ];
 
   /**
-   * Normaliza una fecha en formato texto (ej. "jueves 5", "Hoy", "5 de mayo") a un objeto Date.
+   * Normaliza una fecha en formato texto (ej. "jueves 5", "Hoy", "5 de mayo", "2026-10-31 17:30") a un objeto Date.
    * Si no tiene año, asume el año actual o el siguiente si la fecha ya pasó por mucho.
    * Las fechas se interpretan en hora de Argentina y se devuelven a las 00:00 de ese día
    * (ver utils/fechasArgentina.ts), sin importar la zona horaria del servidor.
@@ -44,6 +44,21 @@ export class NormalizadorFechas {
     if (!texto) return null;
 
     const limpio = texto.toLowerCase().trim();
+
+    // Formato ISO "2026-10-31", con hora opcional "2026-10-31 17:30"
+    // (ej. el atributo data-date de Lumiton). Va primero porque el resto de
+    // los casos tomaría el año como número de día.
+    const iso = limpio.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ t](\d{1,2}):(\d{2}))?/);
+    if (iso) {
+      return fechaArgentina(
+        Number(iso[1]),
+        Number(iso[2]) - 1,
+        Number(iso[3]),
+        Number(iso[4] ?? 0),
+        Number(iso[5] ?? 0),
+      );
+    }
+
     const { anio, mes, dia } = calendarioArgentina(fechaReferencia);
 
     // Casos especiales directos

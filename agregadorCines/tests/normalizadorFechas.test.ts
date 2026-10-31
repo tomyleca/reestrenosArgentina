@@ -102,4 +102,15 @@ describe("NormalizadorFechas", () => {
     );
     expect(calendario(resultado)).toMatchObject({ dia: 6, diaSemana: 5 }); // Viernes
   });
+
+  it("debería normalizar una fecha ISO a las 00:00 de Argentina", () => {
+    const resultado = NormalizadorFechas.normalizar("2026-10-31", fechaHoy);
+    expect(resultado?.getTime()).toBe(fechaArgentina(2026, 9, 31).getTime());
+  });
+
+  it("debería normalizar una fecha ISO con hora en hora de Argentina", () => {
+    const resultado = NormalizadorFechas.normalizar("2026-10-31 17:30", fechaHoy);
+    expect(resultado?.getTime()).toBe(fechaArgentina(2026, 9, 31, 17, 30).getTime());
+    expect(resultado?.toISOString()).toBe("2026-10-31T20:30:00.000Z");
+  });
 });

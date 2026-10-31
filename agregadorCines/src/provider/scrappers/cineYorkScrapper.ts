@@ -37,11 +37,18 @@ export class CineYorkScrapper extends Scraper {
           const titulo = el.querySelector(sel.titulo)?.textContent?.trim();
           if (!titulo) continue;
 
+          // data-date trae el día en ISO ("2026-10-31") y el texto la hora
+          // ("sábado 31 oct 17:30hs"): se combinan en "2026-10-31 17:30".
           const dataDate = el.getAttribute("data-date");
           const fechaTexto = sel.fecha
             ? el.querySelector(sel.fecha)?.textContent?.trim()
             : null;
-          const fecha = dataDate || fechaTexto;
+          const hora = fechaTexto?.match(/(\d{1,2}:\d{2})\s*hs?/i)?.[1];
+          const fecha = dataDate
+            ? hora
+              ? `${dataDate} ${hora}`
+              : dataDate
+            : fechaTexto;
 
           // Se deduplica por título + fecha: cada función de la película cuenta
           const key = `${titulo.toLowerCase()}|${fecha ?? ""}`;
