@@ -13,7 +13,6 @@ export interface PaginacionOpciones {
 
 export interface QueryOpciones extends PaginacionOpciones {
   filtroPeriodo?: FiltroPeriodo;
-  soloActivas?: boolean;
   cineId?: number;
   localidad?: Localidad;
 }

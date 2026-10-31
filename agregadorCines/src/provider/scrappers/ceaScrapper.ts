@@ -47,9 +47,6 @@ export class CeaScrapper extends Scraper {
           if (!rawTitle.trim()) continue;
 
           const titulo = rawTitle.replace(/\s+/g, " ").trim();
-          const key = titulo.toLowerCase();
-          if (seen.has(key)) continue;
-          seen.add(key);
 
           // Extraer director y año de dirAnio (ej: "Leo Fleider · 1972")
           const dirAnioText =
@@ -107,6 +104,11 @@ export class CeaScrapper extends Scraper {
           } else if (diaSemanaMes) {
             fecha = diaSemanaMes;
           }
+
+          // Se deduplica por título + fecha: cada función de la película cuenta
+          const key = `${titulo.toLowerCase()}|${fecha ?? ""}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
 
           // Sinopsis
           const sinopsis =

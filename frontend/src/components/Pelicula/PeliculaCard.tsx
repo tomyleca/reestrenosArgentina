@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Pelicula } from "@/types/pelicula";
+import { formatearFuncion } from "@/utils/fechas";
 
 interface PeliculaCardProps {
   pelicula: Pelicula;
@@ -24,6 +25,11 @@ function formatearDuracion(minutos: number): string {
 }
 
 export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
+  // La API devuelve las funciones de hoy en adelante ordenadas por fecha
+  const proximaFuncion = pelicula.funciones[0];
+  const cineProximaFuncion =
+    proximaFuncion && pelicula.cines.find((c) => c.id === proximaFuncion.cineId);
+
   return (
     <article
       tabIndex={0}
@@ -88,6 +94,14 @@ export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
             </span>
           )}
         </div>
+
+        {proximaFuncion && (
+          <p className="mt-1.5 text-xs font-semibold text-accent-light capitalize">
+            <span aria-hidden>📅 </span>
+            Próxima: {formatearFuncion(proximaFuncion.fecha)}
+            {cineProximaFuncion && ` · ${cineProximaFuncion.nombre}`}
+          </p>
+        )}
       </div>
     </article>
   );

@@ -10,8 +10,6 @@ export enum Categoria {
 /** Params para GET /peliculas */
 export interface GetPeliculasParams {
   periodo?: FiltroPeriodo;
-  /** Por defecto true en el backend. Pasar false para incluir inactivas. */
-  activas?: boolean;
   page?: number;
   limit?: number;
   cineId?: number;

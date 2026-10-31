@@ -37,15 +37,16 @@ export class CentroCulturalMunroScrapper extends Scraper {
           const titulo = el.querySelector(sel.titulo)?.textContent?.trim();
           if (!titulo) continue;
 
-          const key = titulo.toLowerCase();
-          if (seen.has(key)) continue;
-          seen.add(key);
-
           const dataDate = el.getAttribute("data-date");
           const fechaTexto = sel.fecha
             ? el.querySelector(sel.fecha)?.textContent?.trim()
             : null;
           const fecha = dataDate || fechaTexto;
+
+          // Se deduplica por título + fecha: cada función de la película cuenta
+          const key = `${titulo.toLowerCase()}|${fecha ?? ""}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
 
           const sinopsis = el.querySelector("p")?.textContent?.trim();
 

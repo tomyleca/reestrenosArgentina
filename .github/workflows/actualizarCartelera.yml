@@ -40,3 +40,4 @@ jobs:
         env:                                   # ejecuto el compilado del actualizarCartelera.ts, que es donde esta el codigo de refrescar
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # Desambiguador IA; sin la key usa solo la heurística

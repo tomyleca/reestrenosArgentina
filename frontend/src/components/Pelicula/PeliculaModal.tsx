@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { Pelicula } from "@/types/pelicula";
 import { useEffect, useState } from "react";
+import DisponibilidadCines from "@/components/Pelicula/DisponibilidadCines";
 
 interface PeliculaModalProps {
   pelicula: Pelicula | null;
@@ -10,24 +11,6 @@ interface PeliculaModalProps {
 }
 
 const TMDB_IMAGE_BASE_ORIGINAL = "https://image.tmdb.org/t/p/w780";
-
-function getLocalidadLabel(localidad?: string): string | null {
-  switch (localidad) {
-    case "GBA_ZONA_NORTE":
-      return "Zona Norte";
-    case "GBA_ZONA_SUR":
-    case "ZONA_SUR":
-      return "Zona Sur";
-    case "GBA_ZONA_OESTE":
-      return "Zona Oeste";
-    case "GBA_ZONA_ESTE":
-      return "Zona Este";
-    case "CABA":
-      return "CABA";
-    default:
-      return null;
-  }
-}
 
 export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -56,10 +39,6 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
   }, [pelicula, onClose]);
 
   if (!pelicula) return null;
-
-  const handleCineClick = (_cineNombre: string, url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
 
   return (
     <div
@@ -133,31 +112,10 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
 
           <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
 
-          {/* 4. Cinema Chips */}
-          <div className="w-full text-left lg:text-center">
-            <p className="text-xxs uppercase tracking-[0.3em] font-black text-white/30 mb-6 text-center">Disponible en</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              {pelicula.cines.map((cine) => {
-                const locLabel = getLocalidadLabel(cine.localidad);
-                return (
-                  <button
-                    key={cine.id}
-                    onClick={() => handleCineClick(cine.nombre, cine.url)}
-                    aria-label={`Ver funciones en ${cine.nombre}`}
-                    className="group relative px-6 py-3 rounded-full bg-white/5 hover:bg-accent border border-white/10 hover:border-accent transition-all duration-300 hover:scale-110 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    <span className="relative z-10 text-white font-bold group-hover:text-black flex items-center gap-2">
-                      <span className="text-lg">📍</span> {cine.nombre}
-                      {locLabel && (
-                        <span className="text-xxs px-2 py-0.5 rounded-full bg-white/10 group-hover:bg-black/10 font-normal">
-                          {locLabel}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* 4. Cines y funciones */}
+          <div className="w-full">
+            <p className="text-xs uppercase tracking-[0.3em] font-black text-white/50 mb-4 text-center">Dónde y cuándo</p>
+            <DisponibilidadCines cines={pelicula.cines} funciones={pelicula.funciones} />
           </div>
         </div>
       </div>

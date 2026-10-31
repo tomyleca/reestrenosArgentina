@@ -72,12 +72,22 @@ export class TMDBAdapter implements ITMDBAdapter {
     const peliculaExistente =
       await this.carteleraRepository.buscarPorTMDBId(idTMDBPelicula);
     if (peliculaExistente) {
-      // Arranca solo con los datos de esta corrida: el repositorio reemplaza
-      // los cines con `set`, así que no hay que arrastrar los de la DB.
-      peliculaExistente.activa = true;
+      // Arranca solo con los datos de esta corrida: cada cine reemplaza su
+      // cartelera, así que no hay que arrastrar los cines ni funciones de la DB.
       peliculaExistente.cines = [peliculaInput.cine];
       peliculaExistente.funciones = [];
-      agregarFechaFuncion(peliculaExistente, peliculaInput.fecha);
+      // La categoría depende de la fecha actual (más de un año desde el
+      // lanzamiento = reestreno), así que se recalcula en cada corrida.
+      if (peliculaExistente.fechaLanzamiento) {
+        peliculaExistente.categoria = calcularCategoria(
+          peliculaExistente.fechaLanzamiento,
+        );
+      }
+      agregarFechaFuncion(
+        peliculaExistente,
+        peliculaInput.fecha,
+        peliculaInput.cine.id,
+      );
       return peliculaExistente;
     }
 
@@ -102,14 +112,13 @@ export class TMDBAdapter implements ITMDBAdapter {
         };
       }),
       categoria: isValidDate ? calcularCategoria(releaseDateObj) : Categoria.ESTRENOS,
-      activa: true,
       tmdbId: detallePelicula.id,
       cines: [peliculaInput.cine],
       funciones: [],
     };
 
     if (peliculaInput.fecha) {
-      agregarFechaFuncion(pelicula, peliculaInput.fecha);
+      agregarFechaFuncion(pelicula, peliculaInput.fecha, peliculaInput.cine.id);
     }
 
     return Promise.resolve(pelicula);
