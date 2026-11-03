@@ -53,7 +53,23 @@ export async function getCloudinaryFolderImages(folderName: string): Promise<str
     return result;
   } catch (error) {
     if (timeoutId) clearTimeout(timeoutId);
-    console.error("❌ Error en Cloudinary Search:", error);
+    console.error("❌ Error en Cloudinary Search:", mensajeDeError(error));
     return [];
   }
+}
+
+// El SDK de Cloudinary rechaza con un objeto que incluye las opciones del request,
+// con la api_key y el api_secret en `auth`. Nunca hay que loguear el error completo.
+function mensajeDeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+
+  const detalle = (error as { error?: { message?: string; http_code?: number } })
+    ?.error;
+  if (detalle?.message) {
+    return detalle.http_code
+      ? `${detalle.message} (HTTP ${detalle.http_code})`
+      : detalle.message;
+  }
+
+  return "Error desconocido de Cloudinary";
 }

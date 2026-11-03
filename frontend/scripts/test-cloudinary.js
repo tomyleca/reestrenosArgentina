@@ -51,7 +51,8 @@ async function testCloudinary() {
     }
   } catch (error) {
     console.error("❌ Error conectando a Cloudinary:");
-    console.error(error.message || error);
+    // El error de Cloudinary trae las credenciales en request_options: solo el mensaje
+    console.error(error.message || error.error?.message || "Error desconocido");
   }
 }
 
