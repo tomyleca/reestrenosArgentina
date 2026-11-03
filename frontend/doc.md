@@ -5,7 +5,7 @@ Interfaz web para visualizar la cartelera de cines argentinos. Construida con **
 ## Características
 
 - **Visualización de Reestrenos**: Grilla infinita con scroll infinito (IntersectionObserver).
-- **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este con indicador de próximamente para zonas sin cines), por cine y un **Filtro** de orden (**Próxima función**, por defecto, o **Popularidad**), con confirmación mediante el botón **Aplicar**.
+- **Filtros interactivos**: Por zona/localidad (CABA, Zona Norte, Zona Sur, Zona Oeste, Zona Este con indicador de próximamente para zonas sin cines), por cine y un **Orden** (**Próxima función**, por defecto, o **Popularidad**), con confirmación mediante el botón **Aplicar**.
 - **Funciones**: cada tarjeta muestra la próxima función ("Próxima: jue 30/10 · Malba"). El modal y la página de detalle muestran, por cine, todas sus funciones de hoy en adelante; para los cines sin funciones (Cinemark, Cinépolis, Pixel) se enlaza al sitio del cine. Las fechas se muestran siempre en hora de Argentina (`utils/fechas.ts`); si una función no tiene horario (00:00) se muestra solo el día.
 - **Última actualización por cine**: cada cine muestra hace cuánto se actualizó su cartelera ("Actualizado hace 3 días"). Pasados 8 días se marca como posiblemente desactualizado (el refresco es semanal y un cine cuyo scraper falla conserva su cartelera anterior).
 - **Server-Side Rendering (SSR)**: La carga inicial se realiza en el servidor para mejorar el SEO y la velocidad.

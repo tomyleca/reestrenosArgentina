@@ -214,7 +214,7 @@ export default function GrillaReestrenos({
 
           {/* Fila 3 — Orden */}
           <div>
-            <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Filtro</p>
+            <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Orden</p>
             <div className="flex flex-wrap gap-2">
               {ORDENES.map(({ valor, label }) => (
                 <button
