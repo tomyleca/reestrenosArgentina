@@ -13,7 +13,8 @@ export interface GetPeliculasParams {
   orden?: OrdenPeliculas;
   page?: number;
   limit?: number;
-  cineId?: number;
+  /** Uno o varios cines; se envía como "1,3" */
+  cineIds?: number[];
   localidad?: Localidad;
 }
 

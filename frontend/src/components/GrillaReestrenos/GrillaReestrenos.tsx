@@ -37,9 +37,9 @@ export default function GrillaReestrenos({
   const [localidad, setLocalidad] = useState<Localidad | undefined>(undefined);
   const [tempLocalidad, setTempLocalidad] = useState<Localidad | undefined>(undefined);
   const [orden, setOrden] = useState<OrdenPeliculas>(ORDEN_POR_DEFECTO);
-  const [cineId, setCineId] = useState<number | undefined>(undefined);
+  const [cineIds, setCineIds] = useState<number[]>([]);
   const [tempOrden, setTempOrden] = useState<OrdenPeliculas>(ORDEN_POR_DEFECTO);
-  const [tempCineId, setTempCineId] = useState<number | undefined>(undefined);
+  const [tempCineIds, setTempCineIds] = useState<number[]>([]);
   const [cines, setCines] = useState<Cine[]>(initialCines);
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
 
@@ -57,7 +57,7 @@ export default function GrillaReestrenos({
     Categoria.REESTRENOS,
     initialData,
     orden,
-    cineId,
+    cineIds,
     localidad,
   );
 
@@ -96,43 +96,51 @@ export default function GrillaReestrenos({
     if (!zonasConCines.has(valor)) return;
     setTempLocalidad((prev) => {
       const nueva = prev === valor ? undefined : valor;
-      // Si el cine seleccionado previamente no pertenece a la nueva localidad, lo deseleccionamos
-      if (nueva && tempCineId) {
-        const cineSeleccionado = cines.find((c) => c.id === tempCineId);
-        if (cineSeleccionado && cineSeleccionado.localidad && cineSeleccionado.localidad !== nueva) {
-          setTempCineId(undefined);
-        }
+      // Se deseleccionan los cines elegidos que no pertenecen a la nueva localidad
+      if (nueva) {
+        setTempCineIds((ids) =>
+          ids.filter((id) => {
+            const cine = cines.find((c) => c.id === id);
+            return !cine?.localidad || cine.localidad === nueva;
+          }),
+        );
       }
       return nueva;
     });
-  }, [cines, tempCineId, zonasConCines]);
+  }, [cines, zonasConCines]);
 
   // Siempre hay un orden elegido: no se deselecciona
   const handleOrden = useCallback((valor: OrdenPeliculas) => {
     setTempOrden(valor);
   }, []);
 
+  // Se pueden elegir varios cines: cada clic agrega o saca el cine de la selección
   const handleCine = useCallback((id: number) => {
-    setTempCineId((prev) => (prev === id ? undefined : id));
+    setTempCineIds((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id].sort((a, b) => a - b),
+    );
   }, []);
 
   const handleAplicar = useCallback(() => {
     setLocalidad(tempLocalidad);
     setOrden(tempOrden);
-    setCineId(tempCineId);
-  }, [tempLocalidad, tempOrden, tempCineId]);
+    setCineIds(tempCineIds);
+  }, [tempLocalidad, tempOrden, tempCineIds]);
 
   const handleLimpiar = useCallback(() => {
     setTempLocalidad(undefined);
     setTempOrden(ORDEN_POR_DEFECTO);
-    setTempCineId(undefined);
+    setTempCineIds([]);
     setLocalidad(undefined);
     setOrden(ORDEN_POR_DEFECTO);
-    setCineId(undefined);
+    setCineIds([]);
   }, []);
 
+  // Las selecciones de cines se guardan ordenadas, así que alcanza con comparar el join
   const hayCambiosPendientes =
-    tempLocalidad !== localidad || tempOrden !== orden || tempCineId !== cineId;
+    tempLocalidad !== localidad ||
+    tempOrden !== orden ||
+    tempCineIds.join(",") !== cineIds.join(",");
 
   const cinesFiltrados = tempLocalidad
     ? cines.filter((c) => c.localidad === tempLocalidad)
@@ -196,11 +204,11 @@ export default function GrillaReestrenos({
                   <button
                     key={cine.id}
                     onClick={() => handleCine(cine.id)}
-                    aria-pressed={tempCineId === cine.id}
+                    aria-pressed={tempCineIds.includes(cine.id)}
                     className={[
                       "px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer",
                       "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-                      tempCineId === cine.id
+                      tempCineIds.includes(cine.id)
                         ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
                         : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm",
                     ].join(" ")}
@@ -251,10 +259,10 @@ export default function GrillaReestrenos({
             </button>
 
             {(tempOrden !== ORDEN_POR_DEFECTO ||
-              tempCineId !== undefined ||
+              tempCineIds.length > 0 ||
               tempLocalidad !== undefined ||
               orden !== ORDEN_POR_DEFECTO ||
-              cineId !== undefined ||
+              cineIds.length > 0 ||
               localidad !== undefined) && (
               <button
                 onClick={handleLimpiar}
