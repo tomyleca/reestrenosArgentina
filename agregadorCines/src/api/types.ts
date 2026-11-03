@@ -17,7 +17,7 @@ export interface PaginacionOpciones {
 
 export interface QueryOpciones extends PaginacionOpciones {
   filtroPeriodo?: FiltroPeriodo;
-  cineId?: number;
+  cineIds?: number[];
   localidad?: Localidad;
 }
 

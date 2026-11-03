@@ -16,7 +16,13 @@ const QueryEstrenosSchema = PaginacionSchema;
 
 const QueryReestrenosSchema = QueryEstrenosSchema.extend({
   periodo: z.enum(["hoy", "semana", "mes"]).nullable().catch(null),
-  cineId: z.coerce.number().int().positive().optional(),
+  // Uno o varios cines: "?cineIds=1,3" (o "?cineIds=1&cineIds=3")
+  cineIds: z
+    .preprocess(
+      (val) => (typeof val === "string" ? val.split(",").filter(Boolean) : val),
+      z.array(z.coerce.number().int().positive()).max(50),
+    )
+    .optional(),
   localidad: z.nativeEnum(Localidad).optional(),
 });
 
@@ -50,7 +56,7 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, orden, periodo: filtroPeriodo, cineId, localidad } = parse.data;
+    const { page, limit, orden, periodo: filtroPeriodo, cineIds, localidad } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
@@ -59,7 +65,7 @@ export class PeliculaController {
         orden,
         page,
         limit,
-        ...(cineId !== undefined && { cineId }),
+        ...(cineIds !== undefined && cineIds.length > 0 && { cineIds }),
         ...(localidad !== undefined && { localidad }),
       },
     );

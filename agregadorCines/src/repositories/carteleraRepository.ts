@@ -135,8 +135,8 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
     const skip = (page - 1) * limit;
     const hoy = inicioDelDiaArgentina();
 
-    const cine: Prisma.CineWhereInput = opciones?.cineId
-      ? { id: opciones.cineId }
+    const cine: Prisma.CineWhereInput = opciones?.cineIds?.length
+      ? { id: { in: opciones.cineIds } }
       : opciones?.localidad
         ? { localidad: opciones.localidad }
         : {};
