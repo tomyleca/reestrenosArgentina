@@ -30,3 +30,12 @@ Una migración se commitea ya aplicada en la DB local y probada. Nunca dejes mig
 - Si hay que editar el SQL (columna obligatoria en una tabla con datos, renombres, duplicados antes de un unique, migración de datos), usá `--create-only`, editá `migration.sql` y aplicala enseguida con `npx prisma migrate dev`.
 - Antes de commitear, `npx prisma migrate status` tiene que decir que la DB está al día.
 - Si no podés aplicarla vos, avisá explícitamente que queda pendiente y qué datos borra o modifica.
+
+## Correr tests
+
+Corré tests solo cuando hagan falta, y solo los relacionados con lo que modificaste. No corras la suite completa por defecto.
+
+- Corré el archivo o el test puntual que cubre el cambio (desde `agregadorCines/`): `npx vitest run tests/ordenPeliculas.test.ts`, o `npx vitest run -t "<nombre del test>"`.
+- Si el cambio no tiene tests relacionados ni agrega lógica testeable (estilos, textos, documentación, configuración), no corras tests: verificá con `tsc`, lint o en el navegador, según corresponda.
+- La suite unitaria completa (`npx vitest run`) solo cuando el cambio toca código que usan muchos módulos (dominio, normalizadores, repositorio, tipos compartidos).
+- Integración: solo el archivo del cine o proveedor que tocaste (`npx vitest run --config vitest.integration.config.ts <archivo>`). Nunca `npm run test:integration` completo: incluye tests que usan la API de TMDB.
