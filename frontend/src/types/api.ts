@@ -1,6 +1,7 @@
 import type { Localidad } from "./pelicula";
 
-export type FiltroPeriodo = "hoy" | "semana" | "mes";
+/** proxima: próxima función primero (por defecto en la API); popularidad: TMDB */
+export type OrdenPeliculas = "proxima" | "popularidad";
 
 export enum Categoria {
   ESTRENOS = "estrenos",
@@ -9,7 +10,7 @@ export enum Categoria {
 
 /** Params para GET /peliculas */
 export interface GetPeliculasParams {
-  periodo?: FiltroPeriodo;
+  orden?: OrdenPeliculas;
   page?: number;
   limit?: number;
   cineId?: number;

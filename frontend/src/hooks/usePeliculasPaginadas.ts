@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Pelicula, Localidad } from "@/types/pelicula";
-import { Categoria, PaginatedResult, FiltroPeriodo } from "@/types/api";
+import { Categoria, PaginatedResult, OrdenPeliculas } from "@/types/api";
 import { peliculaService } from "@/services/peliculaService";
 
 const LIMIT = 25;
@@ -26,7 +26,7 @@ interface EstadoPaginacion {
 export function usePeliculasPaginadas(
   categoria: Categoria,
   initialData?: PaginatedResult<Pelicula>,
-  periodo?: FiltroPeriodo,
+  orden?: OrdenPeliculas,
   cineId?: number,
   localidad?: Localidad,
 ): UsePeliculasPaginadasResult {
@@ -63,7 +63,7 @@ export function usePeliculasPaginadas(
             : peliculaService.getReestrenosPaginados;
 
         const resultado = await fetcher(
-          { page: pagina, limit: LIMIT, periodo, cineId, localidad },
+          { page: pagina, limit: LIMIT, orden, cineId, localidad },
           controller.signal,
         );
         if (controller.signal.aborted) return;
@@ -90,13 +90,13 @@ export function usePeliculasPaginadas(
         }));
       }
     },
-    [categoria, periodo, cineId, localidad],
+    [categoria, orden, cineId, localidad],
   );
 
   // Filtros de la última carga de la página 1. Si vino initialData, esa carga
   // ya la hizo el servidor. Comparar la clave (en lugar de un flag) evita la
   // doble carga del doble efecto de StrictMode.
-  const claveFiltros = `${categoria}|${periodo ?? ""}|${cineId ?? ""}|${localidad ?? ""}`;
+  const claveFiltros = `${categoria}|${orden ?? ""}|${cineId ?? ""}|${localidad ?? ""}`;
   const claveCargadaRef = useRef<string | null>(initialData ? claveFiltros : null);
 
   useEffect(() => {

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Categoria } from "@/types/api";
-import type { PaginatedResult, FiltroPeriodo } from "@/types/api";
+import type { PaginatedResult, OrdenPeliculas } from "@/types/api";
 import type { Pelicula, Cine, Localidad } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import { peliculaService } from "@/services/peliculaService";
@@ -22,10 +22,12 @@ const LOCALIDADES: { valor: Localidad; label: string }[] = [
   { valor: "GBA_ZONA_ESTE", label: "Zona Este" },
 ];
 
-const PERIODOS: { valor: FiltroPeriodo; label: string }[] = [
-  { valor: "hoy", label: "Hoy" },
-  { valor: "semana", label: "Esta semana" },
-  { valor: "mes", label: "Este mes" },
+// Coincide con el orden por defecto de la API, así la primera página del SSR ya viene ordenada
+const ORDEN_POR_DEFECTO: OrdenPeliculas = "proxima";
+
+const ORDENES: { valor: OrdenPeliculas; label: string }[] = [
+  { valor: "proxima", label: "Próxima función" },
+  { valor: "popularidad", label: "Popularidad" },
 ];
 
 export default function GrillaReestrenos({
@@ -34,9 +36,9 @@ export default function GrillaReestrenos({
 }: GrillaReestrenosProps) {
   const [localidad, setLocalidad] = useState<Localidad | undefined>(undefined);
   const [tempLocalidad, setTempLocalidad] = useState<Localidad | undefined>(undefined);
-  const [periodo, setPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
+  const [orden, setOrden] = useState<OrdenPeliculas>(ORDEN_POR_DEFECTO);
   const [cineId, setCineId] = useState<number | undefined>(undefined);
-  const [tempPeriodo, setTempPeriodo] = useState<FiltroPeriodo | undefined>(undefined);
+  const [tempOrden, setTempOrden] = useState<OrdenPeliculas>(ORDEN_POR_DEFECTO);
   const [tempCineId, setTempCineId] = useState<number | undefined>(undefined);
   const [cines, setCines] = useState<Cine[]>(initialCines);
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
@@ -54,7 +56,7 @@ export default function GrillaReestrenos({
   const { peliculas, hasMore, cargando, error, cargarMas } = usePeliculasPaginadas(
     Categoria.REESTRENOS,
     initialData,
-    periodo,
+    orden,
     cineId,
     localidad,
   );
@@ -105,8 +107,9 @@ export default function GrillaReestrenos({
     });
   }, [cines, tempCineId, zonasConCines]);
 
-  const handlePeriodo = useCallback((valor: FiltroPeriodo) => {
-    setTempPeriodo((prev) => (prev === valor ? undefined : valor));
+  // Siempre hay un orden elegido: no se deselecciona
+  const handleOrden = useCallback((valor: OrdenPeliculas) => {
+    setTempOrden(valor);
   }, []);
 
   const handleCine = useCallback((id: number) => {
@@ -115,21 +118,21 @@ export default function GrillaReestrenos({
 
   const handleAplicar = useCallback(() => {
     setLocalidad(tempLocalidad);
-    setPeriodo(tempPeriodo);
+    setOrden(tempOrden);
     setCineId(tempCineId);
-  }, [tempLocalidad, tempPeriodo, tempCineId]);
+  }, [tempLocalidad, tempOrden, tempCineId]);
 
   const handleLimpiar = useCallback(() => {
     setTempLocalidad(undefined);
-    setTempPeriodo(undefined);
+    setTempOrden(ORDEN_POR_DEFECTO);
     setTempCineId(undefined);
     setLocalidad(undefined);
-    setPeriodo(undefined);
+    setOrden(ORDEN_POR_DEFECTO);
     setCineId(undefined);
   }, []);
 
   const hayCambiosPendientes =
-    tempLocalidad !== localidad || tempPeriodo !== periodo || tempCineId !== cineId;
+    tempLocalidad !== localidad || tempOrden !== orden || tempCineId !== cineId;
 
   const cinesFiltrados = tempLocalidad
     ? cines.filter((c) => c.localidad === tempLocalidad)
@@ -209,19 +212,19 @@ export default function GrillaReestrenos({
             </div>
           )}
 
-          {/* Fila 3 — Período */}
+          {/* Fila 3 — Orden */}
           <div>
-            <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Cuando</p>
+            <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Filtro</p>
             <div className="flex flex-wrap gap-2">
-              {PERIODOS.map(({ valor, label }) => (
+              {ORDENES.map(({ valor, label }) => (
                 <button
                   key={valor}
-                  onClick={() => handlePeriodo(valor)}
-                  aria-pressed={tempPeriodo === valor}
+                  onClick={() => handleOrden(valor)}
+                  aria-pressed={tempOrden === valor}
                   className={[
                     "px-4 py-1.5 text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer",
                     "outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-                    tempPeriodo === valor
+                    tempOrden === valor
                       ? "bg-accent border-accent text-bg-base scale-105 shadow-[0_0_15px_rgba(167,139,250,0.4)]"
                       : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 hover:text-white shadow-sm",
                   ].join(" ")}
@@ -247,10 +250,10 @@ export default function GrillaReestrenos({
               Aplicar
             </button>
 
-            {(tempPeriodo !== undefined ||
+            {(tempOrden !== ORDEN_POR_DEFECTO ||
               tempCineId !== undefined ||
               tempLocalidad !== undefined ||
-              periodo !== undefined ||
+              orden !== ORDEN_POR_DEFECTO ||
               cineId !== undefined ||
               localidad !== undefined) && (
               <button
