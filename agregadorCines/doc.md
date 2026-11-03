@@ -118,8 +118,8 @@ GitHub Actions y Vercel corren en UTC, así que ninguna fecha depende de la zona
 ### Públicos
 | Método | Endpoint | Descripción |
 | :--- | :--- | :--- |
-| `GET` | `/peliculas/estrenos` | Obtiene películas en cartelera de estrenos (paginado). |
-| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). Soporta `?periodo=hoy\|semana\|mes`, `?cineId=<id>` y `?localidad=<Localidad>`. El período solo aplica a cines con funciones. |
+| `GET` | `/peliculas/estrenos` | Obtiene películas en cartelera de estrenos (paginado). Soporta `?orden=proxima\|popularidad`. |
+| `GET` | `/peliculas/reestrenos` | Obtiene películas en cartelera de reestrenos (paginado). Soporta `?orden=proxima\|popularidad` (por defecto `proxima`: primero la función más cercana, las películas sin funciones al final y los empates por popularidad), `?periodo=hoy\|semana\|mes`, `?cineId=<id>` y `?localidad=<Localidad>`. El período solo aplica a cines con funciones. |
 | `GET` | `/peliculas/:id` | Obtiene el detalle de una película por ID (con sus funciones de hoy en adelante). |
 | `GET` | `/cines` | Devuelve la lista de todos los cines (ordenados por nombre), con `tieneFunciones` y `ultimaActualizacion`. |
 

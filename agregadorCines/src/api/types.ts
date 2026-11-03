@@ -6,9 +6,13 @@ export interface QueryReestrenos {
   periodo?: FiltroPeriodo;
 }
 
+// proxima: próxima función primero (las películas sin funciones al final); popularidad: TMDB
+export type OrdenPeliculas = "proxima" | "popularidad";
+
 export interface PaginacionOpciones {
   page?: number;
   limit?: number;
+  orden?: OrdenPeliculas;
 }
 
 export interface QueryOpciones extends PaginacionOpciones {

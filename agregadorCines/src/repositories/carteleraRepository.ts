@@ -167,12 +167,56 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
 
     const where: Prisma.PeliculaWhereInput = { categoria, ...disponible };
 
+    if ((opciones?.orden ?? "proxima") === "proxima") {
+      // Prisma no puede ordenar por la primera función de cada película, así que
+      // se traen las candidatas con su próxima función, se ordenan en memoria y
+      // se busca el detalle solo de la página pedida (la cartelera son pocos cientos).
+      const candidatas = await prisma.pelicula.findMany({
+        where,
+        select: {
+          id: true,
+          popularidad: true,
+          funciones: {
+            where: { fecha: { gte: hoy }, cine },
+            orderBy: { fecha: "asc" },
+            take: 1,
+            select: { fecha: true },
+          },
+        },
+      });
+      const idsPagina = ordenarPorProximaFuncion(
+        candidatas.map((c) => ({
+          id: c.id,
+          popularidad: c.popularidad,
+          proximaFuncion: c.funciones[0]?.fecha ?? null,
+        })),
+      ).slice(skip, skip + limit);
+
+      const pagina = await prisma.pelicula.findMany({
+        where: { id: { in: idsPagina } },
+        include: includeCartelera(hoy),
+      });
+      const porId = new Map(pagina.map((p) => [p.id, p]));
+      const data = idsPagina.flatMap((id) => {
+        const pelicula = porId.get(id);
+        return pelicula ? [soloCinesDisponibles(pelicula)] : [];
+      });
+
+      return {
+        data,
+        total: candidatas.length,
+        page,
+        limit,
+        hasMore: skip + data.length < candidatas.length,
+      };
+    }
+
     const [total, data] = await prisma.$transaction([
       prisma.pelicula.count({ where }),
       prisma.pelicula.findMany({
         where,
         include: includeCartelera(hoy),
-        orderBy: { popularidad: "desc" }, //siempre devuelve las peliculas ordenadas por popularidad
+        orderBy: { popularidad: "desc" },
         skip,
         take: limit,
       }),
@@ -261,6 +305,25 @@ function soloCinesDisponibles<
         !c.tieneFunciones || pelicula.funciones.some((f) => f.cineId === c.id),
     ),
   };
+}
+
+export interface CandidataOrden {
+  id: number;
+  popularidad: number | null;
+  proximaFuncion: Date | null;
+}
+
+// Primero la función más cercana; las películas sin funciones (cines que no
+// publican funciones) van al final. Los empates se resuelven por popularidad.
+export function ordenarPorProximaFuncion(candidatas: CandidataOrden[]): number[] {
+  return [...candidatas]
+    .sort((a, b) => {
+      const fechaA = a.proximaFuncion?.getTime() ?? Infinity;
+      const fechaB = b.proximaFuncion?.getTime() ?? Infinity;
+      if (fechaA !== fechaB) return fechaA < fechaB ? -1 : 1;
+      return (b.popularidad ?? 0) - (a.popularidad ?? 0);
+    })
+    .map((c) => c.id);
 }
 
 // "Hoy" es el día de Argentina, no el del servidor (Vercel corre en UTC).

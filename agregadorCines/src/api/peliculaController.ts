@@ -9,6 +9,7 @@ import { Localidad } from "../core/domain/localidad.js";
 const PaginacionSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(25),
+  orden: z.enum(["proxima", "popularidad"]).default("proxima"),
 });
 
 const QueryEstrenosSchema = PaginacionSchema;
@@ -33,11 +34,11 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit } = parse.data;
+    const { page, limit, orden } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.ESTRENOS,
-      { page, limit },
+      { page, limit, orden },
     );
     res.json(resultado);
   };
@@ -49,12 +50,13 @@ export class PeliculaController {
       return;
     }
 
-    const { page, limit, periodo: filtroPeriodo, cineId, localidad } = parse.data;
+    const { page, limit, orden, periodo: filtroPeriodo, cineId, localidad } = parse.data;
 
     const resultado = await this.repository.getPeliculasByCategoriaPaginadas(
       Categoria.REESTRENOS,
       {
         filtroPeriodo,
+        orden,
         page,
         limit,
         ...(cineId !== undefined && { cineId }),
