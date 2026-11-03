@@ -24,23 +24,18 @@ async function traerTodas(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_APP_URL || "http://localhost:3001";
 
-  let uniquePeliculas: Pelicula[] = [];
+  // Buscamos todas las películas para generar rutas dinámicas.
+  // Sin try/catch a propósito: el sitemap es estático, y uno sin películas quedaría
+  // guardado una hora. Si la API falla, el build falla o se sigue sirviendo el último bueno.
+  const [estrenos, reestrenos] = await Promise.all([
+    traerTodas(peliculaService.getEstrenosPaginados),
+    traerTodas(peliculaService.getReestrenosPaginados),
+  ]);
 
-  try {
-    // Buscamos todas las películas para generar rutas dinámicas
-    const [estrenos, reestrenos] = await Promise.all([
-      traerTodas(peliculaService.getEstrenosPaginados),
-      traerTodas(peliculaService.getReestrenosPaginados),
-    ]);
+  const allPeliculas = [...estrenos, ...reestrenos];
 
-    const allPeliculas = [...estrenos, ...reestrenos];
-
-    // Eliminamos duplicados por ID
-    uniquePeliculas = Array.from(new Map(allPeliculas.map(p => [p.id, p])).values());
-  } catch {
-    // Si la API no está disponible durante el build, generamos el sitemap sin las rutas de películas
-    console.warn("⚠️ No se pudo conectar a la API para generar el sitemap. Se generará sin rutas de películas.");
-  }
+  // Eliminamos duplicados por ID
+  const uniquePeliculas = Array.from(new Map(allPeliculas.map(p => [p.id, p])).values());
 
   //De esta forma el Googlebot puede entrar a las rutas de cada pelicula y, de esta forma, generar la metadata correspondiente a cada una.
   const movieUrls = uniquePeliculas.map((pelicula) => ({

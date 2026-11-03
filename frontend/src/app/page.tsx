@@ -7,10 +7,13 @@ import styles from "./page.module.css";
 export default async function Home() {
   // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
   // Esto hace que el primer renderizado ya tenga las películas (mejor carga inicial y SEO)
+  // Los errores de la API no se atrapan a propósito: la home es estática, y si se armara
+  // vacía quedaría guardada una hora. Si falla, el build falla (y sigue el deploy anterior)
+  // o, al regenerar, Next sigue sirviendo la última versión buena.
   const [initialReestrenos, cloudinaryImages, initialCines] = await Promise.all([
-    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }).catch(() => undefined),
+    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }),
     getCloudinaryFolderImages("agregadorCines"),
-    peliculaService.getCines().catch(() => []),
+    peliculaService.getCines(),
   ]);
 
   // Si Cloudinary no devuelve nada (ej: todavia no configuraste las keys), usamos estas de backup

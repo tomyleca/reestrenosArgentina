@@ -51,7 +51,10 @@ La cartelera cambia con cada scraping, no en tiempo real, así que el servidor d
 
 Consecuencias:
 - Después de un refresco, la cartelera nueva puede tardar hasta una hora en verse.
-- **El build prerenderiza la home**: si la API no responde durante el build, la home se publica sin películas hasta la siguiente revalidación (una hora).
+- **Nunca se guarda una home o un sitemap vacíos.** `page.tsx` y `sitemap.ts` no atrapan los errores de la API a propósito:
+  - Si la API falla durante el **build**, el build falla y Vercel sigue sirviendo el deploy anterior. Hay que relanzar el deploy cuando la API vuelva.
+  - Si falla al **regenerar** (cada hora), Next sigue sirviendo la última versión buena y reintenta en la próxima visita.
+- El build reutiliza las respuestas de `.next/cache/fetch-cache` mientras no venzan: para probar localmente el caso "API caída" hay que borrar esa carpeta.
 
 ## Requisitos Previos
 
