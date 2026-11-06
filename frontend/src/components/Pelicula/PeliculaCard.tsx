@@ -57,7 +57,7 @@ export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
             src={`${TMDB_IMAGE_BASE}${pelicula.poster_path}`}
             alt={`Poster de ${pelicula.titulo}`}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 17vw"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center placeholder-gradient text-5xl font-black tracking-tighter text-accent">
@@ -67,7 +67,7 @@ export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent translate-y-1 transition-transform duration-300 hover:translate-y-0">
+      <div className="absolute inset-0 flex flex-col justify-end p-3 bg-gradient-to-t from-black/95 via-black/40 to-transparent translate-y-1 transition-transform duration-300 hover:translate-y-0">
         <h3 className="text-sm font-bold text-white leading-snug mb-1.5 text-shadow">
           {pelicula.titulo}
         </h3>
