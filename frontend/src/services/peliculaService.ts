@@ -3,6 +3,11 @@ import type { GetPeliculasParams, PaginatedResult } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
+// La cartelera se actualiza con el scraping, no en tiempo real: en el servidor,
+// Next guarda las respuestas y las vuelve a pedir como mucho una vez por hora.
+// En el navegador (filtros, scroll infinito) `next` se ignora.
+const REVALIDATE_SEGUNDOS = 60 * 60;
+
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function toSearchParams<T extends object>(params: T): URLSearchParams {
@@ -25,7 +30,10 @@ async function get<T>(
     url.search = params.toString();
   }
 
-  const res = await fetch(url.toString(), { cache: "no-store", signal });
+  const res = await fetch(url.toString(), {
+    next: { revalidate: REVALIDATE_SEGUNDOS },
+    signal,
+  });
 
   if (!res.ok) {
     throw new Error(

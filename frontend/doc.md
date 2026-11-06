@@ -42,10 +42,24 @@ src/
     └── fechas.ts       # Formato de funciones y "última actualización" en hora de Argentina
 ```
 
+## Caché
+
+La cartelera cambia con cada scraping, no en tiempo real, así que el servidor de Next no consulta la API en cada visita:
+
+- **Películas y cines** (`peliculaService`): los `fetch` usan `next: { revalidate: 3600 }`. La home y el sitemap quedan estáticos y se regeneran como mucho una vez por hora; Vercel los sirve desde el CDN. En el navegador (filtros, scroll infinito) esa opción se ignora y los pedidos van directo a la API.
+- **Fotos del hero** (`cloudinaryService`): la lista de URLs se guarda un día con `unstable_cache`. Los errores no se cachean: si Cloudinary falla, se usan las fotos de fallback y el próximo render vuelve a intentar.
+
+Consecuencias:
+- Después de un refresco, la cartelera nueva puede tardar hasta una hora en verse.
+- **Nunca se guarda una home o un sitemap vacíos.** `page.tsx` y `sitemap.ts` no atrapan los errores de la API a propósito:
+  - Si la API falla durante el **build**, el build falla y Vercel sigue sirviendo el deploy anterior. Hay que relanzar el deploy cuando la API vuelva.
+  - Si falla al **regenerar** (cada hora), Next sigue sirviendo la última versión buena y reintenta en la próxima visita.
+- El build reutiliza las respuestas de `.next/cache/fetch-cache` mientras no venzan: para probar localmente el caso "API caída" hay que borrar esa carpeta.
+
 ## Requisitos Previos
 
 - **Node.js**: v18 o superior.
-- **Backend Activo**: El servicio `agregadorCines` debe estar corriendo (por defecto en `http://localhost:3000`).
+- **Backend Activo**: El servicio `agregadorCines` debe estar corriendo (por defecto en `http://localhost:3000`), también durante `npm run build`.
 
 ## Variables de Entorno
 
