@@ -8,6 +8,7 @@ on:
 jobs:
   refrescarPeliculas:
     runs-on: ubuntu-24.04  # Fijado: ubuntu-latest pasó a 26.04 y Playwright 1.58 no lo soporta
+    timeout-minutes: 60    # Si un scraper se cuelga, corta en 1 h en vez del máximo de GitHub (6 h)
     defaults:
       run:
         working-directory: agregadorCines
@@ -16,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: agregadorCines/package-lock.json
 
