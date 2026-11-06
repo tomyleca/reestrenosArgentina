@@ -35,17 +35,19 @@ export abstract class Scraper {
     return await page.$$eval(
       this.cine.selectors.containerPelicula,
       (elements, { sel, cine }) => {
-        return elements.map((el) => {
+        return elements.flatMap((el) => {
           const titulo = el.querySelector(sel.titulo)?.textContent?.trim();
+          // Sin título no hay qué buscar en TMDB: se descarta (suele ser un selector roto)
+          if (!titulo) return [];
           const fecha = sel.fecha
             ? el.querySelector(sel.fecha)?.textContent?.trim()
             : null;
 
-          return {
-            titulo: titulo || "Sin título",
+          return [{
+            titulo,
             cine: cine,
             fecha: fecha,
-          };
+          }];
         });
       },
       { sel: this.cine.selectors, cine: this.cine },

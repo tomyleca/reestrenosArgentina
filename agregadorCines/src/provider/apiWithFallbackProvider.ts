@@ -18,14 +18,28 @@ export class ApiWithFallbackProvider implements ICineProvider {
 
   async obtenerPeliculas(): Promise<PeliculaInput[]> {
     try {
-      return await this.requester.obtenerPeliculas();
+      const peliculas = await this.requester.obtenerPeliculas();
+      if (peliculas.length > 0) return peliculas;
+      // Una API que responde OK pero vacía suele haber cambiado de formato:
+      // el scraper puede seguir funcionando.
+      console.warn(
+        `⚠️ API de ${this.cine.nombre} respondió sin películas, usando scraper como fallback.`,
+      );
     } catch (error) {
       console.warn(
         `⚠️ API de ${this.cine.nombre} falló, usando scraper como fallback:`,
         error,
       );
-      const page = await this.pageFactory();
-      return this.scraper.ejecutar(page);
+    }
+    return this.scrapear();
+  }
+
+  private async scrapear(): Promise<PeliculaInput[]> {
+    const page = await this.pageFactory();
+    try {
+      return await this.scraper.ejecutar(page);
+    } finally {
+      await page.close();
     }
   }
 }

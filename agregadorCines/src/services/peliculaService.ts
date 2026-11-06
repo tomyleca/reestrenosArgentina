@@ -101,7 +101,11 @@ export class PeliculaService implements IPeliculaService {
     const resultados: ResultadoCine[] = [];
     for (const provider of providers) {
       try {
-        const peliculasInput = await provider.obtenerPeliculas();
+        const obtenidas = await provider.obtenerPeliculas();
+        const peliculasInput = await this.descartarSinTitulo(
+          provider.cine,
+          obtenidas,
+        );
         console.log(
           `🎬 ${provider.cine.nombre}: ${peliculasInput.length} películas obtenidas.`,
         );
@@ -119,6 +123,27 @@ export class PeliculaService implements IPeliculaService {
       }
     }
     return resultados;
+  }
+
+  // Respaldo por si algún scraper devuelve títulos vacíos: buscarlos en TMDB
+  // puede emparejarlos con cualquier película. Un título vacío casi siempre es
+  // un selector roto, así que se avisa con una alerta que lo dice.
+  private async descartarSinTitulo(
+    cine: Cine,
+    peliculasInput: PeliculaInput[],
+  ): Promise<PeliculaInput[]> {
+    const conTitulo = peliculasInput.filter((p) => p.titulo?.trim());
+    const sinTitulo = peliculasInput.length - conTitulo.length;
+    if (sinTitulo > 0) {
+      const mensaje = `${sinTitulo} películas sin título en "${cine.nombre}": revisar el selector de título.`;
+      console.warn(`⚠️ ${mensaje}`);
+      await this.carteleraRepository.agregarAlerta({
+        id: randomUUID(),
+        mensaje,
+        fecha: new Date(),
+      });
+    }
+    return conTitulo;
   }
 
   async normalizarPeliculas(

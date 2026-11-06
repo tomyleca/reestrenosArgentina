@@ -61,7 +61,9 @@ export class CineMalbaScrapper extends CicloScrapper {
             fechaActual = text;
           }
 
-          if (sel.titulo && el.matches(sel.titulo)) {
+          const titulo = el.textContent?.trim();
+          // Los títulos vacíos se descartan en lugar de buscarlos en TMDB
+          if (sel.titulo && el.matches(sel.titulo) && titulo) {
             const parentText = el.parentElement?.textContent || "";
             const matchInParent = parentText.match(
               /^(Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)s?\s+(\d+|de|a las)/i,
@@ -80,7 +82,7 @@ export class CineMalbaScrapper extends CicloScrapper {
             const director = matchDirector?.[1] ? matchDirector[1].trim() : undefined;
 
             results.push({
-              titulo: el.textContent?.trim() || "Sin título",
+              titulo,
               cine: cine,
               fecha: fechaPelicula,
               anioLanzamiento,

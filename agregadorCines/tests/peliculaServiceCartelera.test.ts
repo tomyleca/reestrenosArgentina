@@ -100,4 +100,30 @@ describe("PeliculaService - cartelera por cine", () => {
     expect(reemplazos.has(cinemark.id)).toBe(true);
     expect(alertas).toHaveLength(1);
   });
+
+  it("descarta las películas sin título y avisa con una alerta", async () => {
+    const { repositorio, alertas } = crearRepositorio();
+    const titulosNormalizados: string[] = [];
+    const normalizadorQueRegistra = {
+      normalizar: async (inputs: PeliculaInput[]) => {
+        titulosNormalizados.push(...inputs.map((i) => i.titulo));
+        return normalizador.normalizar(inputs);
+      },
+    } as unknown as INormalizadorPeliculas;
+    const service = new PeliculaService(repositorio, normalizadorQueRegistra);
+
+    await service.refrescarPeliculas([
+      provider(cinemark, async () => [
+        { titulo: "Seven", cine: cinemark },
+        { titulo: "", cine: cinemark },
+        { titulo: "   ", cine: cinemark },
+      ]),
+    ]);
+
+    // Los vacíos no llegan al normalizador, así que no se buscan en TMDB
+    expect(titulosNormalizados).toEqual(["Seven"]);
+    expect(alertas).toEqual([
+      '2 películas sin título en "Cinemark": revisar el selector de título.',
+    ]);
+  });
 });

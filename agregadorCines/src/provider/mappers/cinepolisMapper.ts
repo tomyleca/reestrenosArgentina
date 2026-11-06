@@ -54,16 +54,19 @@ export function cinepolisGraphqlMapper(
 ): PeliculaInput[] {
   if (!responseJson?.data?.movies?.edges) return [];
   
-  return responseJson.data.movies.edges.map((edge: any) => {
+  return responseJson.data.movies.edges.flatMap((edge: any) => {
     const node = edge?.node;
+    const titulo = node?.name || node?.originalName;
+    // Sin título no hay qué buscar en TMDB
+    if (!titulo) return [];
     const result: PeliculaInput = {
-      titulo: node?.name || node?.originalName || "Sin título",
+      titulo,
       cine,
     };
     if (node?.releaseDate) {
       result.fechaLanzamiento = new Date(node.releaseDate);
     }
-    return result;
+    return [result];
   });
 }
 
