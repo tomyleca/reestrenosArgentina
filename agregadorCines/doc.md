@@ -14,6 +14,8 @@ El proyecto está dividido en dos partes principales:
 El scrapper obtiene las películas en cartelera para cada cine configurado. Cada cine puede tener dos estrategias de obtención:
 
 - **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, tarda más de 30 segundos o responde sin películas, se activa el scraping con Playwright como respaldo, y la página se cierra al terminar (ej: Cinemark, Cine Pixel, CEA).
+
+Las películas sin título se descartan: los scrapers no las devuelven y `PeliculaService` las filtra de respaldo, con una alerta "N películas sin título en X: revisar el selector de título". Buscar un título vacío o inventado en TMDB podía emparejarlo con cualquier película.
 - **Solo scraper**: Para cines que no exponen una API pública de cartelera activa (ej: Cinepolis, Malba, Sala Lugones, Casa PBA, Centro Cultural Munro, Cine York).
 
 ### Directorios

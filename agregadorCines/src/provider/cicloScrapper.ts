@@ -52,11 +52,11 @@ export abstract class CicloScrapper extends Scraper {
 
           if (titulos.length === 0) return [];
 
-          return Array.from(titulos).map((tituloEl) => ({
-            titulo: tituloEl.textContent?.trim() || "Sin título",
-            cine: cine,
-            fecha: fecha,
-          }));
+          // Los títulos vacíos se descartan en lugar de buscarlos en TMDB
+          return Array.from(titulos).flatMap((tituloEl) => {
+            const titulo = tituloEl.textContent?.trim();
+            return titulo ? [{ titulo, cine: cine, fecha: fecha }] : [];
+          });
         });
       },
       { sel: this.cine.selectors, cine: this.cine },
