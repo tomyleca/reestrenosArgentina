@@ -23,11 +23,11 @@ const LOCALIDADES: { valor: Localidad; label: string }[] = [
 ];
 
 // Coincide con el orden por defecto de la API, así la primera página del SSR ya viene ordenada
-const ORDEN_POR_DEFECTO: OrdenPeliculas = "proxima";
+const ORDEN_POR_DEFECTO: OrdenPeliculas = "popularidad";
 
 const ORDENES: { valor: OrdenPeliculas; label: string }[] = [
-  { valor: "proxima", label: "Próxima función" },
   { valor: "popularidad", label: "Popularidad" },
+  { valor: "proxima", label: "Próxima función" },
 ];
 
 export default function GrillaReestrenos({

@@ -1,6 +1,6 @@
 import type { Localidad } from "./pelicula";
 
-/** proxima: próxima función primero (por defecto en la API); popularidad: TMDB */
+/** popularidad: TMDB (por defecto en la API); proxima: próxima función primero */
 export type OrdenPeliculas = "proxima" | "popularidad";
 
 export enum Categoria {

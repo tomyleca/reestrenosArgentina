@@ -9,7 +9,7 @@ import { Localidad } from "../core/domain/localidad.js";
 const PaginacionSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(25),
-  orden: z.enum(["proxima", "popularidad"]).default("proxima"),
+  orden: z.enum(["proxima", "popularidad"]).default("popularidad"),
 });
 
 const QueryEstrenosSchema = PaginacionSchema;

@@ -167,7 +167,7 @@ export class PrismaCarteleraRepository implements ICarteleraRepository {
 
     const where: Prisma.PeliculaWhereInput = { categoria, ...disponible };
 
-    if ((opciones?.orden ?? "proxima") === "proxima") {
+    if ((opciones?.orden ?? "popularidad") === "proxima") {
       // Prisma no puede ordenar por la primera función de cada película, así que
       // se traen las candidatas con su próxima función, se ordenan en memoria y
       // se busca el detalle solo de la página pedida (la cartelera son pocos cientos).
