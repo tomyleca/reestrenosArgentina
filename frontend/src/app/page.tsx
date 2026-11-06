@@ -2,6 +2,7 @@ import HeroCarousel from "@/components/HeroCarousel/HeroCarousel";
 import GrillaReestrenos from "@/components/GrillaReestrenos/GrillaReestrenos";
 import { peliculaService } from "@/services/peliculaService";
 import { getCloudinaryFolderImages } from "@/services/cloudinaryService";
+import { ORDEN_POR_DEFECTO } from "@/types/api";
 import styles from "./page.module.css";
 
 export default async function Home() {
@@ -11,7 +12,7 @@ export default async function Home() {
   // vacía quedaría guardada una hora. Si falla, el build falla (y sigue el deploy anterior)
   // o, al regenerar, Next sigue sirviendo la última versión buena.
   const [initialReestrenos, cloudinaryImages, initialCines] = await Promise.all([
-    peliculaService.getReestrenosPaginados({ page: 1, limit: 25 }),
+    peliculaService.getReestrenosPaginados({ page: 1, limit: 25, orden: ORDEN_POR_DEFECTO }),
     getCloudinaryFolderImages("agregadorCines"),
     peliculaService.getCines(),
   ]);

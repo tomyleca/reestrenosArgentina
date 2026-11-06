@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Categoria } from "@/types/api";
+import { Categoria, ORDEN_POR_DEFECTO } from "@/types/api";
 import type { PaginatedResult, OrdenPeliculas } from "@/types/api";
 import type { Pelicula, Cine, Localidad } from "@/types/pelicula";
 import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
@@ -21,9 +21,6 @@ const LOCALIDADES: { valor: Localidad; label: string }[] = [
   { valor: "GBA_ZONA_OESTE", label: "Zona Oeste" },
   { valor: "GBA_ZONA_ESTE", label: "Zona Este" },
 ];
-
-// Coincide con el orden por defecto de la API, así la primera página del SSR ya viene ordenada
-const ORDEN_POR_DEFECTO: OrdenPeliculas = "popularidad";
 
 const ORDENES: { valor: OrdenPeliculas; label: string }[] = [
   { valor: "popularidad", label: "Popularidad" },
