@@ -8,6 +8,9 @@ import { usePeliculasPaginadas } from "@/hooks/usePeliculasPaginadas";
 import { peliculaService } from "@/services/peliculaService";
 import PeliculaCard from "@/components/Pelicula/PeliculaCard";
 import PeliculaModal from "@/components/Pelicula/PeliculaModal";
+import BotonFiltros from "./BotonFiltros";
+
+const PANEL_FILTROS_ID = "panel-filtros";
 
 interface GrillaReestrenosProps {
   initialData?: PaginatedResult<Pelicula>;
@@ -39,6 +42,8 @@ export default function GrillaReestrenos({
   const [tempCineIds, setTempCineIds] = useState<number[]>([]);
   const [cines, setCines] = useState<Cine[]>(initialCines);
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState<Pelicula | null>(null);
+  // Solo afecta a pantallas chicas: en md+ el panel se muestra siempre
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
 
   // Zonas con cines disponibles (usa la lista de cines si cargó, o fallback a las zonas activas conocidas)
   const zonasConCines = new Set<Localidad>(
@@ -122,6 +127,8 @@ export default function GrillaReestrenos({
     setLocalidad(tempLocalidad);
     setOrden(tempOrden);
     setCineIds(tempCineIds);
+    // En mobile se cierra el panel para que se vean los resultados
+    setFiltrosAbiertos(false);
   }, [tempLocalidad, tempOrden, tempCineIds]);
 
   const handleLimpiar = useCallback(() => {
@@ -139,6 +146,12 @@ export default function GrillaReestrenos({
     tempOrden !== orden ||
     tempCineIds.join(",") !== cineIds.join(",");
 
+  // Filtros aplicados (no los pendientes), para el contador del botón mobile
+  const cantidadFiltrosActivos =
+    (localidad !== undefined ? 1 : 0) +
+    cineIds.length +
+    (orden !== ORDEN_POR_DEFECTO ? 1 : 0);
+
   const cinesFiltrados = tempLocalidad
     ? cines.filter((c) => c.localidad === tempLocalidad)
     : cines;
@@ -155,8 +168,18 @@ export default function GrillaReestrenos({
     <section className="w-full py-10 bg-linear-to-b from-bg-base to-bg-elevated">
       {/* ─── Header ─────────────────────────────────────────── */}
       <div className="px-[5%] mb-8">
-        {/* Filtros */}
-        <div className="flex flex-col gap-5">
+        <BotonFiltros
+          abierto={filtrosAbiertos}
+          cantidadActivos={cantidadFiltrosActivos}
+          panelId={PANEL_FILTROS_ID}
+          onToggle={() => setFiltrosAbiertos((abierto) => !abierto)}
+        />
+
+        {/* Filtros: ocultos en mobile hasta que se despliegan, siempre visibles en md+ */}
+        <div
+          id={PANEL_FILTROS_ID}
+          className={`${filtrosAbiertos ? "flex mt-5" : "hidden"} md:flex md:mt-0 flex-col gap-5`}
+        >
           {/* Fila 1 — Zona / Localidad */}
           <div>
             <p className="text-xs uppercase tracking-widest font-bold text-white/30 mb-2">Zona</p>
