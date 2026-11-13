@@ -32,6 +32,8 @@ export class NormalizadorPeliculas implements INormalizadorPeliculas {
       /\b(DOB(LAD[AO])?|ESP)\b/gi,
       /\b(IMAX|PREMIUM|HFR|ATMOS|SCREENX|D-BOX)\b/gi,
       /\b(DIGI|DIGITAL)\b/gi,
+      // Reestrenos por aniversario: "ROCKY 50° ANIVERSARIO" se busca como "ROCKY"
+      /\b\d{1,3}\s*[°ºª]?\s*ANIVERSARIO\b/gi,
       /[\(\[\{][^\)\]\}]*[\)\]\}]/g,
     ];
 
@@ -41,9 +43,9 @@ export class NormalizadorPeliculas implements INormalizadorPeliculas {
     }
 
     // Los reemplazos anteriores pueden dejar guiones/comas colgantes al final
-    // o espacios múltiples en el medio del título.
+    // (con o sin espacio después: "TÍTULO - ") o espacios múltiples en el medio.
     return resultado
-      .replace(/[-|:,]+$/, "")
+      .replace(/[\s\-|:,]+$/, "")
       .replace(/\s{2,}/g, " ")
       .trim();
   }
