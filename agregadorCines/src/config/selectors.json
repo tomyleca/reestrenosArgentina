@@ -15,10 +15,8 @@
   },
 
   "cinePixel": {
-    "containerPelicula": ".movieItem",
-    "titulo": "p.truncate",
-    "idiomas": "#formatAndReleaseStatus p.text-xxs",
-    "link": "a:has(.movieItem)"
+    "containerPelicula": ".movies-list .movie",
+    "titulo": "img[alt]"
   },
 
   "cineMalba": {
