@@ -26,3 +26,4 @@
 - CEA Avellaneda
 - Cine York
 - Centro Cultural Munro
+- Atlas Cines

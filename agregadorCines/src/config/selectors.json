@@ -53,5 +53,9 @@
     "titulo": "[data-field='titulo']",
     "fecha": "[data-field='diaSemanaMes']",
     "ciclo": ".fc-cycle"
+  },
+  "atlas": {
+    "containerPelicula": ".v2-mcard",
+    "titulo": ".v2-mc-title-text"
   }
 }

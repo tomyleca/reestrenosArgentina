@@ -8,7 +8,12 @@ import { CinePixelScrapper } from "../provider/scrappers/cinePixelScrapper.js";
 import { ApiWithFallbackProvider } from "../provider/apiWithFallbackProvider.js";
 import { cinepolisApiMapper } from "../provider/mappers/cinepolisMapper.js";
 import { cinemarkApiMapper } from "../provider/mappers/cinemarkMapper.js";
-import { cinePixelApiMapper } from "../provider/mappers/cinePixelMapper.js";
+import {
+  peliculasPorComplejoMapper,
+  type PeliculaPorComplejoItem,
+} from "../provider/mappers/peliculasPorComplejoMapper.js";
+import { AtlasApiRequester } from "../provider/apiRequesters/atlasApiRequester.js";
+import { AtlasScrapper } from "../provider/scrappers/atlasScrapper.js";
 import { ScraperOnlyProvider } from "../provider/scraperOnlyProvider.js";
 import { CineMalbaScrapper } from "../provider/scrappers/cineMalbaScrapper.js";
 import { CineSalaLugonesScrapper } from "../provider/scrappers/cineSalaLugonesScrapper.js";
@@ -28,6 +33,7 @@ import {
   centroCulturalMunro,
   cineYork,
   cineCEA,
+  cineAtlas,
 } from "./cinesConfig.js";
 
 type ProviderFactory = (
@@ -56,7 +62,9 @@ export const providerRegistry = new Map<string, ProviderFactory>([
     (cine, pageFactory) =>
       new ApiWithFallbackProvider(
         cine,
-        new CineApiRequester(cine, cinePixelApiMapper),
+        new CineApiRequester<PeliculaPorComplejoItem[]>(cine, (data, c) =>
+          peliculasPorComplejoMapper(data, c),
+        ),
         new CinePixelScrapper(cine),
         pageFactory,
       ),
@@ -101,6 +109,16 @@ export const providerRegistry = new Map<string, ProviderFactory>([
         cine,
         new CeaApiRequester(cine),
         new CeaScrapper(cine),
+        pageFactory,
+      ),
+  ],
+  [
+    cineAtlas.nombre,
+    (cine, pageFactory) =>
+      new ApiWithFallbackProvider(
+        cine,
+        new AtlasApiRequester(cine),
+        new AtlasScrapper(cine),
         pageFactory,
       ),
   ],

@@ -1,19 +1,25 @@
 // test de integración: verifica que CineApiRequester obtiene películas
 // directamente del endpoint de cartelera del sitio de Cines Pixel
 // (/Funciones/GetPeliculasPorComplejo). La presencia de `titulo` confirma que
-// el mapper cinePixelApiMapper procesó correctamente la respuesta.
+// el mapper peliculasPorComplejoMapper procesó correctamente la respuesta.
 
 import { describe, test, expect } from "vitest";
 import type { Cine } from "../../src/core/domain/cine.js";
 import { CineApiRequester } from "../../src/provider/cineApiRequester.js";
-import { cinePixelApiMapper } from "../../src/provider/mappers/cinePixelMapper.js";
+import {
+  peliculasPorComplejoMapper,
+  type PeliculaPorComplejoItem,
+} from "../../src/provider/mappers/peliculasPorComplejoMapper.js";
 import { cinePixel } from "../../src/config/cinesConfig.js";
 
 const CINE_PIXEL_CINE: Cine = { ...cinePixel, id: 99 };
 
 describe("CineApiRequester — Cine Pixel (integración)", () => {
   test("debería obtener películas del endpoint de cartelera con título", async () => {
-    const requester = new CineApiRequester(CINE_PIXEL_CINE, cinePixelApiMapper);
+    const requester = new CineApiRequester<PeliculaPorComplejoItem[]>(
+      CINE_PIXEL_CINE,
+      (data, cine) => peliculasPorComplejoMapper(data, cine),
+    );
 
     const peliculas = await requester.obtenerPeliculas();
 
