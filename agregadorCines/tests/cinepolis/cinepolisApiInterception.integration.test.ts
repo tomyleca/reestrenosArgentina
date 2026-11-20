@@ -2,8 +2,9 @@
 // vía intercepción de la API interna (Cloudflare impide llamarla directamente).
 // Playwright navega al sitio, resuelve el challenge de Cloudflare, y el scrapper
 // intercepta la respuesta JSON de /api/movies antes de que llegue al DOM.
-// La presencia de `fechaLanzamiento` en el resultado prueba que los datos
-// provienen de la intercepción de API y no del scraping de DOM.
+// El mapper ya no informa fechaLanzamiento (releaseDate es el estreno en
+// Cinépolis), así que el resultado no distingue la intercepción del scraping
+// de DOM: el log de "Intercepción de API fallida" dice cuál corrió.
 //TODO chequear estos test
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import type { BrowserContext } from "playwright";
@@ -25,7 +26,7 @@ describe("CinepolisScrapper — API interception (integración)", () => {
     await context.close();
   });
 
-  test("debería obtener películas vía intercepción de API con título y fechaLanzamiento", async () => {
+  test("debería obtener películas vía intercepción de API con título", async () => {
     const page = await context.newPage();
     const scrapper = new CinepolisScrapper(CINEPOLIS_CINE);
 
@@ -35,18 +36,11 @@ describe("CinepolisScrapper — API interception (integración)", () => {
     console.log(
       `\n🎬 Cinepolis API interception — ${peliculas.length} películas obtenidas`,
     );
-    peliculas.forEach((p, i) =>
-      console.log(
-        `  ${i + 1}. ${p.titulo} (${p.fechaLanzamiento?.toISOString().split("T")[0]})`,
-      ),
-    );
+    peliculas.forEach((p, i) => console.log(`  ${i + 1}. ${p.titulo}`));
 
     expect(peliculas.length).toBeGreaterThan(0);
     peliculas.forEach((p) => {
       expect(p.titulo).toBeTruthy();
-      // fechaLanzamiento definido confirma intercepción de API exitosa.
-      // El fallback al scraping de DOM no provee este campo.
-      expect(p.fechaLanzamiento).toBeInstanceOf(Date);
       expect(p.cine.nombre).toBe("Cinepolis");
     });
   });
