@@ -115,4 +115,65 @@ describe("CineApiRequester", () => {
     expect(await requester.obtenerPeliculas()).toEqual(deApi);
     expect(mapper).toHaveBeenCalledWith({ data: ["x"] }, cine);
   });
+
+  describe("reintentos", () => {
+    const ok = () => new Response(JSON.stringify({}), { status: 200 });
+    const conEstado = (status: number) => new Response("", { status });
+
+    // Sin espera entre intentos para que los tests no tarden
+    function crearRequester(respuestas: Array<() => Response>) {
+      const fetchMock = vi.fn(async () => {
+        const siguiente = respuestas.shift();
+        if (!siguiente) throw new Error("fetch llamado de más");
+        return siguiente();
+      });
+      vi.stubGlobal("fetch", fetchMock);
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const requester = new CineApiRequester(cine, () => deApi, 1000, 0);
+      return { requester, fetchMock };
+    }
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("reintenta ante un 500 y devuelve las películas cuando la API se recupera", async () => {
+      const { requester, fetchMock } = crearRequester([() => conEstado(500), ok]);
+
+      expect(await requester.obtenerPeliculas()).toEqual(deApi);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("reintenta ante un corte de red", async () => {
+      const { requester, fetchMock } = crearRequester([
+        () => {
+          throw new TypeError("fetch failed");
+        },
+        ok,
+      ]);
+
+      expect(await requester.obtenerPeliculas()).toEqual(deApi);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("se rinde después de tres intentos si el 500 persiste", async () => {
+      const { requester, fetchMock } = crearRequester([
+        () => conEstado(500),
+        () => conEstado(500),
+        () => conEstado(500),
+      ]);
+
+      await expect(requester.obtenerPeliculas()).rejects.toThrow(
+        `HTTP 500 al consultar ${cine.api_url}`,
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    it("no reintenta un 404", async () => {
+      const { requester, fetchMock } = crearRequester([() => conEstado(404)]);
+
+      await expect(requester.obtenerPeliculas()).rejects.toThrow("HTTP 404");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+  });
 });

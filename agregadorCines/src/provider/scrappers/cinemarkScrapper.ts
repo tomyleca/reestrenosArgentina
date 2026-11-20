@@ -2,6 +2,9 @@ import { Scraper } from "../scraper.js";
 import type { Page } from 'playwright';
 import type { Cine } from "../../core/domain/cine.js";
 
+// Tope de clics en "Ver más" por si el botón nunca desapareciera
+const MAX_CLICS_VER_MAS = 10;
+
 export class CinemarkScrapper extends Scraper {
 	cine: Cine;
 	
@@ -45,8 +48,20 @@ export class CinemarkScrapper extends Scraper {
 				console.log("No apareció modal después del clic.");
 				}
 
-				await page.getByRole('button', { name: nombreBoton }).click();
-				await page.waitForTimeout(2000); //cambiar por un wait for selector
+				// El botón desaparece cuando ya se ven todas las películas, así que se
+				// sigue tocando solo mientras exista. Antes se tocaba una vez más sin
+				// mirar: si el primer clic ya había cargado todo, esperaba 30 s un botón
+				// que no estaba y el scraper entero fallaba.
+				const botonVerMas = page.getByRole('button', { name: nombreBoton });
+				for (let i = 0; i < MAX_CLICS_VER_MAS && (await botonVerMas.isVisible()); i++) {
+					// Si el botón se va justo antes del clic no hay nada más que cargar
+					const tocado = await botonVerMas
+						.click({ timeout: 5000 })
+						.then(() => true)
+						.catch(() => false);
+					if (!tocado) break;
+					await page.waitForTimeout(2000); //cambiar por un wait for selector
+				}
 			}
 		
 	}

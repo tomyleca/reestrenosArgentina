@@ -59,13 +59,9 @@ export function cinepolisGraphqlMapper(
     const titulo = node?.name || node?.originalName;
     // Sin título no hay qué buscar en TMDB
     if (!titulo) return [];
-    const result: PeliculaInput = {
-      titulo,
-      cine,
-    };
-    if (node?.releaseDate) {
-      result.fechaLanzamiento = new Date(node.releaseDate);
-    }
+    // `releaseDate` es el estreno en Cinépolis, no el lanzamiento de la película:
+    // en un reestreno llevaría a elegir una del año equivocado, así que no se usa.
+    const result: PeliculaInput = { titulo, cine };
     return [result];
   });
 }

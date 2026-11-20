@@ -37,7 +37,9 @@ export const cinePixel: CineConfig = {
   localidad: "GBA_ZONA_SUR",
   url: "https://www.cinespixel.com.ar/",
   tieneFunciones: false,
-  api_url: "https://apiv2.gaf.adro.studio/nowPlaying/103",
+  // 331 es el código del complejo de Adrogué en el sitio de Cines Pixel
+  api_url:
+    "https://www.cinespixel.com.ar/Funciones/GetPeliculasPorComplejo?codComplejo=331",
   selectors: {
     containerPelicula: selectorsData.cinePixel.containerPelicula,
     titulo: selectorsData.cinePixel.titulo,
