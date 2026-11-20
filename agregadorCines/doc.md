@@ -13,7 +13,7 @@ El proyecto está dividido en dos partes principales:
 
 El scrapper obtiene las películas en cartelera para cada cine configurado. Cada cine puede tener dos estrategias de obtención:
 
-- **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, tarda más de 30 segundos o responde sin películas, se activa el scraping con Playwright como respaldo, y la página se cierra al terminar (ej: Cinemark, Cine Pixel, CEA. Antes de pasar al scraper, un error 5xx o un corte de red se reintenta hasta 2 veces con 3 segundos de espera (`CineApiRequester`): la API de Cinemark devuelve 500 de a ratos. Un 4xx o un timeout no se reintentan.
+- **API-first con fallback a scraper**: Se consulta la API pública del cine. Si falla, tarda más de 30 segundos o responde sin películas, se activa el scraping con Playwright como respaldo, y la página se cierra al terminar (ej: Cinemark, Cine Pixel, CEA, Atlas). Antes de pasar al scraper, un error 5xx o un corte de red se reintenta hasta 2 veces con 3 segundos de espera (`CineApiRequester`): la API de Cinemark devuelve 500 de a ratos. Un 4xx o un timeout no se reintentan.
 
 Las películas sin título se descartan: los scrapers no las devuelven y `PeliculaService` las filtra de respaldo, con una alerta "N películas sin título en X: revisar el selector de título". Buscar un título vacío o inventado en TMDB podía emparejarlo con cualquier película.
 - **Solo scraper**: Para cines que no exponen una API pública de cartelera activa (ej: Cinepolis, Malba, Sala Lugones, Casa PBA, Centro Cultural Munro, Cine York).
@@ -77,7 +77,7 @@ Los providers devuelven una entrada por función, por lo que la misma película 
 
 Cada cine en `cinesConfig` declara `tieneFunciones`:
 - **`true`** (Malba, Sala Lugones, Casa PBA, CEA, Munro, York): la película está en cartelera en ese cine si tiene alguna función **de hoy en adelante** ahí.
-- **`false`** (Cinemark, Cinépolis, Pixel): la película está en cartelera si apareció en el **último scraping exitoso** del cine (relación `Cine.peliculas`).
+- **`false`** (Cinemark, Cinépolis, Pixel, Atlas): la película está en cartelera si apareció en el **último scraping exitoso** del cine (relación `Cine.peliculas`).
 
 No hay columna `activa`: la disponibilidad se calcula al consultar. La API devuelve solo las funciones de hoy en adelante y, en `cines`, solo los cines donde la película está disponible.
 
@@ -96,12 +96,14 @@ La película se identifica solo por su `tmdbId` (`upsert` por `tmdbId` en el rep
 
 La categoría (`ESTRENOS` / `REESTRENOS`) depende de la fecha actual: es reestreno si pasó más de un año desde el lanzamiento. Por eso `TMDBAdapter` la recalcula en cada corrida para las películas que ya existen en la DB, en lugar de conservar la que se guardó al crearlas. Las películas sin `fechaLanzamiento` conservan la categoría guardada.
 
-### Cines Pixel (`peliculasPorComplejoMapper`)
+### Cines Pixel y Atlas (`peliculasPorComplejoMapper`)
 
-El sitio usa una plataforma de venta con el endpoint `/Funciones/GetPeliculasPorComplejo?codComplejo=<código>`: una entrada por película con su próxima función. `mappers/peliculasPorComplejoMapper.ts` lo interpreta:
+Los dos sitios usan la misma plataforma de venta, con el endpoint `/Funciones/GetPeliculasPorComplejo?codComplejo=<código>`: una entrada por película con su próxima función. `mappers/peliculasPorComplejoMapper.ts` lo interpreta para ambos:
 - Deja afuera las preventas: películas cuya próxima función es después de los próximos 7 días.
 - La plataforma corta los títulos en 30 caracteres: si el título llega al tope, se busca en TMDB por el título original y el local va como contexto (`textoRaw`).
 - No informa `fechaLanzamiento`: `estreno` es la llegada de la película al cine, no su lanzamiento.
+
+**Atlas** tiene 7 complejos y se muestra como un solo cine (localidad CABA). `AtlasApiRequester` consulta cada complejo (códigos en `COMPLEJOS_ATLAS`), junta las películas sin repetir y, si un complejo falla, falla todo para que corra el scraper de la home (`AtlasScrapper`). El prefijo `BARS:` de los títulos (festival Buenos Aires Rojo Sangre) se saca y se informa como ciclo.
 
 ### Cachés de TMDB por corrida
 

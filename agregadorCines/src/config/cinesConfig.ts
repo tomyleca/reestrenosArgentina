@@ -122,6 +122,21 @@ export const cineCEA: CineConfig = {
   },
 };
 
+// Cadena con 7 complejos (CABA, Catán y Nordelta) que se muestra como un solo
+// cine. La API se consulta por complejo (AtlasApiRequester le agrega codComplejo)
+// y trae solo la próxima función de cada película, así que no tiene funciones.
+export const cineAtlas: CineConfig = {
+  nombre: "Atlas",
+  localidad: "CABA",
+  url: "https://www.atlascines.com/",
+  tieneFunciones: false,
+  api_url: "https://www.atlascines.com/Funciones/GetPeliculasPorComplejo",
+  selectors: {
+    containerPelicula: selectorsData.atlas.containerPelicula,
+    titulo: selectorsData.atlas.titulo,
+  },
+};
+
 export const cinesConfig: CineConfig[] = [
   cinemarkHoyts,
   cinepolis,
@@ -132,4 +147,5 @@ export const cinesConfig: CineConfig[] = [
   centroCulturalMunro,
   cineYork,
   cineCEA,
+  cineAtlas,
 ];
