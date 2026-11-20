@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Pelicula } from "@/types/pelicula";
 import { formatearFuncion } from "@/utils/fechas";
 
@@ -30,19 +31,20 @@ export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
   const cineProximaFuncion =
     proximaFuncion && pelicula.cines.find((c) => c.id === proximaFuncion.cineId);
 
+  // Es un link real a la página de la película (Google lo sigue y se puede abrir
+  // en otra pestaña), pero un clic común abre el modal sin salir de la grilla.
   return (
-    <article
-      tabIndex={0}
-      role="button"
+    <Link
+      href={`/pelicula/${pelicula.id}`}
       aria-label={`Ver detalles de ${pelicula.titulo}`}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
+      onClick={(e) => {
+        const abreEnOtraPestana = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+        if (abreEnOtraPestana) return;
+        e.preventDefault();
+        onClick();
       }}
       className={[
+        "block",
         "relative flex-none w-full rounded-2xl overflow-hidden cursor-pointer",
         "transition-all duration-300 ease-out outline-none",
         "focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg-base",
@@ -103,6 +105,6 @@ export default function PeliculaCard({ pelicula, onClick }: PeliculaCardProps) {
           </p>
         )}
       </div>
-    </article>
+    </Link>
   );
 }

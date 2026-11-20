@@ -20,12 +20,21 @@ export async function generateMetadata(
   try {
     const pelicula = await peliculaService.getPeliculaById(parseInt(id));
     
+    // Muchas películas no tienen sinopsis en TMDB: sin descripción propia, la
+    // página quedaría con la genérica del sitio.
+    const descripcion =
+      pelicula.descripcion.trim().slice(0, 160) ||
+      `Dónde y cuándo ver ${pelicula.titulo} en los cines de Buenos Aires.`;
+
     return {
       title: pelicula.titulo,
-      description: pelicula.descripcion.slice(0, 160),
+      description: descripcion,
+      // Cada película es su propia página, no una copia de la home
+      alternates: { canonical: `/pelicula/${id}` },
       openGraph: {
         title: pelicula.titulo,
-        description: pelicula.descripcion.slice(0, 160),
+        description: descripcion,
+        url: `/pelicula/${id}`,
         images: pelicula.poster_path ? [`https://image.tmdb.org/t/p/w500${pelicula.poster_path}`] : [],
         type: "video.movie",
       },
@@ -33,6 +42,7 @@ export async function generateMetadata(
   } catch (error) {
     return {
       title: "Película no encontrada",
+      robots: { index: false },
     };
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { Pelicula } from "@/types/pelicula";
 import { useEffect, useState } from "react";
 import DisponibilidadCines from "@/components/Pelicula/DisponibilidadCines";
@@ -117,6 +118,14 @@ export default function PeliculaModal({ pelicula, onClose }: PeliculaModalProps)
             <p className="text-xs uppercase tracking-[0.3em] font-black text-white/50 mb-4 text-center">Dónde y cuándo</p>
             <DisponibilidadCines cines={pelicula.cines} funciones={pelicula.funciones} />
           </div>
+
+          {/* Página propia de la película: para compartirla y para que Google la encuentre */}
+          <Link
+            href={`/pelicula/${pelicula.id}`}
+            className="mt-8 text-sm text-accent-light hover:text-white underline underline-offset-4 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+          >
+            Ver la página de la película
+          </Link>
         </div>
       </div>
     </div>

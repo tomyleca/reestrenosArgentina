@@ -17,6 +17,13 @@ app.use(
 );
 app.use(express.json());
 
+// La API no es para los buscadores: si Google la indexara, sus respuestas
+// competirían con las páginas del sitio en los resultados.
+app.use((_req, res, next) => {
+  res.setHeader("X-Robots-Tag", "noindex");
+  next();
+});
+
 // API pública de películas
 const peliculaController = new PeliculaController(carteleraRepository);
 app.use("/", crearPeliculaRouter(peliculaController));

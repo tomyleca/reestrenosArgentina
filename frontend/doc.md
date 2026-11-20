@@ -42,6 +42,14 @@ src/
     └── fechas.ts       # Formato de funciones y "última actualización" en hora de Argentina
 ```
 
+## SEO
+
+- **Nombre del sitio**: `utils/sitio.ts` (`NOMBRE_SITIO = "ReestrenosArg"`). Va en el título de todas las páginas (`%s | ReestrenosArg`) y en la imagen para redes.
+- **Canonical por página**: el layout no define `alternates.canonical`, porque lo heredan todas las páginas y con `"/"` cada película se declaraba copia de la home. La home declara `/` y cada película `/pelicula/:id`. Una película inexistente responde 404 con `noindex`.
+- **Imagen para redes**: `app/opengraph-image.tsx` la genera en el build (1200×630). Las páginas de película usan su póster.
+- **Links internos**: cada tarjeta de la grilla es un `<a href="/pelicula/:id">`. Un clic común abre el modal, y con Ctrl/Cmd o la ruedita se abre la página en otra pestaña. El modal también enlaza a la página. Así Google llega a cada película desde la home y no solo por el sitemap.
+- La API responde con `X-Robots-Tag: noindex` para que no compita con el sitio en los resultados.
+
 ## Caché
 
 La cartelera cambia con cada scraping, no en tiempo real, así que el servidor de Next no consulta la API en cada visita:

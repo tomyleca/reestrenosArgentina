@@ -4,6 +4,11 @@ import { peliculaService } from "@/services/peliculaService";
 import { getCloudinaryFolderImages } from "@/services/cloudinaryService";
 import { ORDEN_POR_DEFECTO } from "@/types/api";
 import styles from "./page.module.css";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   // SSR: Traemos la 1ra página de reestrenos desde el servidor antes de mandar el HTML al cliente
